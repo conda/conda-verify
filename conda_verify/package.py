@@ -26,6 +26,8 @@ class TarCheck(object):
         self.paths = set(paths)
         if len(paths) != len(self.paths):
             sys.exit('Error: duplicate members')
+        raw = self.t.extractfile('info/index.json').read()
+        self.info = json.loads(raw.decode('utf-8'))
 
     def info_files(self):
         lista = [p.decode('utf-8').strip() for p in
@@ -64,16 +66,12 @@ class TarCheck(object):
             assert not p in not_allowed, p
             assert not p.endswith('/.DS_Store'), p
 
-    def info_misc(self):
-        pass
-
     def index_json(self):
-        info = json.load(self.t.extractfile('info/index.json'))
         for varname in 'name', 'version', 'build':
-            if info[varname] != getattr(self, varname):
-                sys.exit('Error: %s: %r != %r' % (varname, info[varname],
+            if self.info[varname] != getattr(self, varname):
+                sys.exit('Error: %s: %r != %r' % (varname, self.info[varname],
                                                   getattr(self,varname)))
-        assert isinstance(info['build_number'], int)
+        assert isinstance(self.info['build_number'], int)
 
     def no_bat_and_exe(self):
         bats = {p[:-4] for p in self.paths if p.endswith('.bat')}
@@ -147,10 +145,9 @@ class TarCheck(object):
         if self.name in ('python', 'conda-build', 'pip', 'xlwings',
                          'phantomjs', 'qt'):
             return
-        info = json.load(self.t.extractfile('info/index.json'))
-        if info['platform'] != 'win':
+        if self.info['platform'] != 'win':
             return
-        arch = info['arch']
+        arch = self.info['arch']
         assert arch in ('x86', 'x86_64'), arch
         for m in self.t.getmembers():
             if not m.name.lower().endswith(('.exe', '.dll')):
@@ -190,7 +187,6 @@ def validate_package(path, verbose=False):
     x = TarCheck(path, verbose)
     x.info_files()
     x.not_allowed_files()
-    x.info_misc()
     x.index_json()
     x.no_bat_and_exe()
     x.no_setuptools()

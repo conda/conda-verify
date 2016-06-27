@@ -2,7 +2,7 @@ from os.path import isfile, join
 from optparse import OptionParser
 
 from recipe import validate_recipe
-#from package import validate_package
+from package import validate_package
 
 
 def main():

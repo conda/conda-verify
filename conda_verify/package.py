@@ -6,7 +6,24 @@ import json
 import tarfile
 from os.path import basename
 
-from const import LICENSE_FAMILIES
+from const import MAGIC_HEADERS, DLL_TYPES
+
+
+def get_object_type(data):
+    head = data[:4]
+    if head not in MAGIC_HEADERS:
+        return None
+    lookup = MAGIC_HEADERS.get(head)
+    if lookup == 'DLL':
+        pos = data.find('PE\0\0')
+        if pos < 0:
+            return "<no PE header found>"
+        i = ord(data[pos + 4]) + 256 * ord(data[pos + 5])
+        return "DLL " + DLL_TYPES.get(i)
+    elif lookup.startswith('MachO'):
+        return lookup
+    elif lookup == 'ELF':
+        return "ELF" + {'\x01': '32', '\x02': '64'}.get(data[4])
 
 
 def dist_fn(fn):
@@ -73,16 +90,6 @@ class TarCheck(object):
                 sys.exit('Error: %s: %r != %r' % (varname, info[varname],
                                                   getattr(self,varname)))
         assert isinstance(info['build_number'], int)
-
-        lf = info.get('license_family', info.get('license'))
-        if lf not in LICENSE_FAMILIES:
-            print("""\
-Error: license_family is invalid: %s
-Note that license_family falls back to license.
-Allowed license families are:""" % lf)
-            for x in LICENSE_FAMILIES:
-                print("  - %s" % x)
-            exit(1)
 
     def no_bat_and_exe(self):
         bats = {p[:-4] for p in self.paths if p.endswith('.bat')}
@@ -159,7 +166,6 @@ Allowed license families are:""" % lf)
         info = json.load(self.t.extractfile('info/index.json'))
         if info['platform'] != 'win':
             return
-        from fileinfo import get_object_type
         arch = info['arch']
         assert arch in ('x86', 'x86_64'), arch
         for m in self.t.getmembers():

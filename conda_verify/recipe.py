@@ -8,29 +8,10 @@ from os.path import isfile, join
 
 import yaml
 
-from const import LICENSE_FAMILIES
+from const import LICENSE_FAMILIES, FIELDS
 from utils import memoized
 
 
-VERBOSE = False
-
-FIELDS = {
-    'package': {'name', 'version'},
-    'source': {'fn', 'url', 'md5', 'sha1', 'sha256',
-               'git_url', 'git_tag', 'git_branch',
-               'patches', 'hg_url', 'hg_tag'},
-    'build': {'features', 'track_features',
-              'number', 'entry_points', 'osx_is_app',
-              'preserve_egg_dir', 'win_has_prefix', 'no_link',
-              'ignore_prefix_files', 'msvc_compiler',
-              'detect_binary_files_with_prefix',
-              'always_include_files'},
-    'requirements': {'build', 'run'},
-    'app': {'entry', 'icon', 'summary', 'type', 'cli_opts'},
-    'test': {'requires', 'commands', 'files', 'imports'},
-    'about': {'home', 'license', 'license_family', 'license_file',
-              'summary', 'description', 'doc_url', 'dev_url'},
-}
 
 
 def ns_cfg(cfg):

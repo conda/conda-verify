@@ -13,7 +13,6 @@ from utils import memoized
 
 
 
-
 def ns_cfg(cfg):
     plat = cfg['plat']
     py = cfg['PY']
@@ -219,11 +218,14 @@ def validate_recipe(recipe_dir):
     meta_path = join(recipe_dir, 'meta.yaml')
     data = open(meta_path, 'rb').read()
     for c in data:
-        n = ord(c)
+        if sys.version_info[0] == 2:
+            n = ord(c)
+        else:
+            n = c
         if not (n == 10 or 32 <= n < 127):
             sys.exit("Error: non-ASCII character '%s' found in %s" %
                      (c, meta_path))
-    if '{{' in data:
+    if b'{{' in data:
         sys.exit("Error: found {{ in %s (Jinja templating not allowed)" %
                  meta_path)
 

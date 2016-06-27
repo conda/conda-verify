@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import json
@@ -243,14 +244,11 @@ def iter_cfgs():
             yield dict(plat=plat, PY=py, NPY=111, NOMKL=0, DEBUG=0)
 
 
-def validate(recipe_dir):
-    if VERBOSE:
-        print("Validating recipe: %s" % recipe_dir)
-
-    for fn in recipe_dir:
+def validate_recipe(recipe_dir):
+    for fn in os.listdir(recipe_dir):
         # ensure .json files can be parsed
         if fn.endswith('.json'):
-            json.load(open(menu_path))
+            json.load(open(join(recipe_dir, fn)))
 
     meta_path = join(recipe_dir, 'meta.yaml')
     data = open(meta_path, 'rb').read()
@@ -267,30 +265,3 @@ def validate(recipe_dir):
         meta = parse(data, cfg)
         validate_meta(meta)
         validate_files(recipe_dir, meta)
-
-
-def main():
-    from optparse import OptionParser
-
-    p = OptionParser()
-
-    p.add_option('-v', "--verbose",
-                 action="store_true")
-
-    opts, args = p.parse_args()
-
-    if opts.verbose:
-        global VERBOSE
-        VERBOSE = True
-
-    for path in args:
-        meta_path = join(path, 'meta.yaml')
-        if not isfile(meta_path):
-            if VERBOSE:
-                print("Ignoring: %s" % path)
-            continue
-        validate(path)
-
-
-if __name__ == '__main__':
-    main()

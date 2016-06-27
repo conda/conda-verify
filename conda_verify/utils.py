@@ -1,5 +1,24 @@
 import collections
 
+from const import MAGIC_HEADERS, DLL_TYPES
+
+
+
+def get_object_type(data):
+    head = data[:4]
+    if head not in MAGIC_HEADERS:
+        return None
+    lookup = MAGIC_HEADERS.get(head)
+    if lookup == 'DLL':
+        pos = data.find('PE\0\0')
+        if pos < 0:
+            return "<no PE header found>"
+        i = ord(data[pos + 4]) + 256 * ord(data[pos + 5])
+        return "DLL " + DLL_TYPES.get(i)
+    elif lookup.startswith('MachO'):
+        return lookup
+    elif lookup == 'ELF':
+        return "ELF" + {'\x01': '32', '\x02': '64'}.get(data[4])
 
 
 class memoized(object):

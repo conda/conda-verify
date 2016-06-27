@@ -121,7 +121,43 @@ def get_field(meta, field, default=None):
 
 
 name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
+def check_name(name):
+    if name:
+        name = str(name)
+    else:
+        sys.exit("Error: package name missing")
+    if not name_pat.match(name):
+        sys.exit("Error: invalid package name '%s'" % name)
+
+
 version_pat = re.compile(r'[\w\.]+$')
+def check_version(ver):
+    if ver:
+        ver = str(ver)
+    else:
+        sys.exit("Error: package version missing")
+    if not version_pat.match(ver):
+        sys.exit("Error: invalid package version '%s'" % ver)
+
+
+def check_build_number(bn):
+    if not (isinstance(bn, int) and bn >= 0):
+        sys.exit("Error: build/number '%s' (not a positive interger)" % bn)
+
+
+def check_license_family(meta):
+    lf = get_field(meta, 'about/license_family',
+                   get_field(meta, 'about/license'))
+    if lf not in ALLOWED_LICENSE_FAMILIES:
+        print("""\
+Error: license_family is invalid: %s
+Note that about/license_family falls back to about/license.
+Allowed license families are:""" % lf)
+        for x in ALLOWED_LICENSE_FAMILIES:
+            print("  - %s" % x)
+        exit(1)
+
+
 hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
             'sha1': re.compile(r'[a-f0-9]{40}$'),
             'sha256': re.compile(r'[a-f0-9]{64}$')}
@@ -139,8 +175,10 @@ def validate_meta(meta):
             if key not in FIELDS[section]:
                 sys.exit("In section %r: unknown key %r" % (section, key))
 
-    bn = get_field(meta, 'build/number', 0)
-    assert isinstance(bn, int) and bn >= 0
+    check_name(get_field(meta, 'package/name'))
+    check_version(get_field(meta, 'package/version'))
+    check_build_number(get_field(meta, 'build/number', 0))
+    check_license_family(meta)
 
     for field in 'about/home', 'about/dev_url', 'about/doc_url':
         url = get_field(meta, field)
@@ -166,24 +204,17 @@ def validate_meta(meta):
     if git_url:
         assert not (srcmeta.get('git_tag') and srcmeta.get('git_branch'))
 
-    lf = get_field(meta, 'about/license_family',
-                   get_field(meta, 'about/license'))
-    if lf not in ALLOWED_LICENSE_FAMILIES:
-        print("""\
-Error: license_family '%s' not allowed.
-Allowed license families are:""" % lf)
-        for x in ALLOWED_LICENSE_FAMILIES:
-            print("  - %s" % x)
-        exit(1)
 
-
-def foo():
+def validate_files(recipe_dir, meta):
     for field in 'test/files', 'source/patches':
-        flst = get_field(meta, field, [])
-        assert isinstance(flst, list)
+        flst = get_field(meta, field)
+        if not flst:
+            continue
         for fn in flst:
-            path = join(pkg_path, fn)
-            assert isfile(path), path
+            path = join(recipe_dir, fn)
+            if isfile(path):
+               continue
+            sys.exit("Error: no such file '%s'" % path)
 
 
 def iter_cfgs():
@@ -215,6 +246,7 @@ def validate(recipe_dir):
     for cfg in iter_cfgs():
         meta = parse(data, cfg)
         validate_meta(meta)
+        validate_files(recipe_dir, meta)
 
 
 def main():

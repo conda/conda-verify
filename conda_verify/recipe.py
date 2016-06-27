@@ -216,16 +216,14 @@ def validate_recipe(recipe_dir):
             json.load(open(join(recipe_dir, fn)))
 
     meta_path = join(recipe_dir, 'meta.yaml')
-    data = open(meta_path, 'rb').read()
+    with open(meta_path) as fi:
+        data = fi.read()
     for c in data:
-        if sys.version_info[0] == 2:
-            n = ord(c)
-        else:
-            n = c
+        n = ord(c)
         if not (n == 10 or 32 <= n < 127):
             sys.exit("Error: non-ASCII character '%s' found in %s" %
                      (c, meta_path))
-    if b'{{' in data:
+    if '{{' in data:
         sys.exit("Error: found {{ in %s (Jinja templating not allowed)" %
                  meta_path)
 

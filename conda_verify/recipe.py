@@ -274,7 +274,8 @@ def main():
 
     p = OptionParser()
 
-    p.add_option('-v', "--verbose", action="store_true")
+    p.add_option('-v', "--verbose",
+                 action="store_true")
 
     opts, args = p.parse_args()
 

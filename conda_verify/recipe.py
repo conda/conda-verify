@@ -158,10 +158,47 @@ Allowed license families are:""" % lf)
         exit(1)
 
 
+url_pat = re.compile(r'(ftp|http(s)?)://')
+def check_url(url):
+    if not url_pat.match(url):
+        sys.exit("Error: not a valid URL: %s" % url)
+
+
+def check_about(meta):
+    summary = get_field(meta, 'about/summary')
+    if summary and len(summary) > 80:
+        sys.exit("Error: summary exceeds 80 characters")
+
+    for field in 'about/home', 'about/dev_url', 'about/doc_url':
+        url = get_field(meta, field)
+        if url:
+            check_url(url)
+
+    check_license_family(meta)
+
+
 hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
             'sha1': re.compile(r'[a-f0-9]{40}$'),
             'sha256': re.compile(r'[a-f0-9]{64}$')}
-url_pat = re.compile(r'http(s)?://')
+def check_source(meta):
+    src = meta.get('source')
+    if not src:
+        return
+    fn = src.get('fn')
+    if fn:
+        for ht in 'md5', 'sha1', 'sha256':
+            hexgigest = src.get(ht)
+            if hexgigest and not hash_pat[ht].match(hexgigest):
+                sys.exit("Error: invalid hash: %s" % hexgigest)
+        url = src.get('url')
+        if url:
+            check_url(url)
+
+    git_url = src.get('git_url')
+    if git_url and (src.get('git_tag') and src.get('git_branch')):
+        sys.exit("Error: cannot specify both git_branch and git_tag")
+
+
 lic_pat = re.compile(r'.+?\s+\(http\S+\)$')
 
 def validate_meta(meta):
@@ -178,31 +215,12 @@ def validate_meta(meta):
     check_name(get_field(meta, 'package/name'))
     check_version(get_field(meta, 'package/version'))
     check_build_number(get_field(meta, 'build/number', 0))
-    check_license_family(meta)
-
-    for field in 'about/home', 'about/dev_url', 'about/doc_url':
-        url = get_field(meta, field)
-        if url:
-            assert url_pat.match(url), url
+    check_about(meta)
+    check_source(meta)
 
     lic = get_field(meta, 'about/license')
     if lic and lic.endswith(')'):
         assert lic_pat.match(lic), lic
-
-    srcmeta = meta.get('source', {})
-    fn = srcmeta.get('fn')
-    if fn:
-        for ht in 'md5', 'sha1', 'sha256':
-            hexgigest = srcmeta.get(ht)
-            if hexgigest:
-                assert hash_pat[ht].match(hexgigest), hexgigest
-        url = srcmeta.get('url')
-        if url:
-            assert url.startswith(('http://', 'https://', 'ftp://')), url
-
-    git_url = srcmeta.get('git_url')
-    if git_url:
-        assert not (srcmeta.get('git_tag') and srcmeta.get('git_branch'))
 
 
 def validate_files(recipe_dir, meta):
@@ -211,6 +229,8 @@ def validate_files(recipe_dir, meta):
         if not flst:
             continue
         for fn in flst:
+            if fn.startswith('..'):
+                sys.exit("Error: path outsite recipe: %s" % fn)
             path = join(recipe_dir, fn)
             if isfile(path):
                continue

@@ -16,12 +16,12 @@ def main():
     for path in args:
         if isfile(join(path, 'meta.yaml')):
             if opts.verbose:
-                print("Validating conda recipe: %s" % path)
+                print("==> %s <==" % path)
             validate_recipe(path)
 
         elif path.endswith('.tar.bz2'):
             if opts.verbose:
-                print("Validating conda package: %s" % path)
+                print("==> %s <==" % path)
             validate_package(path)
 
         else:

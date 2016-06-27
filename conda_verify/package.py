@@ -1,15 +1,18 @@
+from __future__ import print_function, division, absolute_import
+
 import re
 import sys
 import json
 import tarfile
 from os.path import basename
 
+from const import LICENSE_FAMILIES
+
 
 def dist_fn(fn):
     if fn.endswith('.tar.bz2'):
         return fn[:-8]
-    else:
-        sys.exit("Error: did not expect filename: %s" % fn)
+    sys.exit("Error: did not expect filename: %s" % fn)
 
 
 class TarCheck(object):
@@ -44,9 +47,9 @@ class TarCheck(object):
             return
         for p in sorted(seta | setb):
             if p not in seta:
-                print '%r not in info/files' % p
+                print('%r not in info/files' % p)
             if p not in setb:
-                print '%r not in tarball' % p
+                print('%r not in tarball' % p)
         sys.exit('info/files')
 
     def not_allowed_files(self):
@@ -70,6 +73,16 @@ class TarCheck(object):
                 sys.exit('Error: %s: %r != %r' % (varname, info[varname],
                                                   getattr(self,varname)))
         assert isinstance(info['build_number'], int)
+
+        lf = info.get('license_family', info.get('license'))
+        if lf not in LICENSE_FAMILIES:
+            print("""\
+Error: license_family is invalid: %s
+Note that license_family falls back to license.
+Allowed license families are:""" % lf)
+            for x in LICENSE_FAMILIES:
+                print("  - %s" % x)
+            exit(1)
 
     def no_bat_and_exe(self):
         bats = {p[:-4] for p in self.paths if p.endswith('.bat')}
@@ -95,14 +108,14 @@ class TarCheck(object):
     def no_pth(self):
         for p in self.paths:
             if p.endswith('.pth'):
-                print "WARNING: .pth file: %s" % p
+                print("WARNING: .pth file: %s" % p)
 
     def warn_pyo(self):
         if self.name == 'python':
             return
         for p in self.paths:
             if p.endswith('.pyo'):
-                print "WARNING: .pyo file: %s" % p
+                print("WARNING: .pyo file: %s" % p)
 
     def no_py_next_so(self):
         for p in self.paths:
@@ -114,7 +127,7 @@ class TarCheck(object):
                 continue
             for ext in '.py', '.pyc':
                 if root + ext in self.paths:
-                    print "WARNING: %-4s next to: %s" % (ext, p)
+                    print("WARNING: %-4s next to: %s" % (ext, p))
 
     def no_pyc_in_stdlib(self):
         if self.name in {'python', 'scons'}:
@@ -135,7 +148,7 @@ class TarCheck(object):
             if ('/site-packages/' not in p) or ('/port_v3/' in p):
                 continue
             if p.endswith('.py') and (p + 'c') not in self.paths:
-                print "WARNING: pyc missing for:", p
+                print("WARNING: pyc missing for:", p)
                 if not self.verbose:
                     return
 
@@ -171,7 +184,7 @@ class TarCheck(object):
                 continue
             res.add(fn)
         for x in res:
-            print '    %s' % x
+            print('    %s' % x)
         if self.name == 'deshaw':
             return
         for pkg_name in 'numpy', 'scipy':

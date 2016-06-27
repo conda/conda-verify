@@ -1,3 +1,5 @@
+from __future__ import print_function, division, absolute_import
+
 import os
 import re
 import sys
@@ -6,6 +8,7 @@ from os.path import isfile, join
 
 import yaml
 
+from const import LICENSE_FAMILIES
 from utils import memoized
 
 
@@ -28,24 +31,6 @@ FIELDS = {
     'about': {'home', 'license', 'license_family', 'license_file',
               'summary', 'description', 'doc_url', 'dev_url'},
 }
-
-ALLOWED_LICENSE_FAMILIES = set("""
-AGPL
-GPL2
-GPL3
-LGPL
-BSD
-MIT
-Apache
-PSF
-Public-Domain
-Proprietary
-Other
-""".split())
-
-
-vxy_pat = re.compile(r'(\d+)\.(\d+)')
-feat_pat = re.compile(r'(vc\d+|nomkl|debug)$')
 
 
 def ns_cfg(cfg):
@@ -149,12 +134,12 @@ def check_build_number(bn):
 def check_license_family(meta):
     lf = get_field(meta, 'about/license_family',
                    get_field(meta, 'about/license'))
-    if lf not in ALLOWED_LICENSE_FAMILIES:
+    if lf not in LICENSE_FAMILIES:
         print("""\
 Error: license_family is invalid: %s
 Note that about/license_family falls back to about/license.
 Allowed license families are:""" % lf)
-        for x in ALLOWED_LICENSE_FAMILIES:
+        for x in LICENSE_FAMILIES:
             print("  - %s" % x)
         exit(1)
 

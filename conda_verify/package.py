@@ -28,7 +28,7 @@ class TarCheck(object):
             sys.exit('Error: duplicate members')
 
     def info_files(self):
-        lista = [p.strip() for p in
+        lista = [p.decode('utf-8').strip() for p in
                  self.t.extractfile('info/files').readlines()]
         for p in lista:
             if p.startswith('info/'):

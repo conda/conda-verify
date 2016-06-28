@@ -5,7 +5,7 @@ import json
 import tarfile
 from os.path import basename
 
-from conda_verify.utils import get_object_type
+from anaconda_verify.utils import get_object_type
 
 
 class PackageError(Exception):

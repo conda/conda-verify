@@ -4,8 +4,8 @@ import sys
 from os.path import isfile, join
 from optparse import OptionParser
 
-from conda_verify.recipe import validate_recipe, RecipeError
-from conda_verify.package import validate_package, PackageError
+from anaconda_verify.recipe import validate_recipe, RecipeError
+from anaconda_verify.package import validate_package, PackageError
 
 
 def main():

@@ -6,19 +6,19 @@ from os.path import join
 from distutils.core import setup
 
 
-# read version from conda_verify/__init__.py
+# read version from anaconda_verify/__init__.py
 pat = re.compile(r'__version__\s*=\s*(\S+)', re.M)
-data = open(join('conda_verify', '__init__.py')).read()
+data = open(join('anaconda_verify', '__init__.py')).read()
 version = eval(pat.search(data).group(1))
 
 setup(
-    name = "conda-verify",
+    name = "anaconda-verify",
     version = version,
     author = "Ilan Schnell",
     author_email = "ilan@continuum.io",
-    url = "https://github.com/conda/conda-verify",
+    url = "https://github.com/ContinuumIO/anaconda-verify",
     license = "BSD",
     description = "create installer from conda packages",
     long_description = open('README.md').read(),
-    packages = ['conda_verify'],
+    packages = ['anaconda_verify'],
 )

@@ -1,8 +1,8 @@
-conda-verify
-============
+anaconda-verify
+===============
 
-conda-verify is a tool for (passively) verifying conda recipes, as well
-as conda packages.
+anaconda-verify is a tool for (passively) verifying conda recipes and
+conda packages.
 
 All <a href="https://github.com/ContinuumIO/anaconda-recipes">
 Anaconda recipes</a>, as well as

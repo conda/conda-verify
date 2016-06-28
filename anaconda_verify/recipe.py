@@ -5,8 +5,8 @@ from os.path import isfile, join
 
 import yaml
 
-from conda_verify.const import LICENSE_FAMILIES, FIELDS
-from conda_verify.utils import memoized
+from anaconda_verify.const import LICENSE_FAMILIES, FIELDS
+from anaconda_verify.utils import memoized
 
 
 class RecipeError(Exception):

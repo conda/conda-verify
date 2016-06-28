@@ -83,7 +83,10 @@ def get_field(meta, field, default=None):
     submeta = meta.get(section)
     if submeta is None:
         submeta = {}
-    return submeta.get(key, default)
+    res = submeta.get(key)
+    if res is None:
+        res = default
+    return res
 
 
 name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')

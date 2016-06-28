@@ -121,7 +121,7 @@ Note that about/license_family falls back to about/license.
 Allowed license families are:""" % lf)
         for x in LICENSE_FAMILIES:
             print("  - %s" % x)
-        exit(1)
+        raise RecipeError("wrong license family")
 
 
 url_pat = re.compile(r'(ftp|http(s)?)://')

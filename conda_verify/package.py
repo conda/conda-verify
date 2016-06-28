@@ -90,6 +90,14 @@ class CondaPackageCheck(object):
         if both:
             raise PackageError("Both .bat and .exe files: %s" % ', '.join(both))
 
+    def warn_post_link(self):
+        for p in self.paths:
+            if p.endswith((
+                    '-post-link.sh',  '-pre-link.sh',  '-pre-unlink.sh',
+                    '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat',
+                    )):
+                print("WARNING: %s" % p)
+
     def no_setuptools(self):
         for p in self.paths:
             if p.endswith('easy-install.pth'):
@@ -129,7 +137,7 @@ class CondaPackageCheck(object):
                 continue
             for ext in '.py', '.pyc':
                 if root + ext in self.paths:
-                    print("WARNING: %-4s next to: %s" % (ext, p))
+                    raise PackageError("%-4s next to: %s" % (ext, p))
 
     def no_pyc_in_stdlib(self):
         if self.name in {'python', 'scons'}:
@@ -207,6 +215,7 @@ def validate_package(path, verbose=True):
     x.not_allowed_files()
     x.index_json()
     x.no_bat_and_exe()
+    x.warn_post_link()
     x.no_setuptools()
     x.no_pth()
     x.warn_pyo()

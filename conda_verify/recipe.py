@@ -1,9 +1,6 @@
 from __future__ import print_function, division, absolute_import
 
-import os
 import re
-import sys
-import json
 from os.path import isfile, join
 
 import yaml
@@ -20,8 +17,8 @@ def ns_cfg(cfg):
     for x in py, np:
         assert isinstance(x, int), x
     return dict(
-        nomkl = bool(cfg['NOMKL']),
-        debug = bool(cfg['DEBUG']),
+        nomkl = False,
+        debug = False,
         linux = plat.startswith('linux-'),
         linux32 = bool(plat == 'linux-32'),
         linux64 = bool(plat == 'linux-64'),
@@ -91,9 +88,9 @@ def check_name(name):
     if name:
         name = str(name)
     else:
-        sys.exit("Error: package name missing")
+        raise Exception("package name missing")
     if not name_pat.match(name):
-        sys.exit("Error: invalid package name '%s'" % name)
+        raise Exception("invalid package name '%s'" % name)
 
 
 version_pat = re.compile(r'[\w\.]+$')
@@ -101,14 +98,14 @@ def check_version(ver):
     if ver:
         ver = str(ver)
     else:
-        sys.exit("Error: package version missing")
+        raise Exception("package version missing")
     if not version_pat.match(ver):
-        sys.exit("Error: invalid package version '%s'" % ver)
+        raise Exception("invalid package version '%s'" % ver)
 
 
 def check_build_number(bn):
     if not (isinstance(bn, int) and bn >= 0):
-        sys.exit("Error: build/number '%s' (not a positive interger)" % bn)
+        raise Exception("build/number '%s' (not a positive interger)" % bn)
 
 
 def check_license_family(meta):
@@ -127,13 +124,13 @@ Allowed license families are:""" % lf)
 url_pat = re.compile(r'(ftp|http(s)?)://')
 def check_url(url):
     if not url_pat.match(url):
-        sys.exit("Error: not a valid URL: %s" % url)
+        raise Exception("not a valid URL: %s" % url)
 
 
 def check_about(meta):
     summary = get_field(meta, 'about/summary')
     if summary and len(summary) > 80:
-        sys.exit("Error: summary exceeds 80 characters")
+        raise Exception("summary exceeds 80 characters")
 
     for field in 'about/home', 'about/dev_url', 'about/doc_url':
         url = get_field(meta, field)
@@ -155,14 +152,14 @@ def check_source(meta):
         for ht in 'md5', 'sha1', 'sha256':
             hexgigest = src.get(ht)
             if hexgigest and not hash_pat[ht].match(hexgigest):
-                sys.exit("Error: invalid hash: %s" % hexgigest)
+                raise Exception("invalid hash: %s" % hexgigest)
         url = src.get('url')
         if url:
             check_url(url)
 
     git_url = src.get('git_url')
     if git_url and (src.get('git_tag') and src.get('git_branch')):
-        sys.exit("Error: cannot specify both git_branch and git_tag")
+        raise Exception("cannot specify both git_branch and git_tag")
 
 
 lic_pat = re.compile(r'.+?\s+\(http\S+\)$')
@@ -170,13 +167,14 @@ lic_pat = re.compile(r'.+?\s+\(http\S+\)$')
 def validate_meta(meta):
     for section in meta:
         if section not in FIELDS:
-            sys.exit("Unknown section: %s" % section)
+            raise Exception("Unknown section: %s" % section)
         submeta = meta.get(section)
         if submeta is None:
             submeta = {}
         for key in submeta:
             if key not in FIELDS[section]:
-                sys.exit("In section %r: unknown key %r" % (section, key))
+                raise Exception("in section %r: unknown key %r" %
+                                (section, key))
 
     check_name(get_field(meta, 'package/name'))
     check_version(get_field(meta, 'package/version'))
@@ -196,36 +194,31 @@ def validate_files(recipe_dir, meta):
             continue
         for fn in flst:
             if fn.startswith('..'):
-                sys.exit("Error: path outsite recipe: %s" % fn)
+                raise Exception("path outsite recipe: %s" % fn)
             path = join(recipe_dir, fn)
             if isfile(path):
                continue
-            sys.exit("Error: no such file '%s'" % path)
+            raise Exception("no such file '%s'" % path)
 
 
 def iter_cfgs():
     for py in 27, 34, 35:
         for plat in 'linux-64', 'linux-32', 'osx-64', 'win-32', 'win-64':
-            yield dict(plat=plat, PY=py, NPY=111, NOMKL=0, DEBUG=0)
+            yield dict(plat=plat, PY=py, NPY=111)
 
 
 def validate_recipe(recipe_dir):
-    for fn in os.listdir(recipe_dir):
-        # ensure .json files can be parsed
-        if fn.endswith('.json'):
-            json.load(open(join(recipe_dir, fn)))
-
     meta_path = join(recipe_dir, 'meta.yaml')
     with open(meta_path) as fi:
         data = fi.read()
     for c in data:
         n = ord(c)
         if not (n == 10 or 32 <= n < 127):
-            sys.exit("Error: non-ASCII character '%s' found in %s" %
-                     (c, meta_path))
+            raise Exception("non-ASCII character '%s' found in %s" %
+                            (c, meta_path))
     if '{{' in data:
-        sys.exit("Error: found {{ in %s (Jinja templating not allowed)" %
-                 meta_path)
+        raise Exception("found {{ in %s (Jinja templating not allowed)" %
+                        meta_path)
 
     for cfg in iter_cfgs():
         meta = parse(data, cfg)

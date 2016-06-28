@@ -64,17 +64,22 @@ class TarCheck(object):
             not_allowed.remove('pkgs')
         not_allowed_dirs = tuple(x + '/' for x in not_allowed)
         for p in self.paths:
-            assert not p.startswith(not_allowed_dirs), p
-            assert not p in not_allowed, p
-            assert not p.endswith('/.DS_Store'), p
+            if (p.startswith(not_allowed_dirs) or
+                    p in not_allowed or
+                    p.endswith('/.DS_Store')):
+                raise PackageError("directory or filename not allowed: "
+                                   "%s" % p)
 
     def index_json(self):
         for varname in 'name', 'version', 'build':
             if self.info[varname] != getattr(self, varname):
                 raise PackageError("info/index.json for %s: %r != %r" %
                                    (varname, self.info[varname],
-                                    getattr(self,varname)))
-        assert isinstance(self.info['build_number'], int)
+                                    getattr(self, varname)))
+        bn = self.info['build_number']
+        if not isinstance(bn, int):
+            raise PackageError("info/index.json: invalid build_number: %s" %
+                               bn)
 
     def no_bat_and_exe(self):
         bats = {p[:-4] for p in self.paths if p.endswith('.bat')}
@@ -85,17 +90,20 @@ class TarCheck(object):
 
     def no_setuptools(self):
         for p in self.paths:
-            assert not p.endswith('easy-install.pth')
+            if p.endswith('easy-install.pth'):
+                raise PackageError("easy-install.pth file not allowed")
 
-        if self.name not in ('setuptools', 'distribute'):
-            for p in self.paths:
-                if p.endswith('MyPyPa-0.1.0-py2.5.egg'):
-                    continue
-                assert not p.endswith('.egg'), p
-                assert 'site-packages/pkg_resources' not in p, p
-                assert 'site-packages/__pycache__/pkg_resources' not in p, p
-                assert not p.startswith('bin/easy_install'), p
-                assert not p.startswith('Scripts/easy_install'), p
+        if self.name in ('setuptools', 'distribute'):
+            return
+        for p in self.paths:
+            if p.endswith('MyPyPa-0.1.0-py2.5.egg'):
+                continue
+            if (p.endswith('.egg') or
+                    'site-packages/pkg_resources' in p or
+                    'site-packages/__pycache__/pkg_resources' in p or
+                    p.startswith('bin/easy_install') or
+                    p.startswith('Scripts/easy_install')):
+                raise PackageError("file '%s' not allowed" % p)
 
     def no_pth(self):
         for p in self.paths:
@@ -125,13 +133,15 @@ class TarCheck(object):
         if self.name in {'python', 'scons'}:
             return
         for p in self.paths:
-            assert not p.endswith('.pyc') or 'site-packages' in p, p
+            if p.endswith('.pyc') and not 'site-packages' in p:
+                raise PackageError(".pyc found in stdlib: %s" % p)
 
     def no_2to3_pickle(self):
         if self.name == 'python':
             return
         for p in self.paths:
-            assert not ('lib2to3' in p and p.endswith('.pickle')), p
+            if ('lib2to3' in p and p.endswith('.pickle')):
+                raise PackageError("found lib2to3 .pickle: %s" % p)
 
     def pyc_files(self):
         if 'py3' in self.build:

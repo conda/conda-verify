@@ -186,8 +186,9 @@ class TarCheck(object):
             if '-' in fn or fn.endswith('.pyc'):
                 continue
             res.add(fn)
-        for x in res:
-            print('    %s' % x)
+        if self.verbose:
+            for x in res:
+                print('    %s' % x)
         for pkg_name in 'numpy', 'scipy':
             if self.name != pkg_name and pkg_name in res:
                 raise PackageError("found %s" % pkg_name)
@@ -198,7 +199,7 @@ class TarCheck(object):
                     raise PackageError("found %s" % x)
 
 
-def validate_package(path, verbose=False):
+def validate_package(path, verbose=True):
     x = TarCheck(path, verbose)
     x.info_files()
     x.not_allowed_files()

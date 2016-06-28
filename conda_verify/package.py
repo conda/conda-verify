@@ -8,11 +8,14 @@ from os.path import basename
 from conda_verify.utils import get_object_type
 
 
+class PackageError(Exception):
+    pass
+
 
 def dist_fn(fn):
     if fn.endswith('.tar.bz2'):
         return fn[:-8]
-    raise Exception("did not expect filename: %s" % fn)
+    raise PackageError("did not expect filename: %s" % fn)
 
 
 class TarCheck(object):
@@ -24,7 +27,7 @@ class TarCheck(object):
         paths = [m.path for m in self.t.getmembers()]
         self.paths = set(paths)
         if len(paths) != len(self.paths):
-            raise Exception("duplicate members")
+            raise PackageError("duplicate members")
         raw = self.t.extractfile('info/index.json').read()
         self.info = json.loads(raw.decode('utf-8'))
 
@@ -33,17 +36,17 @@ class TarCheck(object):
                  self.t.extractfile('info/files').readlines()]
         for p in lista:
             if p.startswith('info/'):
-                raise Exception("Did not expect '%s' in info/files" % p)
+                raise PackageError("Did not expect '%s' in info/files" % p)
 
         seta = set(lista)
         if len(lista) != len(seta):
-            raise Exception('info/files: duplicates')
+            raise PackageError('info/files: duplicates')
 
         listb = [m.path for m in self.t.getmembers()
                  if not (m.path.startswith('info/') or m.isdir())]
         setb = set(listb)
         if len(listb) != len(setb):
-            raise Exception("info_files: duplicate members")
+            raise PackageError("info_files: duplicate members")
 
         if seta == setb:
             return
@@ -52,7 +55,7 @@ class TarCheck(object):
                 print('%r not in info/files' % p)
             if p not in setb:
                 print('%r not in tarball' % p)
-        raise Exception("info/files")
+        raise PackageError("info/files")
 
     def not_allowed_files(self):
         not_allowed = {'conda-meta', 'conda-bld',
@@ -68,9 +71,9 @@ class TarCheck(object):
     def index_json(self):
         for varname in 'name', 'version', 'build':
             if self.info[varname] != getattr(self, varname):
-                raise Exception("info/index.json for %s: %r != %r" %
-                                (varname, self.info[varname],
-                                 getattr(self,varname)))
+                raise PackageError("info/index.json for %s: %r != %r" %
+                                   (varname, self.info[varname],
+                                    getattr(self,varname)))
         assert isinstance(self.info['build_number'], int)
 
     def no_bat_and_exe(self):
@@ -78,7 +81,7 @@ class TarCheck(object):
         exes = {p[:-4] for p in self.paths if p.endswith('.exe')}
         both = bats & exes
         if both:
-            raise Exception("Both .bat and .exe files: %s" % ', '.join(both))
+            raise PackageError("Both .bat and .exe files: %s" % ', '.join(both))
 
     def no_setuptools(self):
         for p in self.paths:

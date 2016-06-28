@@ -9,6 +9,9 @@ from conda_verify.const import LICENSE_FAMILIES, FIELDS
 from conda_verify.utils import memoized
 
 
+class RecipeError(Exception):
+    pass
+
 
 def ns_cfg(cfg):
     plat = cfg['plat']
@@ -88,9 +91,9 @@ def check_name(name):
     if name:
         name = str(name)
     else:
-        raise Exception("package name missing")
+        raise RecipeError("package name missing")
     if not name_pat.match(name):
-        raise Exception("invalid package name '%s'" % name)
+        raise RecipeError("invalid package name '%s'" % name)
 
 
 version_pat = re.compile(r'[\w\.]+$')
@@ -98,14 +101,14 @@ def check_version(ver):
     if ver:
         ver = str(ver)
     else:
-        raise Exception("package version missing")
+        raise RecipeError("package version missing")
     if not version_pat.match(ver):
-        raise Exception("invalid package version '%s'" % ver)
+        raise RecipeError("invalid package version '%s'" % ver)
 
 
 def check_build_number(bn):
     if not (isinstance(bn, int) and bn >= 0):
-        raise Exception("build/number '%s' (not a positive interger)" % bn)
+        raise RecipeError("build/number '%s' (not a positive interger)" % bn)
 
 
 def check_license_family(meta):
@@ -124,13 +127,13 @@ Allowed license families are:""" % lf)
 url_pat = re.compile(r'(ftp|http(s)?)://')
 def check_url(url):
     if not url_pat.match(url):
-        raise Exception("not a valid URL: %s" % url)
+        raise RecipeError("not a valid URL: %s" % url)
 
 
 def check_about(meta):
     summary = get_field(meta, 'about/summary')
     if summary and len(summary) > 80:
-        raise Exception("summary exceeds 80 characters")
+        raise RecipeError("summary exceeds 80 characters")
 
     for field in 'about/home', 'about/dev_url', 'about/doc_url':
         url = get_field(meta, field)
@@ -152,14 +155,14 @@ def check_source(meta):
         for ht in 'md5', 'sha1', 'sha256':
             hexgigest = src.get(ht)
             if hexgigest and not hash_pat[ht].match(hexgigest):
-                raise Exception("invalid hash: %s" % hexgigest)
+                raise RecipeError("invalid hash: %s" % hexgigest)
         url = src.get('url')
         if url:
             check_url(url)
 
     git_url = src.get('git_url')
     if git_url and (src.get('git_tag') and src.get('git_branch')):
-        raise Exception("cannot specify both git_branch and git_tag")
+        raise RecipeError("cannot specify both git_branch and git_tag")
 
 
 lic_pat = re.compile(r'.+?\s+\(http\S+\)$')
@@ -167,14 +170,14 @@ lic_pat = re.compile(r'.+?\s+\(http\S+\)$')
 def validate_meta(meta):
     for section in meta:
         if section not in FIELDS:
-            raise Exception("Unknown section: %s" % section)
+            raise RecipeError("Unknown section: %s" % section)
         submeta = meta.get(section)
         if submeta is None:
             submeta = {}
         for key in submeta:
             if key not in FIELDS[section]:
-                raise Exception("in section %r: unknown key %r" %
-                                (section, key))
+                raise RecipeError("in section %r: unknown key %r" %
+                                  (section, key))
 
     check_name(get_field(meta, 'package/name'))
     check_version(get_field(meta, 'package/version'))
@@ -194,11 +197,11 @@ def validate_files(recipe_dir, meta):
             continue
         for fn in flst:
             if fn.startswith('..'):
-                raise Exception("path outsite recipe: %s" % fn)
+                raise RecipeError("path outsite recipe: %s" % fn)
             path = join(recipe_dir, fn)
             if isfile(path):
                continue
-            raise Exception("no such file '%s'" % path)
+            raise RecipeError("no such file '%s'" % path)
 
 
 def iter_cfgs():
@@ -214,11 +217,11 @@ def validate_recipe(recipe_dir):
     for c in data:
         n = ord(c)
         if not (n == 10 or 32 <= n < 127):
-            raise Exception("non-ASCII character '%s' found in %s" %
-                            (c, meta_path))
+            raise RecipeError("non-ASCII character '%s' found in %s" %
+                              (c, meta_path))
     if '{{' in data:
-        raise Exception("found {{ in %s (Jinja templating not allowed)" %
-                        meta_path)
+        raise RecipeError("found {{ in %s (Jinja templating not allowed)" %
+                          meta_path)
 
     for cfg in iter_cfgs():
         meta = parse(data, cfg)

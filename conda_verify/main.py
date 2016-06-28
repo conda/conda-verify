@@ -3,8 +3,8 @@ from __future__ import print_function, division, absolute_import
 from os.path import isfile, join
 from optparse import OptionParser
 
-from conda_verify.recipe import validate_recipe
-from conda_verify.package import validate_package
+from conda_verify.recipe import validate_recipe, RecipeError
+from conda_verify.package import validate_package, PackageError
 
 
 def main():
@@ -19,12 +19,18 @@ def main():
         if isfile(join(path, 'meta.yaml')):
             if opts.verbose:
                 print("==> %s <==" % path)
-            validate_recipe(path)
+            try:
+                validate_recipe(path)
+            except RecipeError as e:
+                print(e)
 
         elif path.endswith('.tar.bz2'):
             if opts.verbose:
                 print("==> %s <==" % path)
-            validate_package(path)
+            try:
+                validate_package(path)
+            except PackageError as e:
+                print(e)
 
         else:
             if opts.verbose:

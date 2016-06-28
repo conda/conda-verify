@@ -161,16 +161,19 @@ class TarCheck(object):
         if self.info['platform'] != 'win':
             return
         arch = self.info['arch']
-        assert arch in ('x86', 'x86_64'), arch
+        if arch not in ('x86', 'x86_64'):
+            raise PackageError("Unrecognized Windows architecture: %s" %
+                               arch)
         for m in self.t.getmembers():
             if not m.name.lower().endswith(('.exe', '.dll')):
                 continue
             data = self.t.extractfile(m.path).read(4096)
             tp = get_object_type(data)
-            if arch == 'x86':
-                assert tp == 'DLL I386', m.name
-            if arch == 'x86_64':
-                assert tp == 'DLL AMD64', m.name
+            if ((arch == 'x86' and tp != 'DLL I386') or
+                (arch == 'x86_64' and tp != 'DLL AMD64')):
+                raise PackageError("File %s has object type %s, but info/"
+                                   "index.json arch is %s" %
+                                   (m.name, tp, arch))
 
     def list_packages(self):
         pat = re.compile(r'site-packages/([^/]+)')

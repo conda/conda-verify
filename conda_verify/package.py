@@ -15,10 +15,12 @@ class PackageError(Exception):
 def dist_fn(fn):
     if fn.endswith('.tar.bz2'):
         return fn[:-8]
+    if fn.endswith('.tar'):
+        return fn[:-4]
     raise PackageError("did not expect filename: %s" % fn)
 
 
-class TarCheck(object):
+class CondaPackageCheck(object):
     def __init__(self, path, verbose=False):
         self.verbose = verbose
         self.t = tarfile.open(path)
@@ -200,7 +202,7 @@ class TarCheck(object):
 
 
 def validate_package(path, verbose=True):
-    x = TarCheck(path, verbose)
+    x = CondaPackageCheck(path, verbose)
     x.info_files()
     x.not_allowed_files()
     x.index_json()

@@ -188,15 +188,14 @@ class TarCheck(object):
             res.add(fn)
         for x in res:
             print('    %s' % x)
-        if self.name == 'deshaw':
-            return
         for pkg_name in 'numpy', 'scipy':
-            if self.name != pkg_name:
-                assert pkg_name not in res, pkg_name
+            if self.name != pkg_name and pkg_name in res:
+                raise PackageError("found %s" % pkg_name)
         if self.name not in ('setuptools', 'distribute', 'python'):
             for x in ('pkg_resources.py', 'setuptools.pth', 'easy_install.py',
-                      'site.py', 'setuptools'):
-                assert x not in res, res
+                      'setuptools'):
+                if x in res:
+                    raise PackageError("found %s" % x)
 
 
 def validate_package(path, verbose=False):

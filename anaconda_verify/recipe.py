@@ -111,6 +111,13 @@ def check_build_number(bn):
         raise RecipeError("build/number '%s' (not a positive interger)" % bn)
 
 
+def check_requirements(meta):
+    for req in get_field(meta, 'requirements/run', []):
+        name = req.split()[0]
+        if not name_pat.match(name):
+            raise RecipeError("invalid run requirement name '%s'" % name)
+
+
 def check_license_family(meta):
     lf = get_field(meta, 'about/license_family',
                    get_field(meta, 'about/license'))
@@ -182,6 +189,7 @@ def validate_meta(meta):
     check_name(get_field(meta, 'package/name'))
     check_version(get_field(meta, 'package/version'))
     check_build_number(get_field(meta, 'build/number', 0))
+    check_requirements(meta)
     check_about(meta)
     check_source(meta)
 

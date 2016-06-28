@@ -6,7 +6,7 @@ import json
 import tarfile
 from os.path import basename
 
-from utils import get_object_type
+from conda_verify.utils import get_object_type
 
 
 

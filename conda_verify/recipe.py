@@ -8,8 +8,8 @@ from os.path import isfile, join
 
 import yaml
 
-from const import LICENSE_FAMILIES, FIELDS
-from utils import memoized
+from conda_verify.const import LICENSE_FAMILIES, FIELDS
+from conda_verify.utils import memoized
 
 
 

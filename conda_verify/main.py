@@ -1,8 +1,10 @@
+from __future__ import print_function, division, absolute_import
+
 from os.path import isfile, join
 from optparse import OptionParser
 
-from recipe import validate_recipe
-from package import validate_package
+from conda_verify.recipe import validate_recipe
+from conda_verify.package import validate_package
 
 
 def main():

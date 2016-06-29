@@ -36,7 +36,7 @@ def main():
             try:
                 validate_recipe(path)
             except RecipeError as e:
-                sys.stderr.write("Error: %s\n" % e)
+                sys.stderr.write("RecipeError: %s\n" % e)
                 if opts.exit:
                     sys.exit(1)
 
@@ -46,7 +46,7 @@ def main():
             try:
                 validate_package(path, verbose)
             except PackageError as e:
-                sys.stderr.write("Error: %s\n" % e)
+                sys.stderr.write("PackageError: %s\n" % e)
                 if opts.exit:
                     sys.exit(1)
 

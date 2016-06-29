@@ -18,8 +18,16 @@ def main():
     p.add_option('-q', "--quiet",
                  action="store_true")
 
+    p.add_option('-V', '--version',
+                 help="display the version being used and exit",
+                 action="store_true")
+
     opts, args = p.parse_args()
     verbose = not opts.quiet
+    if opts.version:
+        from anaconda_verify import __version__
+        print('anaconda-verify version:', __version__)
+        return
 
     for path in args:
         if isfile(join(path, 'meta.yaml')):

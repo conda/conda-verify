@@ -176,8 +176,6 @@ def check_source(meta):
         raise RecipeError("cannot specify both git_branch and git_tag")
 
 
-lic_pat = re.compile(r'.+?\s+\(http\S+\)$')
-
 def validate_meta(meta):
     for section in meta:
         if section not in FIELDS:
@@ -196,10 +194,6 @@ def validate_meta(meta):
     check_requirements(meta)
     check_about(meta)
     check_source(meta)
-
-    lic = get_field(meta, 'about/license')
-    if lic and lic.endswith(')'):
-        assert lic_pat.match(lic), lic
 
 
 def validate_files(recipe_dir, meta):

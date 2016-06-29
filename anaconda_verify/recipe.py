@@ -145,7 +145,8 @@ def check_about(meta):
     if summary and len(summary) > 80:
         raise RecipeError("summary exceeds 80 characters")
 
-    for field in 'about/home', 'about/dev_url', 'about/doc_url':
+    for field in ('about/home', 'about/dev_url', 'about/doc_url',
+                  'about/license_url'):
         url = get_field(meta, field)
         if url:
             check_url(url)

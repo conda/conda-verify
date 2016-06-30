@@ -115,6 +115,14 @@ class CondaPackageCheck(object):
                     p.startswith('Scripts/easy_install')):
                 raise PackageError("file '%s' not allowed" % p)
 
+    def no_easy_install_script(self):
+        for m in self.t.getmembers():
+            if not m.name.startswith(('bin/', 'Scripts/')):
+                continue
+            data = self.t.extractfile(m.path).read(1024)
+            if b'EASY-INSTALL-SCRIPT' in data:
+                raise PackageError("easy install script found: %s" % m.name)
+
     def no_pth(self):
         for p in self.paths:
             if p.endswith('-nspkg.pth'):
@@ -219,6 +227,7 @@ def validate_package(path, verbose=True):
     x.no_bat_and_exe()
     x.warn_post_link()
     x.no_setuptools()
+    x.no_easy_install_script()
     x.no_pth()
     x.warn_pyo()
     x.no_py_next_so()

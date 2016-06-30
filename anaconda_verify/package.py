@@ -117,6 +117,8 @@ class CondaPackageCheck(object):
 
     def no_pth(self):
         for p in self.paths:
+            if p.endswith('-nspkg.pth'):
+                raise PackageError("found namespace .pth file '%s'" % p)
             if p.endswith('.pth'):
                 print("WARNING: .pth file: %s" % p)
 

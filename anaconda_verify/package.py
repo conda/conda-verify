@@ -62,8 +62,6 @@ class CondaPackageCheck(object):
     def not_allowed_files(self):
         not_allowed = {'conda-meta', 'conda-bld',
                        'pkgs', 'pkgs32', 'envs'}
-        if self.name == '_cache':
-            not_allowed.remove('pkgs')
         not_allowed_dirs = tuple(x + '/' for x in not_allowed)
         for p in self.paths:
             if (p.startswith(not_allowed_dirs) or

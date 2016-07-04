@@ -145,7 +145,7 @@ class CondaPackageCheck(object):
                 continue
             for ext in '.py', '.pyc':
                 if root + ext in self.paths:
-                    raise PackageError("%-4s next to: %s" % (ext, p))
+                    print("WARNING: %s next to: %s" % (ext, p))
 
     def no_pyc_in_stdlib(self):
         if self.name in {'python', 'scons'}:

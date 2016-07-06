@@ -88,6 +88,13 @@ class CondaPackageCheck(object):
         if both:
             raise PackageError("Both .bat and .exe files: %s" % ', '.join(both))
 
+    def warn_has_prefix(self):
+        if self.info['platform'] != 'win':
+            return
+        for p in self.paths:
+            if p == 'info/has_prefix':
+                print("WARNING: %s" % p)
+
     def warn_post_link(self):
         for p in self.paths:
             if p.endswith((
@@ -223,6 +230,7 @@ def validate_package(path, verbose=True):
     x.not_allowed_files()
     x.index_json()
     x.no_bat_and_exe()
+    x.warn_has_prefix()
     x.warn_post_link()
     x.no_setuptools()
     x.no_easy_install_script()

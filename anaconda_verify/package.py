@@ -125,7 +125,7 @@ class CondaPackageCheck(object):
             if not m.name.startswith(('bin/', 'Scripts/')):
                 continue
             data = self.t.extractfile(m.path).read(1024)
-            if b'EASY-INSTALL-SCRIPT' in data:
+            if b'EASY-INSTALL-' in data:
                 raise PackageError("easy install script found: %s" % m.name)
 
     def no_pth(self):

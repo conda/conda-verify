@@ -9,7 +9,10 @@ from anaconda_verify.package import validate_package, PackageError
 
 
 def main():
-    p = OptionParser()
+    p = OptionParser(
+        usage="usage: %prog [options] <path to recipes or packages>",
+        description="tool for (passively) verifying conda recipes and conda "
+                    "packages for the Anaconda distribution")
 
     p.add_option('-e', "--exit",
                  help="on error exit",

@@ -1,7 +1,8 @@
 from __future__ import print_function, division, absolute_import
 
+import os
 import re
-from os.path import isfile, join
+from os.path import isfile, getsize, join
 
 import yaml
 
@@ -216,6 +217,30 @@ def iter_cfgs():
             yield dict(plat=plat, PY=py, NPY=111)
 
 
+def dir_size(dir_path):
+    size = 0
+    for root, dirs, files in os.walk(dir_path):
+        for fn in files:
+            size += getsize(join(root, fn))
+    return size
+
+
+def check_dir_content(recipe_dir):
+    disallowed_extensions = (
+        '.tar', '.tar.gz', '.tar.bz2', '.tar.xz',
+        '.so', '.dylib', '.la', '.a', '.dll', '.pyd',
+    )
+    for fn in os.listdir(recipe_dir):
+        if fn.lower().endswith(disallowed_extensions):
+            raise RecipeError("found: %s" % fn)
+
+    kb_size = dir_size(recipe_dir) / 1024
+    kb_limit = 512
+    if kb_size > kb_limit:
+        raise RecipeError("recipe too large: %d KB (limit %s KB)" %
+                          (kb_size, kb_limit))
+
+
 def validate_recipe(recipe_dir):
     meta_path = join(recipe_dir, 'meta.yaml')
     with open(meta_path) as fi:
@@ -228,6 +253,8 @@ def validate_recipe(recipe_dir):
     if '{{' in data:
         raise RecipeError("found {{ in %s (Jinja templating not allowed)" %
                           meta_path)
+
+    check_dir_content(recipe_dir)
 
     for cfg in iter_cfgs():
         meta = parse(data, cfg)

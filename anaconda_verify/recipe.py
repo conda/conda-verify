@@ -227,10 +227,17 @@ def check_dir_content(recipe_dir):
         '.tar', '.tar.gz', '.tar.bz2', '.tar.xz',
         '.so', '.dylib', '.la', '.a', '.dll', '.pyd',
     )
-    for fn in os.listdir(recipe_dir):
-        if fn.lower().endswith(disallowed_extensions):
-            raise RecipeError("found: %s" % fn)
+    for root, unused_dirs, files in os.walk(recipe_dir):
+        for fn in files:
+            fn_lower = fn.lower()
+            if fn_lower.endswith(disallowed_extensions):
+                raise RecipeError("found: %s" % fn)
+            path = join(root, fn)
+            # only allow small archives for testing
+            if fn_lower.endswith(('.bz2', '.gz')) and getsize(path) > 512:
+                raise RecipeError("found: %s (too large)" % fn)
 
+    # check total size od recipe directory (recursively)
     kb_size = dir_size(recipe_dir) / 1024
     kb_limit = 512
     if kb_size > kb_limit:

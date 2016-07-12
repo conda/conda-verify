@@ -96,7 +96,7 @@ class CondaPackageCheck(object):
             placeholder, mode, f = [x.strip('"\'') for x in
                                     shlex.split(line, posix=False)]
         except ValueError:
-            placeholder, mode, f = '/opt/an...', 'text', line
+            placeholder, mode, f = '/<dummy>/<placeholder>', 'text', line
 
         if f not in self.paths:
             PackageError("info/has_prefix: target '%s' not in package" % f)

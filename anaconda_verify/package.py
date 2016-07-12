@@ -99,19 +99,20 @@ class CondaPackageCheck(object):
             placeholder, mode, f = '/opt/an...', 'text', line
 
         if f not in self.paths:
-            PackageError("info/has_prefix: target '%s' not in package" % f)
+            raise PackageError("info/has_prefix: target '%s' not in "
+                               "package" % f)
 
         if mode == 'binary':
             if self.info['platform'] == 'win':
-                PackageError("info/has_prefix: binary replace mode "
-                             "not allowed on Windows")
+                raise PackageError("info/has_prefix: binary replace mode "
+                                   "not allowed on Windows")
             if len(placeholder) != 255:
-                PackageError("info/has_prefix: binary placeholder not 255 "
-                             "bytes, but: %d" % len(placeholder))
+                raise PackageError("info/has_prefix: binary placeholder not "
+                                   "255 bytes, but: %d" % len(placeholder))
         elif mode == 'text':
             pass
         else:
-            PackageError("info/has_prefix: invalid mode")
+            raise PackageError("info/has_prefix: invalid mode")
 
 
     def has_prefix(self):

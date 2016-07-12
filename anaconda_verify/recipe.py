@@ -218,11 +218,8 @@ def iter_cfgs():
 
 
 def dir_size(dir_path):
-    size = 0
-    for root, unused_dirs, files in os.walk(dir_path):
-        for fn in files:
-            size += getsize(join(root, fn))
-    return size
+    return sum(sum(getsize(join(root, fn)) for fn in files)
+               for root, unused_dirs, files in os.walk(dir_path))
 
 
 def check_dir_content(recipe_dir):

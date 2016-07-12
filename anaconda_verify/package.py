@@ -2,6 +2,7 @@ from __future__ import print_function, division, absolute_import
 
 import re
 import json
+import shlex
 import tarfile
 from os.path import basename
 
@@ -86,14 +87,43 @@ class CondaPackageCheck(object):
         exes = {p[:-4] for p in self.paths if p.endswith('.exe')}
         both = bats & exes
         if both:
-            raise PackageError("Both .bat and .exe files: %s" % ', '.join(both))
+            raise PackageError("Both .bat and .exe files: %s" % both)
 
-    def warn_has_prefix(self):
-        if self.info['platform'] != 'win':
-            return
-        for p in self.paths:
-            if p == 'info/has_prefix':
-                print("WARNING: %s" % p)
+
+    def _check_has_prefix_line(self, line):
+        line = line.strip()
+        try:
+            placeholder, mode, f = [x.strip('"\'') for x in
+                                    shlex.split(line, posix=False)]
+        except ValueError:
+            placeholder, mode, f = '/opt/an...', 'text', line
+
+        if f not in self.paths:
+            PackageError("info/has_prefix: target '%s' not in package" % f)
+
+        if mode == 'binary':
+            if self.info['platform'] == 'win':
+                PackageError("info/has_prefix: binary replace mode "
+                             "not allowed on Windows")
+            if len(placeholder) != 255:
+                PackageError("info/has_prefix: binary placeholder not 255 "
+                             "bytes, but: %d" % len(placeholder))
+        elif mode == 'text':
+            pass
+        else:
+            PackageError("info/has_prefix: invalid mode")
+
+
+    def has_prefix(self):
+        for m in self.t.getmembers():
+            if m.path != 'info/has_prefix':
+                continue
+            if self.info['platform'] == 'win':
+                print("WARNING: %s" % m.path)
+            data = self.t.extractfile(m.path).read()
+            for line in data.splitlines():
+                self._check_has_prefix_line(line)
+
 
     def warn_post_link(self):
         for p in self.paths:
@@ -230,7 +260,7 @@ def validate_package(path, verbose=True):
     x.not_allowed_files()
     x.index_json()
     x.no_bat_and_exe()
-    x.warn_has_prefix()
+    x.has_prefix()
     x.warn_post_link()
     x.no_setuptools()
     x.no_easy_install_script()

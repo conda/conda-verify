@@ -219,7 +219,7 @@ def iter_cfgs():
 
 def dir_size(dir_path):
     size = 0
-    for root, dirs, files in os.walk(dir_path):
+    for root, unused_dirs, files in os.walk(dir_path):
         for fn in files:
             size += getsize(join(root, fn))
     return size
@@ -237,7 +237,7 @@ def check_dir_content(recipe_dir):
     kb_size = dir_size(recipe_dir) / 1024
     kb_limit = 512
     if kb_size > kb_limit:
-        raise RecipeError("recipe too large: %d KB (limit %s KB)" %
+        raise RecipeError("recipe too large: %d KB (limit %d KB)" %
                           (kb_size, kb_limit))
 
 

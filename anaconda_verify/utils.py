@@ -1,3 +1,4 @@
+import sys
 import collections
 
 from anaconda_verify.const import MAGIC_HEADERS, DLL_TYPES
@@ -21,6 +22,14 @@ def get_object_type(data):
         return "ELF" + {'\x01': '32', '\x02': '64'}.get(data[4])
 
 
+def all_ascii(data):
+    for c in data:
+        n = ord(c) if sys.version_info[0] == 2 else c
+        if not (n == 10 or 32 <= n < 127):
+            return False
+    return True
+
+
 class memoized(object):
     """Decorator. Caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned
@@ -40,3 +49,8 @@ class memoized(object):
             value = self.func(*args)
             self.cache[args] = value
             return value
+
+
+if __name__ == '__main__':
+    print(sys.version)
+    print(all_ascii(b'Hello\x00'), all_ascii(b"Hello World!"))

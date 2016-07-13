@@ -1,7 +1,12 @@
 2016-07-XX   1.1.0:
 -------------------
   * add recipe size limit and disallow files with certain extensions
-  * add more checking for info/has_prefix in conda packages
+  * add more checking for info/has_prefix in conda packages, in particular
+    ensure that the binary placeholder length is 255 bytes on Unix, as
+    conda-build 2.0 will start using this value.  We already use conda-build
+    master for building packages on repo.continuum.io, and want to enforce
+    255 bytes for all new packages, in order to make the transition to
+    conda-build easier for the community.
   * add check for header in build.sh
 
 

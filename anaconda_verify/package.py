@@ -62,6 +62,13 @@ class CondaPackageCheck(object):
                 print('%r not in tarball' % p)
         raise PackageError("info/files")
 
+
+    def no_hardlinks(self):
+        for m in self.t.getmembers():
+            if m.islnk():
+                raise PackageError('hardlink found: %s' % m.path)
+
+
     def not_allowed_files(self):
         not_allowed = {'conda-meta', 'conda-bld',
                        'pkgs', 'pkgs32', 'envs'}
@@ -262,6 +269,7 @@ class CondaPackageCheck(object):
 def validate_package(path, verbose=True):
     x = CondaPackageCheck(path, verbose)
     x.info_files()
+    x.no_hardlinks()
     x.not_allowed_files()
     x.index_json()
     x.no_bat_and_exe()

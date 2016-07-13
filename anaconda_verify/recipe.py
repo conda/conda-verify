@@ -55,6 +55,8 @@ def select_lines(data, namespace):
         line = line.rstrip()
         m = sel_pat.match(line)
         if m:
+            if m.group(1).rstrip().endswith('#'):
+                raise RecipeError("found commented selector: %s" % line)
             cond = m.group(2)
             if eval(cond, namespace, {}):
                 lines.append(m.group(1))

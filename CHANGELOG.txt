@@ -2,6 +2,7 @@
 -------------------
   * add recipe size limit and disallow files with certain extensions
   * add more checking for info/has_prefix in conda packages
+  * add check for header in build.sh
 
 
 2016-06-30   1.0.0:

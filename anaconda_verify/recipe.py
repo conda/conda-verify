@@ -244,6 +244,14 @@ def check_dir_content(recipe_dir):
         raise RecipeError("recipe too large: %d KB (limit %d KB)" %
                           (kb_size, kb_limit))
 
+    try:
+        with open(join(recipe_dir, 'build.sh'), 'r') as fi:
+            data = fi.read()
+        if data and not data.startswith(('#!/bin/bash\n', '#!/bin/sh\n')):
+            raise RecipeError("not a bash script: build.sh")
+    except IOError:
+        pass
+
 
 def validate_recipe(recipe_dir):
     meta_path = join(recipe_dir, 'meta.yaml')

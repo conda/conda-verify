@@ -259,7 +259,7 @@ def validate_recipe(recipe_dir):
     with open(meta_path, 'rb') as fi:
         data = fi.read()
     if not all_ascii(data):
-        raise RecipeError("non-ASCII character found in: %s" % meta_path)
+        raise RecipeError("non-ASCII in: %s" % meta_path)
     if b'{{' in data:
         raise RecipeError("found {{ in %s (Jinja templating not allowed)" %
                           meta_path)

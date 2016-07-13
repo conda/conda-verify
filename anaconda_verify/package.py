@@ -6,7 +6,7 @@ import shlex
 import tarfile
 from os.path import basename
 
-from anaconda_verify.utils import get_object_type
+from anaconda_verify.utils import get_object_type, all_ascii
 
 
 class PackageError(Exception):
@@ -32,6 +32,8 @@ class CondaPackageCheck(object):
         if len(paths) != len(self.paths):
             raise PackageError("duplicate members")
         raw = self.t.extractfile('info/index.json').read()
+        if not all_ascii(raw):
+            raise PackageError("non-ASCII in: info/index.json")
         self.info = json.loads(raw.decode('utf-8'))
 
     def info_files(self):
@@ -122,6 +124,8 @@ class CondaPackageCheck(object):
             if self.info['platform'] == 'win':
                 print("WARNING: %s" % m.path)
             data = self.t.extractfile(m.path).read()
+            if not all_ascii(data):
+                raise PackageError("non-ASCII in: info/has_prefix")
             for line in data.decode('utf-8').splitlines():
                 self._check_has_prefix_line(line)
 

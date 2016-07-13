@@ -7,7 +7,7 @@ from os.path import isfile, getsize, join
 import yaml
 
 from anaconda_verify.const import LICENSE_FAMILIES, FIELDS
-from anaconda_verify.utils import memoized
+from anaconda_verify.utils import all_ascii, memoized
 
 
 class RecipeError(Exception):
@@ -245,9 +245,10 @@ def check_dir_content(recipe_dir):
                           (kb_size, kb_limit))
 
     try:
-        with open(join(recipe_dir, 'build.sh'), 'r') as fi:
+        with open(join(recipe_dir, 'build.sh'), 'rb') as fi:
             data = fi.read()
-        if data and not data.startswith(('#!/bin/bash\n', '#!/bin/sh\n')):
+        if data and not data.decode('utf-8').startswith(('#!/bin/bash\n',
+                                                         '#!/bin/sh\n')):
             raise RecipeError("not a bash script: build.sh")
     except IOError:
         pass
@@ -255,20 +256,17 @@ def check_dir_content(recipe_dir):
 
 def validate_recipe(recipe_dir):
     meta_path = join(recipe_dir, 'meta.yaml')
-    with open(meta_path) as fi:
+    with open(meta_path, 'rb') as fi:
         data = fi.read()
-    for c in data:
-        n = ord(c)
-        if not (n == 10 or 32 <= n < 127):
-            raise RecipeError("non-ASCII character '%s' found in %s" %
-                              (c, meta_path))
-    if '{{' in data:
+    if not all_ascii(data):
+        raise RecipeError("non-ASCII character found in: %s" % meta_path)
+    if b'{{' in data:
         raise RecipeError("found {{ in %s (Jinja templating not allowed)" %
                           meta_path)
 
     check_dir_content(recipe_dir)
 
     for cfg in iter_cfgs():
-        meta = parse(data, cfg)
+        meta = parse(data.decode('utf-8'), cfg)
         validate_meta(meta)
         validate_files(recipe_dir, meta)

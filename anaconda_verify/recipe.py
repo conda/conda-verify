@@ -56,6 +56,7 @@ def select_lines(data, namespace):
         m = sel_pat.match(line)
         if m:
             x = m.group(1).strip()
+            # disallow comment, unless the whole line is a comment
             if '#' in x and not x.startswith('#'):
                 raise RecipeError("found commented selector: %s" % line)
             cond = m.group(2)

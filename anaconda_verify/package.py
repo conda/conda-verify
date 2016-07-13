@@ -122,7 +122,7 @@ class CondaPackageCheck(object):
             if self.info['platform'] == 'win':
                 print("WARNING: %s" % m.path)
             data = self.t.extractfile(m.path).read()
-            for line in data.splitlines():
+            for line in data.decode('utf-8').splitlines():
                 self._check_has_prefix_line(line)
 
 

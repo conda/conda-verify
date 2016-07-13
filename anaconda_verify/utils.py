@@ -22,10 +22,13 @@ def get_object_type(data):
         return "ELF" + {'\x01': '32', '\x02': '64'}.get(data[4])
 
 
-def all_ascii(data):
+def all_ascii(data, allow_CR=False):
+    newline = [10] # LF
+    if allow_CR:
+        newline.append(13) # CF
     for c in data:
         n = ord(c) if sys.version_info[0] == 2 else c
-        if not (n in (10, 13) or 32 <= n < 127):
+        if not (n in newline or 32 <= n < 127):
             return False
     return True
 

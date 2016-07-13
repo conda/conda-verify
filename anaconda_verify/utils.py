@@ -25,7 +25,7 @@ def get_object_type(data):
 def all_ascii(data):
     for c in data:
         n = ord(c) if sys.version_info[0] == 2 else c
-        if not (n == 10 or 32 <= n < 127):
+        if not (n in (10, 13) or 32 <= n < 127):
             return False
     return True
 

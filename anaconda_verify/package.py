@@ -35,6 +35,7 @@ class CondaPackageCheck(object):
         if not all_ascii(raw):
             raise PackageError("non-ASCII in: info/index.json")
         self.info = json.loads(raw.decode('utf-8'))
+        self.win_pkg = bool(self.info['platform'] == 'win')
 
     def info_files(self):
         lista = [p.decode('utf-8').strip() for p in
@@ -112,7 +113,7 @@ class CondaPackageCheck(object):
                                "package" % f)
 
         if mode == 'binary':
-            if self.info['platform'] == 'win':
+            if self.win_pkg:
                 raise PackageError("info/has_prefix: binary replace mode "
                                    "not allowed on Windows")
             if len(placeholder) != 255:
@@ -128,10 +129,10 @@ class CondaPackageCheck(object):
         for m in self.t.getmembers():
             if m.path != 'info/has_prefix':
                 continue
-            if self.info['platform'] == 'win':
+            if self.win_pkg:
                 print("WARNING: %s" % m.path)
             data = self.t.extractfile(m.path).read()
-            if not all_ascii(data):
+            if not all_ascii(data, self.win_pkg):
                 raise PackageError("non-ASCII in: info/has_prefix")
             for line in data.decode('utf-8').splitlines():
                 self._check_has_prefix_line(line)
@@ -225,7 +226,7 @@ class CondaPackageCheck(object):
         if self.name in ('python', 'conda-build', 'pip', 'xlwings',
                          'phantomjs', 'qt'):
             return
-        if self.info['platform'] != 'win':
+        if not self.win_pkg:
             return
         arch = self.info['arch']
         if arch not in ('x86', 'x86_64'):

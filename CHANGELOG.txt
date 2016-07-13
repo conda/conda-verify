@@ -1,4 +1,4 @@
-2016-07-XX   1.1.0:
+2016-07-13   1.1.0:
 -------------------
   * add recipe size limit and disallow files with certain extensions
   * add more checking for info/has_prefix in conda packages, in particular

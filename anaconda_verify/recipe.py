@@ -55,7 +55,8 @@ def select_lines(data, namespace):
         line = line.rstrip()
         m = sel_pat.match(line)
         if m:
-            if m.group(1).rstrip().endswith('#'):
+            x = m.group(1).strip()
+            if '#' in x and not x.startswith('#'):
                 raise RecipeError("found commented selector: %s" % line)
             cond = m.group(2)
             if eval(cond, namespace, {}):

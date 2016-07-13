@@ -8,6 +8,7 @@
     255 bytes for all new packages, in order to make the transition to
     conda-build easier for the community.
   * add check for header in build.sh
+  * add checking for non-ASCII in info/index.json and info/has_prefix
 
 
 2016-06-30   1.0.0:

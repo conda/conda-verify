@@ -1,7 +1,7 @@
 2016-XX-XX   1.2.0:
 -------------------
   * add check for hard links in packages
-  * disallow commented selectors
+  * warn about commented selectors
 TODO: add file permission checking
 
 

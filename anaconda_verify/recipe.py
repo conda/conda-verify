@@ -131,6 +131,8 @@ def check_requirements(meta):
 
 
 def check_license_family(meta):
+    if not PEDANTIC:
+        return
     lf = get_field(meta, 'about/license_family',
                    get_field(meta, 'about/license'))
     if lf not in LICENSE_FAMILIES:
@@ -152,7 +154,11 @@ def check_url(url):
 def check_about(meta):
     summary = get_field(meta, 'about/summary')
     if summary and len(summary) > 80:
-        raise RecipeError("summary exceeds 80 characters")
+        msg = "summary exceeds 80 characters"
+        if PEDANTIC:
+            raise RecipeError(msg)
+        else:
+            print("Warning: %s" % msg)
 
     for field in ('about/home', 'about/dev_url', 'about/doc_url',
                   'about/license_url'):
@@ -187,13 +193,13 @@ def check_source(meta):
 
 def validate_meta(meta):
     for section in meta:
-        if section not in FIELDS:
+        if PEDANTIC and section not in FIELDS:
             raise RecipeError("Unknown section: %s" % section)
         submeta = meta.get(section)
         if submeta is None:
             submeta = {}
         for key in submeta:
-            if key not in FIELDS[section]:
+            if PEDANTIC and key not in FIELDS[section]:
                 raise RecipeError("in section %r: unknown key %r" %
                                   (section, key))
 
@@ -211,7 +217,7 @@ def validate_files(recipe_dir, meta):
         if not flst:
             continue
         for fn in flst:
-            if fn.startswith('..'):
+            if PEDANTIC and fn.startswith('..'):
                 raise RecipeError("path outsite recipe: %s" % fn)
             path = join(recipe_dir, fn)
             if isfile(path):
@@ -239,27 +245,32 @@ def check_dir_content(recipe_dir):
         for fn in files:
             fn_lower = fn.lower()
             if fn_lower.endswith(disallowed_extensions):
-                raise RecipeError("found: %s" % fn)
+                if PEDANTIC:
+                    raise RecipeError("found: %s" % fn)
+                else:
+                    print("Warning: found: %s" % fn)
             path = join(root, fn)
             # only allow small archives for testing
-            if fn_lower.endswith(('.bz2', '.gz')) and getsize(path) > 512:
+            if (PEDANTIC and fn_lower.endswith(('.bz2', '.gz')) and
+                         getsize(path) > 512):
                 raise RecipeError("found: %s (too large)" % fn)
 
     # check total size od recipe directory (recursively)
     kb_size = dir_size(recipe_dir) / 1024
     kb_limit = 512
-    if kb_size > kb_limit:
+    if PEDANTIC and kb_size > kb_limit:
         raise RecipeError("recipe too large: %d KB (limit %d KB)" %
                           (kb_size, kb_limit))
 
-    try:
-        with open(join(recipe_dir, 'build.sh'), 'rb') as fi:
-            data = fi.read()
-        if data and not data.decode('utf-8').startswith(('#!/bin/bash\n',
-                                                         '#!/bin/sh\n')):
-            raise RecipeError("not a bash script: build.sh")
-    except IOError:
-        pass
+    if PEDANTIC:
+        try:
+            with open(join(recipe_dir, 'build.sh'), 'rb') as fi:
+                data = fi.read()
+            if data and not data.decode('utf-8').startswith(('#!/bin/bash\n',
+                                                             '#!/bin/sh\n')):
+                raise RecipeError("not a bash script: build.sh")
+        except IOError:
+            pass
 
 
 def validate_recipe(recipe_dir, pedantic=True):
@@ -269,9 +280,9 @@ def validate_recipe(recipe_dir, pedantic=True):
     meta_path = join(recipe_dir, 'meta.yaml')
     with open(meta_path, 'rb') as fi:
         data = fi.read()
-    if not all_ascii(data):
+    if PEDANTIC and not all_ascii(data):
         raise RecipeError("non-ASCII in: %s" % meta_path)
-    if b'{{' in data:
+    if PEDANTIC and b'{{' in data:
         raise RecipeError("found {{ in %s (Jinja templating not allowed)" %
                           meta_path)
 

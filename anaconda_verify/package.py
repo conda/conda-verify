@@ -120,8 +120,12 @@ class CondaPackageCheck(object):
                 raise PackageError("info/has_prefix: binary replace mode "
                                    "not allowed on Windows")
             if len(placeholder) != 255:
-                raise PackageError("info/has_prefix: binary placeholder not "
-                                   "255 bytes, but: %d" % len(placeholder))
+                msg = ("info/has_prefix: binary placeholder not "
+                       "255 bytes, but: %d" % len(placeholder))
+                if PEDANTIC:
+                    raise PackageError(msg)
+                else:
+                    print("Warning: %s" % msg)
         elif mode == 'text':
             pass
         else:
@@ -167,6 +171,8 @@ class CondaPackageCheck(object):
                 raise PackageError("file '%s' not allowed" % p)
 
     def no_easy_install_script(self):
+        if not PEDANTIC:
+            return
         for m in self.t.getmembers():
             if not m.name.startswith(('bin/', 'Scripts/')):
                 continue
@@ -176,7 +182,7 @@ class CondaPackageCheck(object):
 
     def no_pth(self):
         for p in self.paths:
-            if p.endswith('-nspkg.pth'):
+            if PEDANTIC and p.endswith('-nspkg.pth'):
                 raise PackageError("found namespace .pth file '%s'" % p)
             if p.endswith('.pth'):
                 print("WARNING: .pth file: %s" % p)

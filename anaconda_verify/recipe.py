@@ -10,6 +10,9 @@ from anaconda_verify.const import LICENSE_FAMILIES, FIELDS
 from anaconda_verify.utils import all_ascii, memoized
 
 
+PEDANTIC = True
+
+
 class RecipeError(Exception):
     pass
 
@@ -55,10 +58,11 @@ def select_lines(data, namespace):
         line = line.rstrip()
         m = sel_pat.match(line)
         if m:
-            x = m.group(1).strip()
-            # warn about comment, unless the whole line is a comment
-            if '#' in x and not x.startswith('#'):
-                print("Warning: found commented selector: %s" % line)
+            if PEDANTIC:
+                x = m.group(1).strip()
+                # error on comment, unless the whole line is a comment
+                if '#' in x and not x.startswith('#'):
+                    raise RecipeError("found commented selector: %s" % line)
             cond = m.group(2)
             if eval(cond, namespace, {}):
                 lines.append(m.group(1))
@@ -258,7 +262,10 @@ def check_dir_content(recipe_dir):
         pass
 
 
-def validate_recipe(recipe_dir):
+def validate_recipe(recipe_dir, pedantic=True):
+    global PEDANTIC
+    PEDANTIC = bool(pedantic)
+
     meta_path = join(recipe_dir, 'meta.yaml')
     with open(meta_path, 'rb') as fi:
         data = fi.read()

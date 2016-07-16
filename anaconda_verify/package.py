@@ -9,6 +9,9 @@ from os.path import basename
 from anaconda_verify.utils import get_object_type, all_ascii
 
 
+PEDANTIC = True
+
+
 class PackageError(Exception):
     pass
 
@@ -267,7 +270,10 @@ class CondaPackageCheck(object):
                     raise PackageError("found %s" % x)
 
 
-def validate_package(path, verbose=True):
+def validate_package(path, pedantic=True, verbose=True):
+    global PEDANTIC
+    PEDANTIC = bool(pedantic)
+
     x = CondaPackageCheck(path, verbose)
     x.info_files()
     x.no_hardlinks()

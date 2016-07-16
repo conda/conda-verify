@@ -18,6 +18,9 @@ def main():
                  help="on error exit",
                  action="store_true")
 
+    p.add_option('-p', "--pedantic",
+                 action="store_true")
+
     p.add_option('-q', "--quiet",
                  action="store_true")
 
@@ -37,7 +40,7 @@ def main():
             if verbose:
                 print("==> %s <==" % path)
             try:
-                validate_recipe(path)
+                validate_recipe(path, opts.pedantic)
             except RecipeError as e:
                 sys.stderr.write("RecipeError: %s\n" % e)
                 if opts.exit:
@@ -47,7 +50,7 @@ def main():
             if verbose:
                 print("==> %s <==" % path)
             try:
-                validate_package(path, verbose)
+                validate_package(path, opts.pedantic, verbose)
             except PackageError as e:
                 sys.stderr.write("PackageError: %s\n" % e)
                 if opts.exit:

@@ -38,10 +38,10 @@ class CondaPackageCheck(object):
         if len(paths) != len(self.paths):
             raise PackageError("duplicate members")
         raw = self.t.extractfile('info/index.json').read()
-        if not all_ascii(raw):
-            raise PackageError("non-ASCII in: info/index.json")
         self.info = json.loads(raw.decode('utf-8'))
         self.win_pkg = bool(self.info['platform'] == 'win')
+        if not all_ascii(raw, self.win_pkg):
+            raise PackageError("non-ASCII in: info/index.json")
 
     def info_files(self):
         lista = [p.decode('utf-8').strip() for p in

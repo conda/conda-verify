@@ -104,8 +104,12 @@ def check_name(name):
         name = str(name)
     else:
         raise RecipeError("package name missing")
-    if not name_pat.match(name):
+    if not name_pat.match(name) or name.endswith(('.', '-', '_')):
         raise RecipeError("invalid package name '%s'" % name)
+    for s in '--', '-.', '-_', '.-', '..', '._', '_-', '_.':
+        if s in name:
+            raise RecipeError("'%s' not allowed in package name '%s'" %
+                              (s, name))
 
 
 version_pat = re.compile(r'[\w\.]+$')
@@ -115,7 +119,14 @@ def check_version(ver):
     else:
         raise RecipeError("package version missing")
     if not version_pat.match(ver):
-        raise RecipeError("invalid package version '%s'" % ver)
+        raise RecipeError("invalid version '%s'" % ver)
+    if ver.startswith(('_', '.')) or ver.endswith(('_', '.')):
+        raise RecipeError("version cannot start or end with '_' or '.': %s" %
+                          ver)
+    for s in '..', '._', '_.':
+        if s in ver:
+            raise RecipeError("'%s' not allowed in package version '%s'" %
+                              (s, ver))
 
 
 def check_build_number(bn):

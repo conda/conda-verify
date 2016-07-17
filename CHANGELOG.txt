@@ -1,12 +1,10 @@
-2016-XX-XX   1.2.0:
+2016-07-17   1.2.0:
 -------------------
   * added --pedantic (-p) option to make anaconda-verify more useful for the
     wider community
   * add check for hard links in packages
   * check for commented selectors (--pedantic only)
   * improve name and version checking
-TODO:
-  * add file permission checking
 
 
 2016-07-13   1.1.0:

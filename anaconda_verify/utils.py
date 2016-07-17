@@ -22,6 +22,15 @@ def get_object_type(data):
         return "ELF" + {'\x01': '32', '\x02': '64'}.get(data[4])
 
 
+def get_bad_seq(s):
+    for seq in ('--', '-.', '-_',
+                '.-', '..', '._',
+                '_-', '_.'):  # but '__' is fine
+        if seq in s:
+            return seq
+    return None
+
+
 def all_ascii(data, allow_CR=False):
     newline = [10] # LF
     if allow_CR:

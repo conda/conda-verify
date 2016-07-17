@@ -7,7 +7,7 @@ from os.path import isfile, getsize, join
 import yaml
 
 from anaconda_verify.const import LICENSE_FAMILIES, FIELDS
-from anaconda_verify.utils import all_ascii, memoized
+from anaconda_verify.utils import all_ascii, get_bad_seq, memoized
 
 
 PEDANTIC = True
@@ -106,10 +106,10 @@ def check_name(name):
         raise RecipeError("package name missing")
     if not name_pat.match(name) or name.endswith(('.', '-', '_')):
         raise RecipeError("invalid package name '%s'" % name)
-    for s in '--', '-.', '-_', '.-', '..', '._', '_-', '_.':
-        if s in name:
-            raise RecipeError("'%s' not allowed in package name '%s'" %
-                              (s, name))
+    seq = get_bad_seq(name)
+    if seq:
+        raise RecipeError("'%s' is not allowed in "
+                          "package name: '%s'" % (seq, name))
 
 
 version_pat = re.compile(r'[\w\.]+$')
@@ -123,10 +123,9 @@ def check_version(ver):
     if ver.startswith(('_', '.')) or ver.endswith(('_', '.')):
         raise RecipeError("version cannot start or end with '_' or '.': %s" %
                           ver)
-    for s in '..', '._', '_.':
-        if s in ver:
-            raise RecipeError("'%s' not allowed in package version '%s'" %
-                              (s, ver))
+    seq = get_bad_seq(ver)
+    if seq:
+        raise RecipeError("'%s' not allowed in version '%s'" % (seq, ver))
 
 
 def check_build_number(bn):

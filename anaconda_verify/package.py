@@ -6,7 +6,7 @@ import shlex
 import tarfile
 from os.path import basename
 
-from anaconda_verify.utils import get_object_type, all_ascii
+from anaconda_verify.utils import get_object_type, all_ascii, get_bad_seq
 
 
 PEDANTIC = True
@@ -17,6 +17,9 @@ class PackageError(Exception):
 
 
 def dist_fn(fn):
+    seq = get_bad_seq(fn)
+    if seq:
+        raise PackageError("'%s' not allowed in file name '%s'" % (seq, fn))
     if fn.endswith('.tar.bz2'):
         return fn[:-8]
     if fn.endswith('.tar'):

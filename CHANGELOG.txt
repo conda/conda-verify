@@ -1,9 +1,11 @@
 2016-XX-XX   1.2.0:
 -------------------
+  * added --pedantic (-p) option to make anaconda-verify more useful for the
+    wider community
   * add check for hard links in packages
-  * warn about commented selectors
+  * check for commented selectors (--pedantic only)
+  * improve name and version checking
 TODO:
-  * add -p, --pedantic
   * add file permission checking
 
 

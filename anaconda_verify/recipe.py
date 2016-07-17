@@ -273,6 +273,15 @@ def check_dir_content(recipe_dir):
             pass
 
 
+def render_jinja2(recipe_dir):
+    import jinja2
+
+    loaders = [jinja2.FileSystemLoader(recipe_dir)]
+    env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
+    template = env.get_or_select_template('meta.yaml')
+    return template.render(environment=env)
+
+
 def validate_recipe(recipe_dir, pedantic=True):
     global PEDANTIC
     PEDANTIC = bool(pedantic)
@@ -282,9 +291,12 @@ def validate_recipe(recipe_dir, pedantic=True):
         data = fi.read()
     if PEDANTIC and not all_ascii(data):
         raise RecipeError("non-ASCII in: %s" % meta_path)
-    if PEDANTIC and b'{{' in data:
-        raise RecipeError("found {{ in %s (Jinja templating not allowed)" %
-                          meta_path)
+    if b'{{' in data:
+        if PEDANTIC:
+            raise RecipeError("found {{ in %s (Jinja templating not allowed)" %
+                              meta_path)
+        else:
+            data = render_jinja2(recipe_dir)
 
     check_dir_content(recipe_dir)
 

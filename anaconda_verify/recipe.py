@@ -307,10 +307,12 @@ def validate_recipe(recipe_dir, pedantic=True):
                               meta_path)
         else:
             data = render_jinja2(recipe_dir)
+    else:
+        data = data.decode('utf-8')
 
     check_dir_content(recipe_dir)
 
     for cfg in iter_cfgs():
-        meta = parse(data.decode('utf-8'), cfg)
+        meta = parse(data, cfg)
         validate_meta(meta)
         validate_files(recipe_dir, meta)

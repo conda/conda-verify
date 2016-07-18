@@ -18,7 +18,7 @@ setup(
     author_email = "ilan@continuum.io",
     url = "https://github.com/ContinuumIO/anaconda-verify",
     license = "BSD",
-    description = "create installer from conda packages",
+    description = "tool for validating conda recipes and conda packages",
     long_description = open('README.md').read(),
     packages = ['anaconda_verify'],
 )

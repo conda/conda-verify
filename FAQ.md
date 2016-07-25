@@ -11,10 +11,10 @@ on this.
 This is how we handle namespace packages in the Anaconda distribution.
 For example, the
 <a href="https://github.com/ContinuumIO/anaconda-recipes/tree/master/backports">
-backports recipe</a>defines the `backports` namespace, and then other
+backports recipe</a> defines the `backports` namespace, and then other
 packages, such as
 <a href="https://github.com/ContinuumIO/anaconda-recipes/tree/master/configparser">
-configparser</a>depend on `backports`.
+configparser</a> depend on `backports`.
 
 There are other ways to get around this problem, e.g. by preserving the egg
 directory which setuptools creates, but that is not as simple and

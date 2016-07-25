@@ -1,3 +1,8 @@
+2016-XX-XX   1.2.1:
+-------------------
+  * fix description in setup.py
+
+
 2016-07-17   1.2.0:
 -------------------
   * added --pedantic (-p) option to make anaconda-verify more useful for the

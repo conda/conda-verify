@@ -236,7 +236,7 @@ class CondaPackageCheck(object):
 
     def check_windows_arch(self):
         if self.name in ('python', 'conda-build', 'pip', 'xlwings',
-                         'phantomjs', 'qt', 'graphviz'):
+                         'phantomjs', 'qt', 'graphviz', 'nsis'):
             return
         if not self.win_pkg:
             return

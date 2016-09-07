@@ -211,7 +211,7 @@ class CondaPackageCheck(object):
                     print("WARNING: %s next to: %s" % (ext, p))
 
     def no_pyc_in_stdlib(self):
-        if self.name in {'python', 'scons'}:
+        if self.name in {'python', 'scons', 'conda-build'}:
             return
         for p in self.paths:
             if p.endswith('.pyc') and not 'site-packages' in p:

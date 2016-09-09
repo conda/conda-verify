@@ -18,7 +18,7 @@ FIELDS = {
                'git_url', 'git_tag', 'git_branch',
                'patches', 'hg_url', 'hg_tag'},
     'build': {'features', 'track_features',
-              'number', 'entry_points', 'osx_is_app',
+              'number', 'entry_points', 'osx_is_app', 'noarch',
               'preserve_egg_dir', 'win_has_prefix', 'no_link',
               'ignore_prefix_files', 'msvc_compiler',
               'detect_binary_files_with_prefix',

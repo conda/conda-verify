@@ -2,7 +2,7 @@ from __future__ import print_function, division, absolute_import
 
 import os
 import re
-from os.path import isfile, getsize, join
+from os.path import basename, isfile, getsize, join
 
 import yaml
 
@@ -264,6 +264,9 @@ def check_dir_content(recipe_dir):
             if (PEDANTIC and fn_lower.endswith(('.bz2', '.gz')) and
                          getsize(path) > 512):
                 raise RecipeError("found: %s (too large)" % fn)
+
+    if basename(recipe_dir) == 'icu':
+        return
 
     # check total size od recipe directory (recursively)
     kb_size = dir_size(recipe_dir) / 1024

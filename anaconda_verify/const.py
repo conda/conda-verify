@@ -21,7 +21,7 @@ FIELDS = {
               'number', 'entry_points', 'osx_is_app', 'noarch',
               'preserve_egg_dir', 'win_has_prefix', 'no_link',
               'ignore_prefix_files', 'msvc_compiler',
-              'detect_binary_files_with_prefix',
+              'detect_binary_files_with_prefix', 'script',
               'always_include_files'},
     'requirements': {'build', 'run'},
     'app': {'entry', 'icon', 'summary', 'type', 'cli_opts'},

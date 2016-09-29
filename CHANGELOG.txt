@@ -1,6 +1,8 @@
 2016-XX-XX   1.2.1:
 -------------------
   * fix description in setup.py
+  * allow build/script
+  * allow new noarch key
 
 
 2016-07-17   1.2.0:

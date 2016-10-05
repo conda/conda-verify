@@ -1,3 +1,8 @@
+2016-XX-XX   1.2.2:
+-------------------
+  * allow build/skip_compile_pyc
+
+
 2016-09-29   1.2.1:
 -------------------
   * fix description in setup.py

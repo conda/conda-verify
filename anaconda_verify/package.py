@@ -180,6 +180,8 @@ class CondaPackageCheck(object):
         for m in self.t.getmembers():
             if not m.name.startswith(('bin/', 'Scripts/')):
                 continue
+            if not m.isfile():
+                continue
             data = self.t.extractfile(m.path).read(1024)
             if b'EASY-INSTALL-SCRIPT' in data:
                 raise PackageError("easy install script found: %s" % m.name)

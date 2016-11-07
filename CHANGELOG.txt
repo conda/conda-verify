@@ -1,4 +1,4 @@
-2016-XX-XX   2.0.0:
+2016-11-07   2.0.0:
 -------------------
   * fork project from anaconda-verify as new conda-verify name
   * allow build/skip_compile_pyc

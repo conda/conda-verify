@@ -6,8 +6,8 @@ from os.path import basename, isfile, getsize, join
 
 import yaml
 
-from anaconda_verify.const import LICENSE_FAMILIES, FIELDS
-from anaconda_verify.utils import all_ascii, get_bad_seq, memoized
+from conda_verify.const import LICENSE_FAMILIES, FIELDS
+from conda_verify.utils import all_ascii, get_bad_seq, memoized
 
 
 PEDANTIC = True

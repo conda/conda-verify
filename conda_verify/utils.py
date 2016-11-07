@@ -1,7 +1,7 @@
 import sys
 import collections
 
-from anaconda_verify.const import MAGIC_HEADERS, DLL_TYPES
+from conda_verify.const import MAGIC_HEADERS, DLL_TYPES
 
 
 

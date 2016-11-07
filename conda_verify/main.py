@@ -4,8 +4,8 @@ import sys
 from os.path import isfile, join
 from optparse import OptionParser
 
-from anaconda_verify.recipe import validate_recipe, RecipeError
-from anaconda_verify.package import validate_package, PackageError
+from conda_verify.recipe import validate_recipe, RecipeError
+from conda_verify.package import validate_package, PackageError
 
 
 def main():
@@ -31,7 +31,7 @@ def main():
     opts, args = p.parse_args()
     verbose = not opts.quiet
     if opts.version:
-        from anaconda_verify import __version__
+        from conda_verify import __version__
         print('anaconda-verify version:', __version__)
         return
 

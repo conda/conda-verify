@@ -6,7 +6,7 @@ import shlex
 import tarfile
 from os.path import basename
 
-from anaconda_verify.utils import get_object_type, all_ascii, get_bad_seq
+from conda_verify.utils import get_object_type, all_ascii, get_bad_seq
 
 
 PEDANTIC = True

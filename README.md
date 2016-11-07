@@ -1,59 +1,26 @@
-anaconda-verify
-===============
+conda-verify
+============
 
-anaconda-verify is a tool for (passively) verifying conda recipes and
+conda-verify is a tool for (passively) verifying conda recipes and
 conda packages.
 
-All <a href="https://github.com/ContinuumIO/anaconda-recipes">
-Anaconda recipes</a>, as well as
-the <a href="http://repo.continuum.io/pkgs/free/">Anaconda packages</a>
-need to pass this tool before they are made publically available.
+Using conda-verify:
 
-Using anaconda-verify:
-
-    $ conda install anaconda-verify
-    $ anaconda-verify -h
-    $ anaconda-verify <path to recipes or packages>
+    $ conda install conda-verify
+    $ conda-verify -h
+    $ conda-verify <path to recipes or packages>
 
 
 The purpose of this verification process is to ensure that recipes don't
 contain obvious bugs, and that the conda packages we distribute to millions
 of users meet our high quality standards.
 
-Historically, the conda packages which represent the Anaconda distribution
-were not created using `conda-build`, but an internal build system.
-In fact, `conda-build` started as a public fork of this internal system
-3 years ago.  At that point the Anaconda distribution had already been
-around for almost a year, and the only way to create conda packages
-was by using the internal system.
-While `conda-build` has made a lot of progress, the internal system basically
-stayed unchanged, because the needs on a system for building a distribution
-are quite different, and not driven by the community using `conda-build`
-for continuous integration and other language support (e.g. Perl, Lua), etc. .
-On the other hand, the internal system has been developed to support
-Anaconda distribution specific needs, such as MKL featured packages,
-source and license reference meta-data, and interoperability between
-collections of packages.
-
-In an effort to bridge the gap between our internal system and `conda-build`,
-we started using `conda-build` to create conda packages for the Anaconda
-distribution itself about one year ago.
-By now, more than 85% of the conda packages in the Anaconda distribution
-are created using `conda-build`.
-However, because the different requirements mentioned above, we only allow
-certain features that `conda-build` offers.
-This also helps to keep
-the <a href="https://github.com/ContinuumIO/anaconda-recipes">Anaconda
-recipes</a> simple and maintainable, and functional with the rest of the
-internal system which reads meta-data from the recipes.
-This is why we require conda recipes to be valid according to this tool.
-
 
 Packages
 --------
 
-Another aspect of `anaconda-verify` is the ability to verify conda packages.
-These are the most important checks `anaconda-verify` performs on conda
+Another aspect of `conda-verify` is the ability to verify conda packages.
+These are the most important checks `conda-verify` performs on conda
 packages, and more importantly we explain why these checks are necessary
 or useful.
 
@@ -119,7 +86,7 @@ or useful.
 
 Here is an example of running the tool on conda packages:
 
-    $ anaconda-verify bitarray-0.8.1-py35_0.tar.bz2
+    $ conda-verify bitarray-0.8.1-py35_0.tar.bz2
     ==> /Users/ilan/aroot/tars64/bitarray-0.8.1-py35_0.tar.bz2 <==
         bitarray
 

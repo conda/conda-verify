@@ -1,19 +1,10 @@
-from __future__ import print_function, division, absolute_import
-
-import re
 import json
-import shlex
 import tarfile
+import shlex
+import re
 from os.path import basename
-
-from conda_verify.utils import get_object_type, all_ascii, get_bad_seq
-
-
-PEDANTIC = True
-
-
-class PackageError(Exception):
-    pass
+from conda_verify.utils import get_bad_seq, all_ascii, get_object_type
+from conda_verify.exceptions import PackageError
 
 
 def dist_fn(fn):
@@ -69,12 +60,10 @@ class CondaPackageCheck(object):
                 print('%r not in tarball' % p)
         raise PackageError("info/files")
 
-
     def no_hardlinks(self):
         for m in self.t.getmembers():
             if m.islnk():
                 raise PackageError('hardlink found: %s' % m.path)
-
 
     def not_allowed_files(self):
         not_allowed = {'conda-meta', 'conda-bld',
@@ -105,8 +94,7 @@ class CondaPackageCheck(object):
         if both:
             raise PackageError("Both .bat and .exe files: %s" % both)
 
-
-    def _check_has_prefix_line(self, line):
+    def _check_has_prefix_line(self, line, pedantic=True):
         line = line.strip()
         try:
             placeholder, mode, f = [x.strip('"\'') for x in
@@ -126,7 +114,7 @@ class CondaPackageCheck(object):
             if len(placeholder) != 255:
                 msg = ("info/has_prefix: binary placeholder not "
                        "255 bytes, but: %d" % len(placeholder))
-                if PEDANTIC:
+                if pedantic:
                     raise PackageError(msg)
                 else:
                     print("Warning: %s" % msg)
@@ -135,8 +123,7 @@ class CondaPackageCheck(object):
         else:
             raise PackageError("info/has_prefix: invalid mode")
 
-
-    def has_prefix(self):
+    def has_prefix(self, pedantic=True):
         for m in self.t.getmembers():
             if m.path != 'info/has_prefix':
                 continue
@@ -146,8 +133,7 @@ class CondaPackageCheck(object):
             if not all_ascii(data, self.win_pkg):
                 raise PackageError("non-ASCII in: info/has_prefix")
             for line in data.decode('utf-8').splitlines():
-                self._check_has_prefix_line(line)
-
+                self._check_has_prefix_line(line, pedantic=pedantic)
 
     def warn_post_link(self):
         for p in self.paths:
@@ -174,8 +160,8 @@ class CondaPackageCheck(object):
                     p.startswith('Scripts/easy_install')):
                 raise PackageError("file '%s' not allowed" % p)
 
-    def no_easy_install_script(self):
-        if not PEDANTIC:
+    def no_easy_install_script(self, pedantic=True):
+        if not pedantic:
             return
         for m in self.t.getmembers():
             if not m.name.startswith(('bin/', 'Scripts/')):
@@ -186,9 +172,9 @@ class CondaPackageCheck(object):
             if b'EASY-INSTALL-SCRIPT' in data:
                 raise PackageError("easy install script found: %s" % m.name)
 
-    def no_pth(self):
+    def no_pth(self, pedantic=True):
         for p in self.paths:
-            if PEDANTIC and p.endswith('-nspkg.pth'):
+            if pedantic and p.endswith('-nspkg.pth'):
                 raise PackageError("found namespace .pth file '%s'" % p)
             if p.endswith('.pth'):
                 print("WARNING: .pth file: %s" % p)
@@ -213,7 +199,7 @@ class CondaPackageCheck(object):
                     print("WARNING: %s next to: %s" % (ext, p))
 
     def no_pyc_in_stdlib(self):
-        if self.name in {'python', 'scons', 'conda-build', 'dbus'}:
+        if self.name in {'python', 'scons', 'conda-build'}:
             return
         for p in self.paths:
             if p.endswith('.pyc') and not 'site-packages' in p:
@@ -280,28 +266,3 @@ class CondaPackageCheck(object):
                       'setuptools'):
                 if x in res:
                     raise PackageError("found %s" % x)
-
-
-def validate_package(path, pedantic=True, verbose=True):
-    global PEDANTIC
-    PEDANTIC = bool(pedantic)
-
-    x = CondaPackageCheck(path, verbose)
-    x.info_files()
-    x.no_hardlinks()
-    x.not_allowed_files()
-    x.index_json()
-    x.no_bat_and_exe()
-    x.has_prefix()
-    x.warn_post_link()
-    x.no_setuptools()
-    x.no_easy_install_script()
-    x.no_pth()
-    x.warn_pyo()
-    x.no_py_next_so()
-    x.no_pyc_in_stdlib()
-    x.no_2to3_pickle()
-    x.pyc_files()
-    x.check_windows_arch()
-    x.list_packages()
-    x.t.close()

@@ -4,8 +4,9 @@ import sys
 from os.path import isfile, join
 from optparse import OptionParser
 
-from conda_verify.recipe import validate_recipe, RecipeError
-from conda_verify.package import validate_package, PackageError
+from conda_verify.exceptions import RecipeError, PackageError
+from conda_verify.verify import Verify
+from conda_verify.utils import render_metadata, iter_cfgs
 
 
 def main():
@@ -32,25 +33,30 @@ def main():
     verbose = not opts.quiet
     if opts.version:
         from conda_verify import __version__
-        print('anaconda-verify version:', __version__)
+        print('conda-verify version:', __version__)
         return
 
+    verifier = Verify()
     for path in args:
         if isfile(join(path, 'meta.yaml')):
             if verbose:
                 print("==> %s <==" % path)
-            try:
-                validate_recipe(path, opts.pedantic)
-            except RecipeError as e:
-                sys.stderr.write("RecipeError: %s\n" % e)
-                if opts.exit:
-                    sys.exit(1)
+            for cfg in iter_cfgs():
+                meta = render_metadata(path, cfg)
+                try:
+                    verifier.verify_recipe(pedantic=opts.pedantic, rendered_meta=meta,
+                                           recipe_dir=path)
+                except RecipeError as e:
+                    sys.stderr.write("RecipeError: %s\n" % e)
+                    if opts.exit:
+                        sys.exit(1)
 
         elif path.endswith('.tar.bz2'):
             if verbose:
                 print("==> %s <==" % path)
             try:
-                validate_package(path, opts.pedantic, verbose)
+                verifier.verify_package(pedantic=opts.pedantic, path_to_package=path,
+                                        verbose=verbose)
             except PackageError as e:
                 sys.stderr.write("PackageError: %s\n" % e)
                 if opts.exit:

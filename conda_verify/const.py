@@ -23,7 +23,7 @@ FIELDS = {
               'ignore_prefix_files', 'msvc_compiler', 'skip_compile_pyc',
               'detect_binary_files_with_prefix', 'script',
               'always_include_files'},
-    'requirements': {'build', 'run'},
+    'requirements': {'build', 'run', 'preferred_env', 'preferred_env_executable_paths'},
     'app': {'entry', 'icon', 'summary', 'type', 'cli_opts'},
     'test': {'requires', 'commands', 'files', 'imports'},
     'about': {'license', 'license_url', 'license_family', 'license_file',

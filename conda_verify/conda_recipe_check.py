@@ -60,7 +60,11 @@ class CondaRecipeCheck(object):
 
     def check_build_number(self):
         bn = get_field(self.meta, "build/number", 0)
-        if not (isinstance(bn, int) and bn >= 0):
+        try:
+            bn = int(bn)
+        except ValueError:
+            raise RecipeError("build/number '%s' (not an interger)" % bn)
+        if bn < 0:
             raise RecipeError("build/number '%s' (not a positive interger)" % bn)
 
     def check_requirements(self):

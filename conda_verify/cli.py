@@ -9,7 +9,7 @@ from conda_verify.verify import Verify
 from conda_verify.utils import render_metadata, iter_cfgs
 
 
-def main():
+def cli():
     p = OptionParser(
         usage="usage: %prog [options] <path to recipes or packages>",
         description="tool for (passively) verifying conda recipes and conda "
@@ -33,8 +33,7 @@ def main():
     verbose = not opts.quiet
     if opts.version:
         from conda_verify import __version__
-        print('conda-verify version:', __version__)
-        return
+        return 'conda-verify {}' .format(__version__)
 
     verifier = Verify()
     for path in args:
@@ -65,7 +64,3 @@ def main():
         else:
             if verbose:
                 print("Ignoring: %s" % path)
-
-
-if __name__ == '__main__':
-    main()

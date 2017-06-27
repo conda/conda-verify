@@ -72,7 +72,8 @@ class CondaPackageCheck(object):
         for p in self.paths:
             if (p.startswith(not_allowed_dirs) or
                     p in not_allowed or
-                    p.endswith('/.DS_Store')):
+                    p.endswith('/.DS_Store') or
+                    p.endswith('~')):
                 raise PackageError("directory or filename not allowed: "
                                    "%s" % p)
 

@@ -28,6 +28,7 @@ FIELDS = {
     'test': {'requires', 'commands', 'files', 'imports'},
     'about': {'license', 'license_url', 'license_family', 'license_file',
               'summary', 'description', 'home', 'doc_url', 'dev_url'},
+    'extra': {'recipe-maintainers'},
 }
 
 MAGIC_HEADERS = {

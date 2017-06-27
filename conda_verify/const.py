@@ -16,7 +16,7 @@ FIELDS = {
     'package': {'name', 'version'},
     'source': {'fn', 'url', 'md5', 'sha1', 'sha256',
                'git_url', 'git_tag', 'git_branch',
-               'patches', 'hg_url', 'hg_tag'},
+               'patches', 'hg_url', 'hg_tag', 'path'},
     'build': {'features', 'track_features',
               'number', 'entry_points', 'osx_is_app', 'noarch',
               'preserve_egg_dir', 'win_has_prefix', 'no_link',

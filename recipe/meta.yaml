@@ -1,0 +1,21 @@
+package:
+  name: conda-verify
+  version: "0.2.1"
+
+source:
+  path: ../
+
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+
+
+build:
+  script: python setup.py install
+
+about:
+  home: https://github.com/conda/conda-verify
+  license: BSD

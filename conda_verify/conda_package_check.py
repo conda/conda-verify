@@ -65,7 +65,7 @@ class CondaPackageCheck(object):
             if m.islnk():
                 raise PackageError('hardlink found: %s' % m.path)
 
-    def not_allowed_files(self):
+    def not_allowed_files(self, pedantic=False):
         not_allowed = {'conda-meta', 'conda-bld',
                        'pkgs', 'pkgs32', 'envs'}
         not_allowed_dirs = tuple(x + '/' for x in not_allowed)
@@ -76,6 +76,9 @@ class CondaPackageCheck(object):
                     p.endswith('~')):
                 raise PackageError("directory or filename not allowed: "
                                    "%s" % p)
+            if pedantic and p in ('info/package_metadata.json',
+                                  'info/link.json'):
+                raise PackageError("file not allowed: %s" % p)
 
     def index_json(self):
         for varname in 'name', 'version', 'build':

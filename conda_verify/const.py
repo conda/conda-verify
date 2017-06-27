@@ -23,11 +23,13 @@ FIELDS = {
               'ignore_prefix_files', 'msvc_compiler', 'skip_compile_pyc',
               'detect_binary_files_with_prefix', 'script',
               'always_include_files'},
-    'requirements': {'build', 'run', 'preferred_env', 'preferred_env_executable_paths'},
+    'requirements': {'build', 'run', 'preferred_env',
+                     'preferred_env_executable_paths'},
     'app': {'entry', 'icon', 'summary', 'type', 'cli_opts'},
     'test': {'requires', 'commands', 'files', 'source_files', 'imports'},
     'about': {'license', 'license_url', 'license_family', 'license_file',
-              'summary', 'description', 'home', 'doc_url', 'dev_url'},
+              'summary', 'description', 'home', 'doc_url', 'doc_source_url',
+              'dev_url'},
     'extra': {'recipe-maintainers'},
 }
 

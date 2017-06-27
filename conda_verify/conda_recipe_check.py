@@ -12,6 +12,7 @@ class CondaRecipeCheck(object):
         self.recipe_dir = recipe_dir
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.version_pat = re.compile(r'[\w\.]+$')
+        self.ver_spec_pat = re.compile(r'[\w\.,=!<>\*]+$')
         self.url_pat = re.compile(r'(ftp|http(s)?)://')
         self.hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
             'sha1': re.compile(r'[a-f0-9]{40}$'),
@@ -69,10 +70,20 @@ class CondaRecipeCheck(object):
 
     def check_requirements(self):
         meta = self.meta
-        for req in get_field(meta, 'requirements/run', []):
-            name = req.split()[0]
+        for req in (get_field(meta, 'requirements/build', []) +
+                    get_field(meta, 'requirements/run', [])):
+            parts = req.split()
+            name = parts[0]
             if not self.name_pat.match(name):
                 raise RecipeError("invalid run requirement name '%s'" % name)
+            if len(parts) >= 2:
+                ver_spec = parts[1]
+                if not self.ver_spec_pat.match(ver_spec):
+                    raise RecipeError("invalid version spec '%s'" % req)
+                if len(parts) == 3 and not self.version_pat.match(ver_spec):
+                    raise RecipeError("invalid (pure) version spec '%s'" % req)
+            if len(parts) > 3:
+                raise RecipeError("invalid spec (too many parts) '%s'" % req)
 
     def check_url(self, url):
         if not self.url_pat.match(url):

@@ -33,7 +33,7 @@ def cli():
     verbose = not opts.quiet
     if opts.version:
         from conda_verify import __version__
-        return 'conda-verify {}' .format(__version__)
+        sys.exit('conda-verify {}' .format(__version__))
 
     verifier = Verify()
     for path in args:

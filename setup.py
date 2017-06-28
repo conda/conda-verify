@@ -10,7 +10,7 @@ setup(
     version=__version__,
     author="Continuum Analytics, Inc.",
     author_email="conda@continuum.io",
-    url="https://github.com/ContinuumIO/conda-verify",
+    url="https://github.com/conda/conda-verify",
     license="BSD",
     description="A tool for validating conda recipes and conda packages",
     long_description=open('README.md').read(),

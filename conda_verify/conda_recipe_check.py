@@ -75,7 +75,10 @@ class CondaRecipeCheck(object):
             parts = req.split()
             name = parts[0]
             if not self.name_pat.match(name):
-                raise RecipeError("invalid run requirement name '%s'" % name)
+                if req in get_field(meta, 'requirements/run', []):
+                    raise RecipeError("invalid run requirement name '%s'" % name)
+                else:
+                    raise RecipeError("invalid build requirement name '%s'" % name)
             if len(parts) >= 2:
                 ver_spec = parts[1]
                 if not self.ver_spec_pat.match(ver_spec):

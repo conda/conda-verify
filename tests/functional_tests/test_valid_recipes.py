@@ -9,7 +9,7 @@ from conda_verify.verify import Verify
 
 @pytest.fixture
 def recipe_dir():
-    return os.path.join(os.path.dirname(__file__), 'test-recipes')
+    return os.path.join(os.path.dirname(__file__), 'test_recipes')
 
 
 @pytest.fixture

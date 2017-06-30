@@ -163,13 +163,13 @@ class CondaRecipeCheck(object):
         for root, unused_dirs, files in os.walk(recipe_dir):
             for fn in files:
                 fn_lower = fn.lower()
-                if fn_lower.endswith(disallowed_extensions):
-                    raise RecipeError("found: %s" % fn)
                 path = join(root, fn)
                 # only allow small archives for testing
                 if (fn_lower.endswith(('.bz2', '.gz')) and
                             getsize(path) > 512):
                     raise RecipeError("found: %s (too large)" % fn)
+                if fn_lower.endswith(disallowed_extensions):
+                    raise RecipeError("found: %s" % fn)
 
         if basename(recipe_dir) == 'icu':
             return

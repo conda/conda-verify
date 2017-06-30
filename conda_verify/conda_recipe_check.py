@@ -117,9 +117,9 @@ class CondaRecipeCheck(object):
                 hexgigest = src.get(ht)
                 if hexgigest and not self.hash_pat[ht].match(hexgigest):
                     raise RecipeError("invalid hash: %s" % hexgigest)
-            url = src.get('url')
-            if url:
-                self.check_url(url)
+        url = src.get('url')
+        if url:
+            self.check_url(url)
 
         git_url = src.get('git_url')
         if git_url and (src.get('git_tag') and src.get('git_branch')):

@@ -293,7 +293,7 @@ def test_invalid_source_url(recipe_dir, verifier):
                                recipe_dir=recipe)
 
     assert ("conda_verify.exceptions.RecipeError: "
-            "invalid run requirement name 'python@#'" in str(excinfo))
+            "not a valid URL: www.continuum.io" in str(excinfo))
 
 
 def test_invalid_about_summary(recipe_dir, verifier):

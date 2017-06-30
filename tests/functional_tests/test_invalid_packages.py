@@ -398,3 +398,14 @@ def test_invalid_package_in_bin(package_dir, verifier, capfd):
 
     assert ("conda_verify.exceptions.PackageError: "
             "found setuptools" in str(excinfo))
+
+
+def test_invalid_easy_install_file(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.31-py27_0.tar')
+
+    with pytest.raises(PackageError) as excinfo:
+        verifier.verify_package(pedantic=False, path_to_package=package,
+                                verbose=True)
+
+    assert ("conda_verify.exceptions.PackageError: "
+            "easy-install.pth file not allowed" in str(excinfo))

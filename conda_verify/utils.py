@@ -66,6 +66,7 @@ def ns_cfg(cfg):
         py33 = bool(py == 33),
         py34 = bool(py == 34),
         py35 = bool(py == 35),
+        py36 = bool(py == 36),
         np = np,
     )
 

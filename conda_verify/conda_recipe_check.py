@@ -144,7 +144,7 @@ class CondaRecipeCheck(object):
 
     def validate_files(self):
         meta = self.meta
-        for field in 'test/files', 'source/patches':
+        for field in 'test/files', 'source/patches', 'test/source_files':
             flst = get_field(meta, field)
             if not flst:
                 continue

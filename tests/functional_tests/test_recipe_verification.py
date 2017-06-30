@@ -429,4 +429,4 @@ def test_invalid_dir_content_filesize(recipe_dir, verifier):
                                recipe_dir=recipe)
 
     assert ('conda_verify.exceptions.RecipeError: '
-            'found: testfile.so' in str(excinfo))
+            'found: test.tar.bz2 (too large)' in str(excinfo))

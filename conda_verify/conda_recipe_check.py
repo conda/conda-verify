@@ -64,9 +64,9 @@ class CondaRecipeCheck(object):
         try:
             bn = int(bn)
         except ValueError:
-            raise RecipeError("build/number '%s' (not an interger)" % bn)
+            raise RecipeError("build/number '%s' (not an integer)" % bn)
         if bn < 0:
-            raise RecipeError("build/number '%s' (not a positive interger)" % bn)
+            raise RecipeError("build/number '%s' (not a positive integer)" % bn)
 
     def check_requirements(self):
         meta = self.meta

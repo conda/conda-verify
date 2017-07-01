@@ -101,12 +101,3 @@ def get_python_version_specs(specs):
         if m:
             return m.group(1)
     return None
-
-
-if __name__ == '__main__':
-    import sys
-    print(check_spec('numpy 1.2'))
-    print(check_build_number(3))
-    #print(get_python_version_specs(sys.argv[1:]))
-    print(sys.argv[1])
-    print(check_build_string(sys.argv[1]))

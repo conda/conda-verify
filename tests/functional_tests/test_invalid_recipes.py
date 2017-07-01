@@ -405,7 +405,7 @@ def test_invalid_dir_size(recipe_dir, verifier):
                                recipe_dir=recipe)
 
     assert ('conda_verify.exceptions.RecipeError: '
-            'recipe too large: 1006 KB (limit 512 KB)' in str(excinfo))
+            'recipe too large' in str(excinfo))
 
 
 def test_invalid_dir_content(recipe_dir, verifier):
@@ -417,7 +417,7 @@ def test_invalid_dir_content(recipe_dir, verifier):
                                recipe_dir=recipe)
 
     assert ('conda_verify.exceptions.RecipeError: '
-            'found: testfile.so' in str(excinfo))
+            'found: testfile' in str(excinfo))
 
 
 def test_invalid_dir_content_filesize(recipe_dir, verifier):

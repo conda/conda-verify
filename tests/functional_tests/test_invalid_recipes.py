@@ -443,18 +443,6 @@ def test_duplicate_version_specifications(recipe_dir, verifier):
     assert "duplicate specs: ['python', 'python']" in str(excinfo)
 
 
-def test_missing_version_specifications(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir, 'missing_version_specs')
-    metadata = utils.render_metadata(recipe, None)
-
-    verifier.verify_recipe(pedantic=False, rendered_meta=metadata,
-                           recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert "empty spec" in str(output)
-
-
 def test_many_version_specifications(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'many_version_specs')
     metadata = utils.render_metadata(recipe, None)

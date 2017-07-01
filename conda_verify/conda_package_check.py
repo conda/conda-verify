@@ -101,6 +101,9 @@ class CondaPackageCheck(object):
             if res:
                 raise PackageError("info/index.json: %s" % res)
 
+        depends = self.info.get('depends')
+        if depends is None:
+            raise PackageError("info/index.json: key 'depends' missing")
         res = check_specs(self.info['depends'])
         if res:
             raise PackageError("info/index.json: %s" % res)
@@ -133,7 +136,7 @@ class CondaPackageCheck(object):
             if self.name == 'python':
                 raise PackageError("binary placeholder not allowed in Python")
             if pedantic:
-                print("WARNING: info/has_prefix: bina, check_build_number, get_python_version_specsry replace mode")
+                print("WARNING: info/has_prefix: binary replace mode: %s" % f)
                 return
             if len(placeholder) != 255:
                 msg = ("info/has_prefix: binary placeholder not "
@@ -269,12 +272,14 @@ class CondaPackageCheck(object):
                                    (m.name, tp, arch))
 
     def get_sp_location(self):
-        if self.win_pkg:
-            return 'Lib/site-packages'
         py_ver = get_python_version_specs(self.info['depends'])
         if py_ver is None:
             return '<not a Python package>'
-        return 'lib/python%s/site-packages' % py_ver
+
+        if self.win_pkg:
+            return 'Lib/site-packages'
+        else:
+            return 'lib/python%s/site-packages' % py_ver
 
     def list_packages(self):
         sp_location = self.get_sp_location()

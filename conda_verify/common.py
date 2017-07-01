@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 
-from anaconda_verify.utils import get_bad_seq
+from conda_verify.utils import get_bad_seq
 
 
 name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
@@ -78,7 +78,7 @@ def check_specs(specs):
 
 def check_build_number(bn):
     if not (isinstance(bn, int) and bn >= 0):
-        return "build number '%s' (not a positive interger)" % bn
+        return "build number '%s' (not a positive integer)" % bn
 
 
 def get_python_version_specs(specs):

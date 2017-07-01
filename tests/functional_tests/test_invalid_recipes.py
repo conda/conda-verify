@@ -219,7 +219,7 @@ def test_invalid_build_number(recipe_dir, verifier):
                                recipe_dir=recipe)
 
     assert ("conda_verify.exceptions.RecipeError: "
-            "build/number 'a' (not a positive integer)" in str(excinfo))
+            "build number 'a' (not a positive integer)" in str(excinfo))
 
 
 def test_invalid_build_number_negative(recipe_dir, verifier):
@@ -231,7 +231,7 @@ def test_invalid_build_number_negative(recipe_dir, verifier):
                                recipe_dir=recipe)
 
     assert ("conda_verify.exceptions.RecipeError: "
-            "build/number '-1' (not a positive integer)" in str(excinfo))
+            "build number '-1' (not a positive integer)" in str(excinfo))
 
 
 def test_invalid_build_requirement_name(recipe_dir, verifier):

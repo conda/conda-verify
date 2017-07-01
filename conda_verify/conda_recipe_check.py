@@ -2,7 +2,7 @@ import re
 import os
 from os.path import join, isfile, basename, getsize
 from conda_verify.const import LICENSE_FAMILIES, FIELDS
-from conda_verify.common import check_specs
+from conda_verify.common import check_specs, check_build_number, check_name, check_version
 from conda_verify.utils import get_bad_seq, get_field
 from conda_verify.exceptions import RecipeError
 
@@ -32,43 +32,15 @@ class CondaRecipeCheck(object):
                     raise RecipeError("in section %r: unknown key %r" %
                                       (section, key))
 
-    def check_name(self):
-        name = get_field(self.meta, "package/name")
-        if name:
-            name = str(name)
-        else:
-            raise RecipeError("package name missing")
-        if not self.name_pat.match(name) or name.endswith(('.', '-', '_')):
-            raise RecipeError("invalid package name '%s'" % name)
-        seq = get_bad_seq(name)
-        if seq:
-            raise RecipeError("'%s' is not allowed in "
-                              "package name: '%s'" % (seq, name))
+        for res in [check_name(get_field(meta, 'package/name')),
+                    check_version(get_field(meta, 'package/version')),
+                    check_build_number(get_field(meta, 'build/number', 0))]:
+            if res:
+                raise RecipeError(res)
 
-    def check_version(self):
-        ver = get_field(self.meta, "package/version")
-        if ver:
-            ver = str(ver)
-        else:
-            raise RecipeError("package version missing")
-        if not self.version_pat.match(ver):
-            raise RecipeError("invalid version '%s'" % ver)
-        if ver.startswith(('_', '.')) or ver.endswith(('_', '.')):
-            raise RecipeError("version cannot start or end with '_' or '.': %s" %
-                              ver)
-        seq = get_bad_seq(ver)
-        if seq:
-            raise RecipeError("'%s' not allowed in version '%s'" % (seq, ver))
+        if pedantic and str(get_field(meta, 'build/noarch')).lower() == 'python':
+            raise RecipeError("noarch python recipe not allowed in pedantic mode")
 
-    def check_build_number(self):
-        bn = get_field(self.meta, "build/number", 0)
-        try:
-            bn = int(bn)
-        except ValueError:
-            raise RecipeError("build/number '%s' (not an integer)" % bn)
-        if bn < 0:
-            raise RecipeError("build/number '%s' (not a positive integer)" % bn)
-    
     def check_requirements(self):
         meta = self.meta
         for req in (get_field(meta, 'requirements/build', []) +

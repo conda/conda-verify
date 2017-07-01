@@ -42,8 +42,6 @@ class CondaPackageCheck(object):
             path = m.path
             if not all_ascii(path.encode('utf-8')):
                 raise PackageError("non-ASCII path: %r" % path)
-            if ' ' in path:
-                print("WARNING: ' ' (space) in path: %r" % path)
 
     def info_files(self):
         raw = self.t.extractfile('info/files').read()

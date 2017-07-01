@@ -37,13 +37,13 @@ class CondaPackageCheck(object):
         if not all_ascii(raw, self.win_pkg):
             raise PackageError("non-ASCII in: info/index.json")
 
-    # def check_members(self):
-    #     for m in self.t.getmembers():
-    #         path = m.path
-    #         if not all_ascii(path):
-    #             raise PackageError("non-ASCII path: %r" % path)
-    #         if ' ' in path:
-    #             print("WARNING: ' ' (space) in path: %r" % path)
+    def check_members(self):
+        for m in self.t.getmembers():
+            path = m.path
+            if not all_ascii(path.encode('utf-8')):
+                raise PackageError("non-ASCII path: %r" % path)
+            if ' ' in path:
+                print("WARNING: ' ' (space) in path: %r" % path)
 
     def info_files(self):
         raw = self.t.extractfile('info/files').read()

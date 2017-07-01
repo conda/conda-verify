@@ -24,7 +24,7 @@ def test_invalid_package_sequence(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "'_-' not allowed in file name "
             "'test_-file.tar.bz2'" in str(excinfo))
 
@@ -36,7 +36,7 @@ def test_invalid_package_extension(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "did not expect filename: testfile.zip" in str(excinfo))
 
 
@@ -47,7 +47,7 @@ def test_duplicate_members(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "duplicate members" in str(excinfo))
 
 
@@ -58,7 +58,7 @@ def test_index_unicode(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "non-ASCII in: info/index.json" in str(excinfo))
 
 
@@ -69,7 +69,7 @@ def test_info_in_files_file(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "Did not expect 'info/index.json' in info/files" in str(excinfo))
 
 
@@ -80,7 +80,7 @@ def test_duplicates_in_files_file(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "info/files: duplicates" in str(excinfo))
 
 
@@ -93,7 +93,7 @@ def test_not_in_files_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "info/files" in str(excinfo))
 
     assert "'lib/testfile.txt' not in info/files" in str(output)
@@ -108,7 +108,7 @@ def test_not_in_tarball(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "info/files" in str(excinfo))
 
     assert "'testfile.txt' not in tarball" in str(output)
@@ -121,7 +121,7 @@ def test_not_allowed_files(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "directory or filename not allowed: "
             "info/testfile~" in str(excinfo))
 
@@ -133,7 +133,7 @@ def test_file_not_allowed(package_dir, verifier):
         verifier.verify_package(pedantic=True, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "file not allowed: info/link.json" in str(excinfo))
 
 
@@ -144,9 +144,8 @@ def test_invalid_package_name(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
-            "info/index.json for name: "
-            "'test-file' != 'testfile'" in str(excinfo))
+    assert ("PackageError: "
+            "info/index.json for name: " in str(excinfo))
 
 
 def test_invalid_build_number(package_dir, verifier):
@@ -156,7 +155,7 @@ def test_invalid_build_number(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "info/index.json: invalid build_number: 1" in str(excinfo))
 
 
@@ -167,8 +166,8 @@ def test_duplicates_in_bin(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
-            "Both .bat and .exe files: {'bin/testfile'}" in str(excinfo))
+    assert ("PackageError: "
+            "Both .bat and .exe files:" in str(excinfo))
 
 
 def test_win_package_warning(package_dir, verifier, capfd):
@@ -180,7 +179,7 @@ def test_win_package_warning(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "info/has_prefix: target 'bin/testfile' "
             "not in package" in str(excinfo))
 
@@ -194,7 +193,7 @@ def test_win_package_binary_warning(package_dir, verifier, capfd):
         verifier.verify_package(pedantic=True, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "binary placeholder not allowed on Windows" in str(excinfo))
 
 
@@ -217,7 +216,7 @@ def test_invalid_prefix_mode(package_dir, verifier):
         verifier.verify_package(pedantic=True, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "info/has_prefix: invalid mode" in str(excinfo))
 
 
@@ -228,7 +227,7 @@ def test_unicode_prefix(package_dir, verifier):
         verifier.verify_package(pedantic=True, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "non-ASCII in: info/has_prefix" in str(excinfo))
 
 
@@ -250,7 +249,7 @@ def test_invalid_setuptools(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "file 'bin/easy_install.pth' not allowed" in str(excinfo))
 
 
@@ -261,7 +260,7 @@ def test_invalid_eggfile(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "file 'bin/test.egg' not allowed" in str(excinfo))
 
 
@@ -272,7 +271,7 @@ def test_invalid_script_header(package_dir, verifier):
         verifier.verify_package(pedantic=True, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "easy install script found: bin/test-script.py" in str(excinfo))
 
 
@@ -283,7 +282,7 @@ def test_invalid_namespace_file(package_dir, verifier, capfd):
         verifier.verify_package(pedantic=True, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "found namespace .pth file 'bin/test-nspkg.pth'" in str(excinfo))
 
     verifier.verify_package(pedantic=False, path_to_package=package,
@@ -312,7 +311,7 @@ def test_invalid_pyc_and_so_files(package_dir, verifier, capfd):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             ".pyc found in stdlib: bin/test.pyc" in str(excinfo))
 
     output, error = capfd.readouterr()
@@ -327,7 +326,7 @@ def test_invalid_pickle_file(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "found lib2to3 .pickle: lib/lib2to3/test.pickle" in str(excinfo))
 
 
@@ -339,8 +338,7 @@ def test_missing_pyc_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert ("WARNING: pyc missing for: "
-            "lib/site-packages/python2.7/test.py" in str(output))
+    assert ("WARNING: pyc missing for:" in str(output))
 
 
 def test_invalid_windows_architecture(package_dir, verifier):
@@ -350,7 +348,7 @@ def test_invalid_windows_architecture(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "Unrecognized Windows architecture: x84" in str(excinfo))
 
 
@@ -361,7 +359,7 @@ def test_invalid_windows_dll(package_dir, verifier):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=False)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "File bin/testfile.dll has object type None, "
             "but info/index.json arch is x86_64" in str(excinfo))
 
@@ -375,7 +373,7 @@ def test_invalid_package_in_name(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "found numpy" in str(excinfo))
 
     assert 'numpy' in str(output)
@@ -388,7 +386,7 @@ def test_invalid_package_in_bin(package_dir, verifier, capfd):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=True)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "found setuptools" in str(excinfo))
 
 
@@ -399,5 +397,5 @@ def test_invalid_easy_install_file(package_dir, verifier, capfd):
         verifier.verify_package(pedantic=False, path_to_package=package,
                                 verbose=True)
 
-    assert ("conda_verify.exceptions.PackageError: "
+    assert ("PackageError: "
             "easy-install.pth file not allowed" in str(excinfo))

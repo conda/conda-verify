@@ -38,8 +38,10 @@ class CondaPackageCheck(object):
             raise PackageError("non-ASCII in: info/index.json")
 
     def info_files(self):
-        lista = [p.decode('utf-8').strip() for p in
-                 self.t.extractfile('info/files').readlines()]
+        raw = self.t.extractfile('info/files').read()
+        if not all_ascii(raw, self.win_pkg):
+            raise PackageError("non-ASCII in: info/files")
+        lista = [p.strip() for p in raw.decode('utf-8').splitlines()]
         for p in lista:
             if p.startswith('info/'):
                 raise PackageError("Did not expect '%s' in info/files" % p)

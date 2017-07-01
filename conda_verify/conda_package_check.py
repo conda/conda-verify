@@ -37,13 +37,13 @@ class CondaPackageCheck(object):
         if not all_ascii(raw, self.win_pkg):
             raise PackageError("non-ASCII in: info/index.json")
 
-    def check_members(self):
-        for m in self.t.getmembers():
-            path = m.path
-            if not all_ascii(path):
-                raise PackageError("non-ASCII path: %r" % path)
-            if ' ' in path:
-                print("WARNING: ' ' (space) in path: %r" % path)
+    # def check_members(self):
+    #     for m in self.t.getmembers():
+    #         path = m.path
+    #         if not all_ascii(path):
+    #             raise PackageError("non-ASCII path: %r" % path)
+    #         if ' ' in path:
+    #             print("WARNING: ' ' (space) in path: %r" % path)
 
     def info_files(self):
         raw = self.t.extractfile('info/files').read()
@@ -145,6 +145,9 @@ class CondaPackageCheck(object):
         if mode == 'binary':
             if self.name == 'python':
                 raise PackageError("binary placeholder not allowed in Python")
+            if self.win_pkg:
+                raise PackageError("binary placeholder not allowed on Windows")
+
             if pedantic:
                 print("WARNING: info/has_prefix: binary replace mode: %s" % f)
                 return

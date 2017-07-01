@@ -190,25 +190,16 @@ def test_win_package_warning(package_dir, verifier, capfd):
 def test_win_package_binary_warning(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.13-py36_0.tar.bz2')
 
-    verifier.verify_package(pedantic=True, path_to_package=package,
-                            verbose=False)
+    with pytest.raises(PackageError) as excinfo:
+        verifier.verify_package(pedantic=True, path_to_package=package,
+                                verbose=False)
 
-    output, error = capfd.readouterr()
-
-    assert ("WARNING: info/has_prefix: "
-            "binary replace mode: bin/testfile" in str(output))
+    assert ("conda_verify.exceptions.PackageError: "
+            "binary placeholder not allowed on Windows" in str(excinfo))
 
 
 def test_package_placeholder_warning(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.14-py36_0.tar.bz2')
-
-    with pytest.raises(PackageError) as excinfo:
-        verifier.verify_package(pedantic=False, path_to_package=package,
-                                verbose=False)
-
-    assert ("conda_verify.exceptions.PackageError: "
-            "info/has_prefix: "
-            "binary placeholder not 255 bytes" in str(excinfo))
 
     verifier.verify_package(pedantic=False, path_to_package=package,
                             verbose=False)

@@ -4,7 +4,7 @@ import shlex
 import re
 from os.path import basename
 
-from conda_verify.common import check_name, check_specs, check_version
+from conda_verify.common import check_name, check_specs, check_version, check_build_number, get_python_version_specs
 from conda_verify.const import LICENSE_FAMILIES
 from conda_verify.utils import get_bad_seq, all_ascii, get_object_type
 from conda_verify.exceptions import PackageError
@@ -133,7 +133,7 @@ class CondaPackageCheck(object):
             if self.name == 'python':
                 raise PackageError("binary placeholder not allowed in Python")
             if pedantic:
-                print("WARNING: info/has_prefix: binary replace mode")
+                print("WARNING: info/has_prefix: bina, check_build_number, get_python_version_specsry replace mode")
                 return
             if len(placeholder) != 255:
                 msg = ("info/has_prefix: binary placeholder not "
@@ -268,13 +268,24 @@ class CondaPackageCheck(object):
                                    "index.json arch is %s" %
                                    (m.name, tp, arch))
 
+    def get_sp_location(self):
+        if self.win_pkg:
+            return 'Lib/site-packages'
+        py_ver = get_python_version_specs(self.info['depends'])
+        if py_ver is None:
+            return '<not a Python package>'
+        return 'lib/python%s/site-packages' % py_ver
+
     def list_packages(self):
+        sp_location = self.get_sp_location()
         pat = re.compile(r'site-packages/([^/]+)')
         res = set()
         for p in self.paths:
             m = pat.search(p)
             if m is None:
                 continue
+            if not p.startswith(sp_location):
+                print("WARNING: found %s" % p)
             fn = m.group(1)
             if '-' in fn or fn.endswith('.pyc'):
                 continue

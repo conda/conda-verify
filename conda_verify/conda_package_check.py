@@ -4,7 +4,7 @@ import shlex
 import re
 from os.path import basename
 
-from conda_verify.common import check_name, check_specs, check_version, check_build_number, get_python_version_specs
+from conda_verify.common import check_build_string, check_name, check_specs, check_version, check_build_number, get_python_version_specs
 from conda_verify.const import LICENSE_FAMILIES
 from conda_verify.utils import get_bad_seq, all_ascii, get_object_type
 from conda_verify.exceptions import PackageError
@@ -104,10 +104,14 @@ class CondaPackageCheck(object):
             raise PackageError("info/index.json: invalid build_number: %s" %
                                bn)
 
-        for res in [
+        lst = [
             check_name(self.info['name']),
             check_version(self.info['version']),
-            ]:
+            check_build_number(self.info['build_number']),
+        ]
+        if pedantic:
+            lst.append(check_build_string(self.info['build']))
+        for res in lst:
             if res:
                 raise PackageError("info/index.json: %s" % res)
 

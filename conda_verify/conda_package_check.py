@@ -191,7 +191,8 @@ class CondaPackageCheck(object):
         if self.name in ('setuptools', 'distribute'):
             return
         for p in self.paths:
-            if p.endswith('MyPyPa-0.1.0-py2.5.egg'):
+            if p.endswith(('MyPyPa-0.1.0-py2.5.egg',
+                           'mytestegg-1.0.0-py3.4.egg')):
                 continue
             if (p.endswith('.egg') or
                     'site-packages/pkg_resources' in p or

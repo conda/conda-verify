@@ -18,7 +18,7 @@ def verifier():
 
 
 def test_valid_package(package_dir, verifier):
-    package = os.path.join(package_dir, 'testfile-0.0.30-py27_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.30-py27_0.tar.bz2')
 
     try:
         verifier.verify_package(pedantic=False, path_to_package=package,
@@ -28,7 +28,7 @@ def test_valid_package(package_dir, verifier):
 
 
 def test_valid_setuptools_package(package_dir, verifier):
-    package = os.path.join(package_dir, 'distribute-0.0.1-py27_0.tar')
+    package = os.path.join(package_dir, 'distribute-0.0.1-py27_0.tar.bz2')
 
     try:
         verifier.verify_package(pedantic=False, path_to_package=package,
@@ -38,7 +38,7 @@ def test_valid_setuptools_package(package_dir, verifier):
 
 
 def test_valid_mypypa_package(package_dir, verifier):
-    package = os.path.join(package_dir, 'testfile-0.0.32-py27_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.32-py27_0.tar.bz2')
 
     try:
         verifier.verify_package(pedantic=False, path_to_package=package,
@@ -48,7 +48,7 @@ def test_valid_mypypa_package(package_dir, verifier):
 
 
 def test_valid_empty_directory(package_dir, verifier):
-    package = os.path.join(package_dir, 'testfile-0.0.33-py27_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.33-py27_0.tar.bz2')
 
     try:
         verifier.verify_package(pedantic=True, path_to_package=package,
@@ -58,7 +58,7 @@ def test_valid_empty_directory(package_dir, verifier):
 
 
 def test_valid_python_package(package_dir, verifier):
-    package = os.path.join(package_dir, 'python-0.0.1-py27_0.tar')
+    package = os.path.join(package_dir, 'python-0.0.1-py27_0.tar.bz2')
 
     try:
         verifier.verify_package(pedantic=True, path_to_package=package,
@@ -68,7 +68,7 @@ def test_valid_python_package(package_dir, verifier):
 
 
 def test_valid_pyd_file(package_dir, verifier):
-    package = os.path.join(package_dir, 'testfile-0.0.34-py27_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.34-py27_0.tar.bz2')
 
     try:
         verifier.verify_package(pedantic=True, path_to_package=package,
@@ -78,7 +78,7 @@ def test_valid_pyd_file(package_dir, verifier):
 
 
 def test_valid_script_file(package_dir, verifier):
-    package = os.path.join(package_dir, 'testfile-0.0.35-py36_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.35-py27_0.tar.bz2')
 
     try:
         verifier.verify_package(pedantic=True, path_to_package=package,

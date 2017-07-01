@@ -430,3 +430,37 @@ def test_invalid_dir_content_filesize(recipe_dir, verifier):
 
     assert ('conda_verify.exceptions.RecipeError: '
             'found: test.tar.bz2 (too large)' in str(excinfo))
+
+
+def test_duplicate_version_specifications(recipe_dir, verifier):
+    recipe = os.path.join(recipe_dir, 'duplicate_version_specs')
+    metadata = utils.render_metadata(recipe, None)
+
+    with pytest.raises(RecipeError) as excinfo:
+        verifier.verify_recipe(pedantic=False, rendered_meta=metadata,
+                               recipe_dir=recipe)
+
+    assert "duplicate specs: ['python', 'python']" in str(excinfo)
+
+
+def test_missing_version_specifications(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'missing_version_specs')
+    metadata = utils.render_metadata(recipe, None)
+
+    verifier.verify_recipe(pedantic=False, rendered_meta=metadata,
+                           recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert "empty spec" in str(output)
+
+
+def test_many_version_specifications(recipe_dir, verifier):
+    recipe = os.path.join(recipe_dir, 'many_version_specs')
+    metadata = utils.render_metadata(recipe, None)
+
+    with pytest.raises(RecipeError) as excinfo:
+        verifier.verify_recipe(pedantic=False, rendered_meta=metadata,
+                               recipe_dir=recipe)
+
+    assert "invalid spec (too many parts) 'python 3.6 * 2 * 3" in str(excinfo)

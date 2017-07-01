@@ -2,6 +2,7 @@ import re
 import os
 from os.path import join, isfile, basename, getsize
 from conda_verify.const import LICENSE_FAMILIES, FIELDS
+from conda_verify.common import check_specs
 from conda_verify.utils import get_bad_seq, get_field
 from conda_verify.exceptions import RecipeError
 
@@ -67,7 +68,7 @@ class CondaRecipeCheck(object):
             raise RecipeError("build/number '%s' (not an integer)" % bn)
         if bn < 0:
             raise RecipeError("build/number '%s' (not a positive integer)" % bn)
-
+    
     def check_requirements(self):
         meta = self.meta
         for req in (get_field(meta, 'requirements/build', []) +
@@ -79,14 +80,11 @@ class CondaRecipeCheck(object):
                     raise RecipeError("invalid run requirement name '%s'" % name)
                 else:
                     raise RecipeError("invalid build requirement name '%s'" % name)
-            if len(parts) >= 2:
-                ver_spec = parts[1]
-                if not self.ver_spec_pat.match(ver_spec):
-                    raise RecipeError("invalid version spec '%s'" % req)
-                if len(parts) == 3 and not self.version_pat.match(ver_spec):
-                    raise RecipeError("invalid (pure) version spec '%s'" % req)
-            if len(parts) > 3:
-                raise RecipeError("invalid spec (too many parts) '%s'" % req)
+        for field in 'requirements/build', 'requirements/run':
+            specs = get_field(meta, field, [])
+            res = check_specs(specs)
+            if res:
+                raise RecipeError(res)
 
     def check_url(self, url):
         if not self.url_pat.match(url):

@@ -3,6 +3,9 @@ import tarfile
 import shlex
 import re
 from os.path import basename
+
+from conda_verify.common import check_name, check_specs, check_version
+from conda_verify.const import LICENSE_FAMILIES
 from conda_verify.utils import get_bad_seq, all_ascii, get_object_type
 from conda_verify.exceptions import PackageError
 
@@ -80,7 +83,7 @@ class CondaPackageCheck(object):
                                   'info/link.json'):
                 raise PackageError("file not allowed: %s" % p)
 
-    def index_json(self):
+    def index_json(self, pedantic=False):
         for varname in 'name', 'version', 'build':
             if self.info[varname] != getattr(self, varname):
                 raise PackageError("info/index.json for %s: %r != %r" %
@@ -90,6 +93,22 @@ class CondaPackageCheck(object):
         if not isinstance(bn, int):
             raise PackageError("info/index.json: invalid build_number: %s" %
                                bn)
+
+        for res in [
+            check_name(self.info['name']),
+            check_version(self.info['version']),
+            ]:
+            if res:
+                raise PackageError("info/index.json: %s" % res)
+
+        res = check_specs(self.info['depends'])
+        if res:
+            raise PackageError("info/index.json: %s" % res)
+
+        if pedantic:
+            lf = self.info.get('license_family', self.info.get('license'))
+            if lf not in LICENSE_FAMILIES:
+                raise PackageError("wrong license family: %s" % lf)
 
     def no_bat_and_exe(self):
         bats = {p[:-4] for p in self.paths if p.endswith('.bat')}

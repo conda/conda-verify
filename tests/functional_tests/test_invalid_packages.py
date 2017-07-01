@@ -181,7 +181,8 @@ def test_win_package_warning(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert ("conda_verify.exceptions.PackageError: "
-            "info/has_prefix: target '' not in package" in str(excinfo))
+            "info/has_prefix: target 'bin/testfile' "
+            "not in package" in str(excinfo))
 
     assert 'WARNING: info/has_prefix' in str(output)
 
@@ -215,7 +216,7 @@ def test_package_placeholder_warning(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert ("info/has_prefix: binary placeholder not 255 bytes, "
-            "but: 256" in str(output))
+            "but: 329" in str(output))
 
 
 def test_invalid_prefix_mode(package_dir, verifier):
@@ -336,7 +337,7 @@ def test_invalid_pickle_file(package_dir, verifier):
                                 verbose=False)
 
     assert ("conda_verify.exceptions.PackageError: "
-            "found lib2to3 .pickle: lib2to3/test.pickle" in str(excinfo))
+            "found lib2to3 .pickle: lib/lib2to3/test.pickle" in str(excinfo))
 
 
 def test_missing_pyc_file(package_dir, verifier, capfd):
@@ -401,7 +402,7 @@ def test_invalid_package_in_bin(package_dir, verifier, capfd):
 
 
 def test_invalid_easy_install_file(package_dir, verifier, capfd):
-    package = os.path.join(package_dir, 'testfile-0.0.31-py27_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.31-py27_0.tar.bz2')
 
     with pytest.raises(PackageError) as excinfo:
         verifier.verify_package(pedantic=False, path_to_package=package,

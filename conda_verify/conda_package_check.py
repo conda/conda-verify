@@ -263,6 +263,23 @@ class CondaPackageCheck(object):
                 if not self.verbose:
                     return
 
+    def menu_names(self, pedantic=False):
+        if not pedantic:
+            return
+        menu_json_files = []
+        for p in self.paths:
+            if p.startswith('Menu/') and p.endswith('.json'):
+                menu_json_files.append(p)
+        if len(menu_json_files) == 0:
+            pass
+        elif len(menu_json_files) == 1:
+            fn = menu_json_files[0][5:]
+            if fn != '%s.json' % self.name:
+                raise PackageError("wrong Menu json file name: %s" % fn)
+        else:
+            raise PackageError("too many Menu json files: %r" %
+                               menu_json_files)
+
     def check_windows_arch(self):
         if self.name in ('python', 'conda-build', 'pip', 'xlwings',
                          'phantomjs', 'qt', 'graphviz', 'nsis', 'swig'):

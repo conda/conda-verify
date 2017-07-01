@@ -12,5 +12,6 @@ def verify_files(path_to_package=None, verbose=True, **kwargs):
     package_check.no_bat_and_exe()
     package_check.list_packages()
     package_check.has_prefix(pedantic=pedantic)
+    package_check.menu_names(pedantic=pedantic)
 
     package_check.t.close()

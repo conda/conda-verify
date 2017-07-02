@@ -14,7 +14,7 @@ setup(
     license="BSD",
     description="A tool for validating conda recipes and conda packages",
     long_description=open('README.md').read(),
-    packages=['conda_verify', 'conda_verify.recipe', 'conda_verify.package'],
+    packages=['conda_verify'],
     entry_points='''
         [console_scripts]
         conda-verify=conda_verify.cli:cli

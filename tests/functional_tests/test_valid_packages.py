@@ -85,3 +85,23 @@ def test_valid_script_file(package_dir, verifier):
                                 verbose=False)
     except PackageError as error:
         pytest.fail(error)
+
+
+def test_valid_noarch_link(package_dir, verifier):
+    package = os.path.join(package_dir, 'testfile-0.0.36-noarch.tar.bz2')
+
+    try:
+        verifier.verify_package(pedantic=True, path_to_package=package,
+                                verbose=False)
+    except PackageError as error:
+        pytest.fail(error)
+
+
+def test_valid_preferred_env(package_dir, verifier):
+    package = os.path.join(package_dir, 'testfile-0.0.37-py36_0.tar.bz2')
+
+    try:
+        verifier.verify_package(pedantic=True, path_to_package=package,
+                                verbose=False)
+    except PackageError as error:
+        pytest.fail(error)

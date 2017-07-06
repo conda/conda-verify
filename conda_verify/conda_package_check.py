@@ -87,8 +87,7 @@ class CondaPackageCheck(object):
                     p.endswith('~')):
                 raise PackageError("directory or filename not allowed: "
                                    "%s" % p)
-            if pedantic and p in ('info/package_metadata.json',
-                                  'info/link.json'):
+            if pedantic and ('info/package_metadata.json' in p or 'info/link.json' in p) and self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
                 raise PackageError("file not allowed: %s" % p)
 
     def index_json(self, pedantic=False):

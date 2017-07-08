@@ -3,3 +3,4 @@ omit =
     *__init__.py
     setup.py
     tests/*
+    *__main__.py

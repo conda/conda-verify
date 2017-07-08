@@ -1,8 +1,9 @@
-import sys
 import collections
-from os.path import join
-import yaml
+import os
 import re
+import sys
+import yaml
+
 from conda_verify.const import MAGIC_HEADERS, DLL_TYPES
 
 
@@ -14,6 +15,7 @@ class memoized(object):
     def __init__(self, func):
         self.func = func
         self.cache = {}
+
     def __call__(self, *args):
         if not isinstance(args, collections.Hashable):
             # uncacheable. a list, for instance.
@@ -103,7 +105,7 @@ def render_jinja2(recipe_dir):
 
 
 def render_metadata(recipe_dir, cfg):
-    meta_path = join(recipe_dir, 'meta.yaml')
+    meta_path = os.path.join(recipe_dir, 'meta.yaml')
     with open(meta_path, 'rb') as fi:
         data = fi.read()
     if b'{{' in data:
@@ -160,14 +162,9 @@ def get_bad_seq(s):
 def all_ascii(data, allow_CR=False):
     newline = [10] # LF
     if allow_CR:
-        newline.append(13) # CF
+        newline.append(13) # CR
     for c in data:
         n = ord(c) if sys.version_info[0] == 2 else c
         if not (n in newline or 32 <= n < 127):
             return False
     return True
-
-
-if __name__ == '__main__':
-    print(sys.version)
-    print(all_ascii(b'Hello\x00'), all_ascii(b"Hello World!"))

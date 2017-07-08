@@ -25,16 +25,16 @@ def dist_fn(fn):
 class CondaPackageCheck(object):
     def __init__(self, path, verbose=False):
         self.verbose = verbose
-        self.t = tarfile.open(path)
+        self.archive = tarfile.open(path)
         self.dist = dist_fn(basename(path))
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
-        self.paths = set(m.path for m in self.t.getmembers())
-        self.index = self.t.extractfile('info/index.json').read()
+        self.paths = set(m.path for m in self.archive.getmembers())
+        self.index = self.archive.extractfile('info/index.json').read()
         self.info = json.loads(self.index.decode('utf-8'))
         self.win_pkg = bool(self.info['platform'] == 'win')
 
     def check_duplicate_members(self):
-        if len(self.t.getmembers()) != len(self.paths):
+        if len(self.archive.getmembers()) != len(self.paths):
             raise PackageError("duplicate members")
 
     def check_index_encoding(self):
@@ -42,13 +42,13 @@ class CondaPackageCheck(object):
             raise PackageError("non-ASCII in: info/index.json")
 
     def check_members(self):
-        for m in self.t.getmembers():
+        for m in self.archive.getmembers():
             path = m.path
             if not all_ascii(path.encode('utf-8')):
                 raise PackageError("non-ASCII path: %r" % path)
 
     def info_files(self):
-        raw = self.t.extractfile('info/files').read()
+        raw = self.archive.extractfile('info/files').read()
         if not all_ascii(raw, self.win_pkg):
             raise PackageError("non-ASCII in: info/files")
         lista = [p.strip() for p in raw.decode('utf-8').splitlines()]
@@ -60,7 +60,7 @@ class CondaPackageCheck(object):
         if len(lista) != len(seta):
             raise PackageError('info/files: duplicates')
 
-        listb = [m.path for m in self.t.getmembers()
+        listb = [m.path for m in self.archive.getmembers()
                  if not (m.path.startswith('info/') or m.isdir())]
         setb = set(listb)
         if len(listb) != len(setb):
@@ -76,7 +76,7 @@ class CondaPackageCheck(object):
         raise PackageError("info/files")
 
     def no_hardlinks(self):
-        for m in self.t.getmembers():
+        for m in self.archive.getmembers():
             if m.islnk():
                 raise PackageError('hardlink found: %s' % m.path)
 
@@ -169,12 +169,12 @@ class CondaPackageCheck(object):
             raise PackageError("info/has_prefix: invalid mode")
 
     def has_prefix(self, pedantic=True):
-        for m in self.t.getmembers():
+        for m in self.archive.getmembers():
             if m.path != 'info/has_prefix':
                 continue
             if self.win_pkg:
                 print("WARNING: %s" % m.path)
-            data = self.t.extractfile(m.path).read()
+            data = self.archive.extractfile(m.path).read()
             if not all_ascii(data, self.win_pkg):
                 raise PackageError("non-ASCII in: info/has_prefix")
             for line in data.decode('utf-8').splitlines():
@@ -209,12 +209,12 @@ class CondaPackageCheck(object):
     def no_easy_install_script(self, pedantic=True):
         if not pedantic:
             return
-        for m in self.t.getmembers():
+        for m in self.archive.getmembers():
             if not m.name.startswith(('bin/', 'Scripts/')):
                 continue
             if not m.isfile():
                 continue
-            data = self.t.extractfile(m.path).read(1024)
+            data = self.archive.extractfile(m.path).read(1024)
             if b'EASY-INSTALL-SCRIPT' in data:
                 raise PackageError("easy install script found: %s" % m.name)
 
@@ -296,10 +296,10 @@ class CondaPackageCheck(object):
         if arch not in ('x86', 'x86_64'):
             raise PackageError("Unrecognized Windows architecture: %s" %
                                arch)
-        for m in self.t.getmembers():
+        for m in self.archive.getmembers():
             if not m.name.lower().endswith(('.exe', '.dll')):
                 continue
-            data = self.t.extractfile(m.path).read(4096)
+            data = self.archive.extractfile(m.path).read(4096)
             tp = get_object_type(data)
             if ((arch == 'x86' and tp != 'DLL I386') or
                 (arch == 'x86_64' and tp != 'DLL AMD64')):

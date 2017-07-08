@@ -26,7 +26,7 @@ def verify_conda_package(path_to_package=None, verbose=True, **kwargs):
     package_check.no_easy_install_script(pedantic)
     package_check.no_pth(pedantic)
     package_check.check_windows_arch()
-    package_check.t.close()
+    package_check.archive.close()
 
 
 def verify_conda_recipe(rendered_meta=None, recipe_dir=None, **kwargs):

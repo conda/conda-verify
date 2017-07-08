@@ -12,27 +12,28 @@ from conda_verify.exceptions import PackageError, RecipeError
 from conda_verify.utils import all_ascii, get_bad_seq, get_field, get_object_type
 
 
-def dist_fn(fn):
-    seq = get_bad_seq(fn)
-    if seq:
-        raise PackageError("'%s' not allowed in file name '%s'" % (seq, fn))
-    if fn.endswith('.tar.bz2'):
-        return fn[:-8]
-    if fn.endswith('.tar'):
-        return fn[:-4]
-    raise PackageError("did not expect filename: %s" % fn)
-
-
 class CondaPackageCheck(object):
     def __init__(self, path, verbose=False):
+        self.path = path
         self.verbose = verbose
-        self.archive = tarfile.open(path)
-        self.dist = dist_fn(os.path.basename(path))
+        self.archive = tarfile.open(self.path)
+        self.dist = self.check_package_name(self.path)
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
         self.paths = set(m.path for m in self.archive.getmembers())
         self.index = self.archive.extractfile('info/index.json').read()
         self.info = json.loads(self.index.decode('utf-8'))
         self.win_pkg = bool(self.info['platform'] == 'win')
+
+    def check_package_name(self, path):
+        path = os.path.basename(path)
+        seq = get_bad_seq(path)
+        if seq:
+            raise PackageError("'%s' not allowed in file name '%s'" % (seq, path))
+        if path.endswith('.tar.bz2'):
+            return path[:-8]
+        elif path.endswith('.tar'):
+            return path[:-4]
+        raise PackageError("did not expect filename: %s" % path)
 
     def check_duplicate_members(self):
         if len(self.archive.getmembers()) != len(self.paths):

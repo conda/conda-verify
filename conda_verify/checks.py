@@ -1,14 +1,15 @@
-import re
-import os
 import json
-import tarfile
+import os
+import re
 import shlex
-from os.path import join, isfile, basename, getsize
-from conda_verify.const import LICENSE_FAMILIES, FIELDS
-from conda_verify.common import (check_build_string, check_specs, check_build_number,
-                                 check_name, check_version, get_python_version_specs)
-from conda_verify.utils import all_ascii, get_bad_seq, get_field, get_object_type
+import tarfile
+
+from conda_verify.common import (check_build_number, check_build_string,
+                                 check_name, check_specs, check_version,
+                                 get_python_version_specs)
+from conda_verify.const import FIELDS, LICENSE_FAMILIES
 from conda_verify.exceptions import PackageError, RecipeError
+from conda_verify.utils import all_ascii, get_bad_seq, get_field, get_object_type
 
 
 def dist_fn(fn):
@@ -26,7 +27,7 @@ class CondaPackageCheck(object):
     def __init__(self, path, verbose=False):
         self.verbose = verbose
         self.archive = tarfile.open(path)
-        self.dist = dist_fn(basename(path))
+        self.dist = dist_fn(os.path.basename(path))
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
         self.paths = set(m.path for m in self.archive.getmembers())
         self.index = self.archive.extractfile('info/index.json').read()
@@ -460,8 +461,8 @@ class CondaRecipeCheck(object):
             for fn in flst:
                 if fn.startswith('..'):
                     raise RecipeError("path outsite recipe: %s" % fn)
-                path = join(self.recipe_dir, fn)
-                if isfile(path):
+                path = os.path.join(self.recipe_dir, fn)
+                if os.path.isfile(path):
                     continue
                 raise RecipeError("no such file '%s'" % path)
 
@@ -474,15 +475,15 @@ class CondaRecipeCheck(object):
         for root, unused_dirs, files in os.walk(recipe_dir):
             for fn in files:
                 fn_lower = fn.lower()
-                path = join(root, fn)
+                path = os.path.join(root, fn)
                 # only allow small archives for testing
                 if (fn_lower.endswith(('.bz2', '.gz')) and
-                            getsize(path) > 512):
+                            os.path.getsize(path) > 512):
                     raise RecipeError("found: %s (too large)" % fn)
                 if fn_lower.endswith(disallowed_extensions):
                     raise RecipeError("found: %s" % fn)
 
-        if basename(recipe_dir) == 'icu':
+        if os.path.basename(recipe_dir) == 'icu':
             return
 
         # check total size od recipe directory (recursively)
@@ -494,5 +495,5 @@ class CondaRecipeCheck(object):
 
     @staticmethod
     def dir_size(dir_path):
-        return sum(sum(getsize(join(root, fn)) for fn in files)
+        return sum(sum(os.path.getsize(os.path.join(root, fn)) for fn in files)
                    for root, unused_dirs, files in os.walk(dir_path))

@@ -1,27 +1,50 @@
 # -*- coding: utf-8 -*-
-from conda_verify.package import (verify_package_files, verify_2to3, verify_post_link,
-                                  verify_pyc, verify_setup_files, verify_arch)
+from conda_verify.checks import CondaPackageCheck, CondaRecipeCheck
 
-from conda_verify.recipe import (verify_fields, verify_source, verify_requirements,
-                                 verify_about, verify_license_family, verify_files)
+
+def verify_conda_package(path_to_package=None, verbose=True, **kwargs):
+    pedantic = kwargs.get("pedantic") if "pedantic" in kwargs.keys() else True
+    package_check = CondaPackageCheck(path_to_package, verbose)
+    package_check.check_members()
+    package_check.info_files()
+    package_check.no_hardlinks()
+    package_check.not_allowed_files(pedantic)
+    package_check.index_json()
+    package_check.no_bat_and_exe()
+    package_check.list_packages()
+    package_check.has_prefix(pedantic)
+    package_check.menu_names(pedantic)
+    package_check.no_2to3_pickle()
+    package_check.warn_post_link()
+    package_check.warn_pyo()
+    package_check.pyc_files()
+    package_check.no_py_next_so()
+    package_check.no_pyc_in_stdlib()
+    package_check.no_setuptools()
+    package_check.no_easy_install_script(pedantic)
+    package_check.no_pth(pedantic)
+    package_check.check_windows_arch()
+    package_check.t.close()
+
+
+def verify_conda_recipe(rendered_meta=None, recipe_dir=None, **kwargs):
+    recipe_check = CondaRecipeCheck(rendered_meta, recipe_dir)
+    pedantic = kwargs.get("pedantic") if "pedantic" in kwargs.keys() else True
+    recipe_check.check_fields(pedantic)
+    recipe_check.check_source()
+    recipe_check.check_requirements()
+    recipe_check.validate_files()
+    recipe_check.check_about(pedantic)
+    recipe_check.check_license_family(pedantic)
+    recipe_check.check_dir_content()
 
 
 class Verify(object):
     def __init__(self):
         pass
 
-    def verify_recipe(self, run_scripts=None, ignore_scripts=None, **kwargs):
-        verify_fields(**kwargs)
-        verify_source(**kwargs)
-        verify_requirements(**kwargs)
-        verify_about(**kwargs)
-        verify_license_family(**kwargs)
-        verify_files(**kwargs)
-
     def verify_package(self, run_scripts=None, ignore_scripts=None, **kwargs):
-        verify_package_files(**kwargs)
-        verify_2to3(**kwargs)
-        verify_post_link(**kwargs)
-        verify_pyc(**kwargs)
-        verify_setup_files(**kwargs)
-        verify_arch(**kwargs)
+        verify_conda_package(**kwargs)
+
+    def verify_recipe(self, run_scripts=None, ignore_scripts=None, **kwargs):
+        verify_conda_recipe(**kwargs)

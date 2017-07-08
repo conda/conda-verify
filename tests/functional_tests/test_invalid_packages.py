@@ -399,3 +399,13 @@ def test_invalid_easy_install_file(package_dir, verifier, capfd):
 
     assert ("PackageError: "
             "easy-install.pth file not allowed" in str(excinfo))
+
+
+def test_empty_tar(package_dir, verifier):
+    package = os.path.join(package_dir, 'testfile-0.0.38-py36_0.tar')
+
+    with pytest.raises(KeyError) as excinfo:
+        verifier.verify_package(pedantic=False, path_to_package=package,
+                                verbose=True)
+
+    assert "not found" in str(excinfo)

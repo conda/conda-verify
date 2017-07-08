@@ -5,6 +5,8 @@ from conda_verify.checks import CondaPackageCheck, CondaRecipeCheck
 def verify_conda_package(path_to_package=None, verbose=True, **kwargs):
     pedantic = kwargs.get("pedantic") if "pedantic" in kwargs.keys() else True
     package_check = CondaPackageCheck(path_to_package, verbose)
+    package_check.check_duplicate_members()
+    package_check.check_index_encoding()
     package_check.check_members()
     package_check.info_files()
     package_check.no_hardlinks()

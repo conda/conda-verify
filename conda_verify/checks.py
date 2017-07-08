@@ -28,14 +28,17 @@ class CondaPackageCheck(object):
         self.t = tarfile.open(path)
         self.dist = dist_fn(basename(path))
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
-        paths = [m.path for m in self.t.getmembers()]
-        self.paths = set(paths)
-        if len(paths) != len(self.paths):
-            raise PackageError("duplicate members")
-        raw = self.t.extractfile('info/index.json').read()
-        self.info = json.loads(raw.decode('utf-8'))
+        self.paths = set(m.path for m in self.t.getmembers())
+        self.index = self.t.extractfile('info/index.json').read()
+        self.info = json.loads(self.index.decode('utf-8'))
         self.win_pkg = bool(self.info['platform'] == 'win')
-        if not all_ascii(raw, self.win_pkg):
+
+    def check_duplicate_members(self):
+        if len(self.t.getmembers()) != len(self.paths):
+            raise PackageError("duplicate members")
+
+    def check_index_encoding(self):
+        if not all_ascii(self.index, self.win_pkg):
             raise PackageError("non-ASCII in: info/index.json")
 
     def check_members(self):
@@ -350,8 +353,8 @@ class CondaRecipeCheck(object):
         self.ver_spec_pat = re.compile(r'[\w\.,=!<>\*]+$')
         self.url_pat = re.compile(r'(ftp|http(s)?)://')
         self.hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
-            'sha1': re.compile(r'[a-f0-9]{40}$'),
-            'sha256': re.compile(r'[a-f0-9]{64}$')}
+                         'sha1': re.compile(r'[a-f0-9]{40}$'),
+                         'sha256': re.compile(r'[a-f0-9]{64}$')}
 
     def check_fields(self, pedantic=True):
         meta = self.meta

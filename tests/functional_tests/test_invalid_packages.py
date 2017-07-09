@@ -409,3 +409,44 @@ def test_empty_tar(package_dir, verifier):
                                 verbose=True)
 
     assert "not found" in str(excinfo)
+
+
+def test_non_ascii_path(package_dir, verifier):
+    package = os.path.join(package_dir, 'testfile-0.0.39-py36_0.tar.bz2')
+
+    with pytest.raises(PackageError) as excinfo:
+        verifier.verify_package(pedantic=False, path_to_package=package,
+                                verbose=True)
+
+    assert "PackageError: non-ASCII path" in str(excinfo)
+
+
+def test_ascii_in_files_file(package_dir, verifier):
+    package = os.path.join(package_dir, 'testfile-0.0.40-py36_0.tar.bz2')
+
+    with pytest.raises(PackageError) as excinfo:
+        verifier.verify_package(pedantic=False, path_to_package=package,
+                                verbose=True)
+
+    assert "PackageError: non-ASCII in: info/files" in str(excinfo)
+
+
+def test_missing_depends_key(package_dir, verifier):
+    package = os.path.join(package_dir, 'testfile-0.0.41-py36_0.tar.bz2')
+
+    with pytest.raises(PackageError) as excinfo:
+        verifier.verify_package(pedantic=False, path_to_package=package,
+                                verbose=True)
+
+    assert ("PackageError: "
+            "info/index.json: key 'depends' missing" in str(excinfo))
+
+
+def test_invalid_license_family(package_dir, verifier):
+    package = os.path.join(package_dir, 'testfile-0.0.42-py36_0.tar.bz2')
+
+    with pytest.raises(PackageError) as excinfo:
+        verifier.verify_package(pedantic=True, path_to_package=package,
+                                verbose=True)
+
+    assert ("PackageError: wrong license family: FAKELICENSE" in str(excinfo))

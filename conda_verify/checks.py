@@ -65,8 +65,6 @@ class CondaPackageCheck(object):
         listb = [m.path for m in self.archive.getmembers()
                  if not (m.path.startswith('info/') or m.isdir())]
         setb = set(listb)
-        if len(listb) != len(setb):
-            raise PackageError("info_files: duplicate members")
 
         if seta == setb:
             return

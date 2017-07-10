@@ -2,6 +2,7 @@ import json
 import os
 import re
 import shlex
+import sys
 import tarfile
 
 from conda_verify.common import (check_build_number, check_build_string,
@@ -45,9 +46,13 @@ class CondaPackageCheck(object):
 
     def check_members(self):
         for m in self.archive.getmembers():
-            path = m.path
-            if not all_ascii(path.encode('utf-8')):
-                raise PackageError("non-ASCII path: %r" % path)
+            if sys.version_info.major == 2:
+                unicode_path = m.path.decode('utf-8')
+            else:
+                unicode_path = m.path.encode('utf-8')
+
+            if not all_ascii(unicode_path):
+                raise PackageError("non-ASCII path: %r" % m.path)
 
     def info_files(self):
         raw = self.archive.extractfile('info/files').read()

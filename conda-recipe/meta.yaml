@@ -14,7 +14,7 @@ requirements:
 
 
 build:
-  script: python setup.py install
+  script: pip install . --no-deps
 
 about:
   home: https://github.com/conda/conda-verify

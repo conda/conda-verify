@@ -81,7 +81,7 @@ def select_lines(data, namespace):
         m = sel_pat.match(line)
         if m:
             cond = m.group(2)
-            if eval(cond, namespace, {}):
+            if namespace.get(cond, {}) is True:
                 lines.append(m.group(1))
             continue
         lines.append(line)

@@ -25,7 +25,8 @@ class CondaPackageCheck(object):
         self.info = json.loads(self.index.decode('utf-8'))
         self.win_pkg = bool(self.info['platform'] == 'win')
 
-    def check_package_name(self, path):
+    @staticmethod
+    def check_package_name(path):
         path = os.path.basename(path)
         seq = get_bad_seq(path)
         if seq:

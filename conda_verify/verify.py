@@ -4,7 +4,8 @@ from conda_verify.checks import CondaPackageCheck, CondaRecipeCheck
 
 class Verify(object):
 
-    def verify_package(self, path_to_package=None, verbose=True, pedantic=False):
+    @staticmethod
+    def verify_package(path_to_package=None, verbose=True, pedantic=False):
         package_check = CondaPackageCheck(path_to_package, verbose)
         package_check.check_duplicate_members()
         package_check.check_index_encoding()
@@ -29,7 +30,8 @@ class Verify(object):
         package_check.check_windows_arch()
         package_check.archive.close()
 
-    def verify_recipe(self, rendered_meta=None, recipe_dir=None, pedantic=False):
+    @staticmethod
+    def verify_recipe(rendered_meta=None, recipe_dir=None, pedantic=False):
         recipe_check = CondaRecipeCheck(rendered_meta, recipe_dir)
         recipe_check.check_fields(pedantic)
         recipe_check.check_source()

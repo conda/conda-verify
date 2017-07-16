@@ -42,8 +42,7 @@ def ns_cfg(cfg):
     plat = cfg['plat']
     py = cfg['PY']
     np = cfg['NPY']
-    for x in py, np:
-        assert isinstance(x, int), x
+
     return dict(
         nomkl = False,
         debug = False,
@@ -81,7 +80,7 @@ def select_lines(data, namespace):
         m = sel_pat.match(line)
         if m:
             cond = m.group(2)
-            if namespace.get(cond, {}) is True:
+            if eval(cond, namespace, {}):
                 lines.append(m.group(1))
             continue
         lines.append(line)

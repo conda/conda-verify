@@ -15,5 +15,8 @@ requirements:
   build: python
   run: python
 
+about:
+  license: GPL3
+
 app:
   icon: icon_64x64.png

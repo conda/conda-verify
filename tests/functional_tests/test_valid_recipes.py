@@ -18,23 +18,11 @@ def verifier():
     return recipe_verifier
 
 
-def test_valid_recipe_named_icu(recipe_dir, verifier):
-    recipe = os.path.join(recipe_dir, 'icu')
-    metadata = utils.render_metadata(recipe, None)
-
-    try:
-        verifier.verify_recipe(pedantic=False, rendered_meta=metadata,
-                               recipe_dir=recipe)
-    except RecipeError as error:
-        pytest.fail(error)
-
-
 def test_valid_test_file(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'valid_test_file')
     metadata = utils.render_metadata(recipe, None)
 
     try:
-        verifier.verify_recipe(pedantic=False, rendered_meta=metadata,
-                               recipe_dir=recipe)
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
     except RecipeError as error:
         pytest.fail(error)

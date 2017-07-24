@@ -19,9 +19,6 @@ def cli():
                  help="on error exit",
                  action="store_true")
 
-    p.add_option('-p', "--pedantic",
-                 action="store_true")
-
     p.add_option('-q', "--quiet",
                  action="store_true")
 
@@ -43,8 +40,7 @@ def cli():
             for cfg in iter_cfgs():
                 meta = render_metadata(path, cfg)
                 try:
-                    verifier.verify_recipe(pedantic=opts.pedantic, rendered_meta=meta,
-                                           recipe_dir=path)
+                    verifier.verify_recipe(rendered_meta=meta, recipe_dir=path)
                 except RecipeError as e:
                     sys.stderr.write("RecipeError: %s\n" % e)
                     if opts.exit:
@@ -54,8 +50,7 @@ def cli():
             if verbose:
                 print("==> %s <==" % path)
             try:
-                verifier.verify_package(pedantic=opts.pedantic, path_to_package=path,
-                                        verbose=verbose)
+                verifier.verify_package(path_to_package=path, verbose=verbose)
             except PackageError as e:
                 sys.stderr.write("PackageError: %s\n" % e)
                 if opts.exit:

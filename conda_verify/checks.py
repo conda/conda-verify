@@ -86,7 +86,7 @@ class CondaPackageCheck(object):
             if m.islnk():
                 raise PackageError('hardlink found: %s' % m.path)
 
-    def not_allowed_files(self, pedantic=False):
+    def not_allowed_files(self):
         not_allowed = {'conda-meta', 'conda-bld',
                        'pkgs', 'pkgs32', 'envs'}
         not_allowed_dirs = tuple(x + '/' for x in not_allowed)
@@ -97,10 +97,11 @@ class CondaPackageCheck(object):
                     p.endswith('~')):
                 raise PackageError("directory or filename not allowed: "
                                    "%s" % p)
-            if pedantic and ('info/package_metadata.json' in p or 'info/link.json' in p) and self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
-                raise PackageError("file not allowed: %s" % p)
+            if 'info/package_metadata.json' in p or 'info/link.json' in p:
+                if self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
+                    raise PackageError("file not allowed: %s" % p)
 
-    def index_json(self, pedantic=False):
+    def index_json(self):
         for varname in 'name', 'version', 'build':
             if self.info[varname] != getattr(self, varname):
                 raise PackageError("info/index.json for %s: %r != %r" %
@@ -116,8 +117,7 @@ class CondaPackageCheck(object):
             check_version(self.info['version']),
             check_build_number(self.info['build_number']),
         ]
-        if pedantic:
-            lst.append(check_build_string(self.info['build']))
+        lst.append(check_build_string(self.info['build']))
         for res in lst:
             if res:
                 raise PackageError("info/index.json: %s" % res)
@@ -129,10 +129,9 @@ class CondaPackageCheck(object):
         if res:
             raise PackageError("info/index.json: %s" % res)
 
-        if pedantic:
-            lf = self.info.get('license_family', self.info.get('license'))
-            if lf not in LICENSE_FAMILIES:
-                raise PackageError("wrong license family: %s" % lf)
+        lf = self.info.get('license_family', self.info.get('license'))
+        if lf not in LICENSE_FAMILIES:
+            raise PackageError("wrong license family: %s" % lf)
 
     def no_bat_and_exe(self):
         bats = {p[:-4] for p in self.paths if p.endswith('.bat')}
@@ -141,7 +140,7 @@ class CondaPackageCheck(object):
         if both:
             raise PackageError("Both .bat and .exe files: %s" % both)
 
-    def _check_has_prefix_line(self, line, pedantic=True):
+    def _check_has_prefix_line(self, line):
         line = line.strip()
         try:
             placeholder, mode, f = [x.strip('"\'') for x in
@@ -159,22 +158,16 @@ class CondaPackageCheck(object):
             if self.win_pkg:
                 raise PackageError("binary placeholder not allowed on Windows")
 
-            if pedantic:
-                print("WARNING: info/has_prefix: binary replace mode: %s" % f)
-                return
             if len(placeholder) != 255:
                 msg = ("info/has_prefix: binary placeholder not "
                        "255 bytes, but: %d" % len(placeholder))
-                if pedantic:
-                    raise PackageError(msg)
-                else:
-                    print("Warning: %s" % msg)
+                raise PackageError(msg)
         elif mode == 'text':
             pass
         else:
             raise PackageError("info/has_prefix: invalid mode")
 
-    def has_prefix(self, pedantic=True):
+    def has_prefix(self):
         for m in self.archive.getmembers():
             if m.path != 'info/has_prefix':
                 continue
@@ -184,7 +177,7 @@ class CondaPackageCheck(object):
             if not all_ascii(data, self.win_pkg):
                 raise PackageError("non-ASCII in: info/has_prefix")
             for line in data.decode('utf-8').splitlines():
-                self._check_has_prefix_line(line, pedantic=pedantic)
+                self._check_has_prefix_line(line)
 
     def warn_post_link(self):
         for p in self.paths:
@@ -212,9 +205,7 @@ class CondaPackageCheck(object):
                     p.startswith('Scripts/easy_install')):
                 raise PackageError("file '%s' not allowed" % p)
 
-    def no_easy_install_script(self, pedantic=True):
-        if not pedantic:
-            return
+    def no_easy_install_script(self):
         for m in self.archive.getmembers():
             if not m.name.startswith(('bin/', 'Scripts/')):
                 continue
@@ -224,12 +215,10 @@ class CondaPackageCheck(object):
             if b'EASY-INSTALL-SCRIPT' in data:
                 raise PackageError("easy install script found: %s" % m.name)
 
-    def no_pth(self, pedantic=True):
+    def no_pth(self):
         for p in self.paths:
-            if pedantic and p.endswith('-nspkg.pth'):
-                raise PackageError("found namespace .pth file '%s'" % p)
             if p.endswith('.pth'):
-                print("WARNING: .pth file: %s" % p)
+                raise PackageError("found namespace .pth file '%s'" % p)
 
     def warn_pyo(self):
         if self.name == 'python':
@@ -275,9 +264,7 @@ class CondaPackageCheck(object):
                 if not self.verbose:
                     return
 
-    def menu_names(self, pedantic=False):
-        if not pedantic:
-            return
+    def menu_names(self):
         menu_json_files = []
         for p in self.paths:
             if p.startswith('Menu/') and p.endswith('.json'):
@@ -362,7 +349,7 @@ class CondaRecipeCheck(object):
                          'sha1': re.compile(r'[a-f0-9]{40}$'),
                          'sha256': re.compile(r'[a-f0-9]{64}$')}
 
-    def check_fields(self, pedantic=True):
+    def check_fields(self):
         meta = self.meta
         for section in meta:
             if section not in FIELDS:
@@ -371,7 +358,7 @@ class CondaRecipeCheck(object):
             if submeta is None:
                 submeta = {}
             for key in submeta:
-                if pedantic and key not in FIELDS[section]:
+                if key not in FIELDS[section]:
                     raise RecipeError("in section %r: unknown key %r" %
                                       (section, key))
 
@@ -382,9 +369,6 @@ class CondaRecipeCheck(object):
             ]:
             if res:
                 raise RecipeError(res)
-
-        if pedantic and str(get_field(meta, 'build/noarch')).lower() == 'python':
-            raise RecipeError("noarch python recipe not allowed in pedantic mode")
     
     def check_requirements(self):
         meta = self.meta
@@ -407,22 +391,18 @@ class CondaRecipeCheck(object):
         if not self.url_pat.match(url):
             raise RecipeError("not a valid URL: %s" % url)
 
-    def check_about(self, pedantic=True):
+    def check_about(self):
         meta = self.meta
         summary = get_field(meta, 'about/summary')
         if summary and len(summary) > 80:
             msg = "summary exceeds 80 characters"
-            if pedantic:
-                raise RecipeError(msg)
-            else:
-                print("Warning: %s" % msg)
+            raise RecipeError(msg)
 
         for field in ('about/home', 'about/dev_url', 'about/doc_url',
                       'about/license_url'):
             url = get_field(meta, field)
             if url:
                 self.check_url(url)
-        self.check_license_family(pedantic)
 
     def check_source(self):
         meta = self.meta
@@ -442,10 +422,8 @@ class CondaRecipeCheck(object):
         if git_url and (src.get('git_tag') and src.get('git_branch')):
             raise RecipeError("cannot specify both git_branch and git_tag")
 
-    def check_license_family(self, pedantic=True):
+    def check_license_family(self):
         meta = self.meta
-        if not pedantic:
-            return
         lf = get_field(meta, 'about/license_family',
                        get_field(meta, 'about/license'))
         if lf not in LICENSE_FAMILIES:
@@ -487,9 +465,6 @@ class CondaRecipeCheck(object):
                     raise RecipeError("found: %s (too large)" % fn)
                 if fn_lower.endswith(disallowed_extensions):
                     raise RecipeError("found: %s" % fn)
-
-        if os.path.basename(recipe_dir) == 'icu':
-            return
 
         # check total size od recipe directory (recursively)
         kb_size = self.dir_size(recipe_dir) / 1024

@@ -8,3 +8,6 @@ package:
 test:
   source_files:
     - test-data.txt
+
+about:
+  license: BSD

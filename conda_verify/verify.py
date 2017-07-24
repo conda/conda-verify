@@ -5,8 +5,8 @@ from conda_verify.checks import CondaPackageCheck, CondaRecipeCheck
 class Verify(object):
 
     @staticmethod
-    def verify_package(path_to_package=None, verbose=True):
-        package_check = CondaPackageCheck(path_to_package, verbose)
+    def verify_package(path_to_package=None):
+        package_check = CondaPackageCheck(path_to_package)
         package_check.check_duplicate_members()
         package_check.check_index_encoding()
         package_check.check_members()

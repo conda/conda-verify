@@ -15,19 +15,12 @@ def cli():
         description="tool for (passively) verifying conda recipes and conda "
                     "packages for the Anaconda distribution")
 
-    p.add_option('-e', "--exit",
-                 help="on error exit",
-                 action="store_true")
-
-    p.add_option('-q', "--quiet",
-                 action="store_true")
-
-    p.add_option('-V', '--version',
+    p.add_option('-v', '--version',
                  help="display the version being used and exit",
                  action="store_true")
 
     opts, args = p.parse_args()
-    verbose = not opts.quiet
+
     if opts.version:
         from conda_verify import __version__
         sys.exit('conda-verify {}' .format(__version__))
@@ -35,27 +28,17 @@ def cli():
     verifier = Verify()
     for path in args:
         if isfile(join(path, 'meta.yaml')):
-            if verbose:
-                print("==> %s <==" % path)
+            print("==> %s <==" % path)
             for cfg in iter_cfgs():
                 meta = render_metadata(path, cfg)
                 try:
                     verifier.verify_recipe(rendered_meta=meta, recipe_dir=path)
                 except RecipeError as e:
                     sys.stderr.write("RecipeError: %s\n" % e)
-                    if opts.exit:
-                        sys.exit(1)
 
         elif path.endswith('.tar.bz2'):
-            if verbose:
-                print("==> %s <==" % path)
+            print("==> %s <==" % path)
             try:
-                verifier.verify_package(path_to_package=path, verbose=verbose)
+                verifier.verify_package(path_to_package=path)
             except PackageError as e:
                 sys.stderr.write("PackageError: %s\n" % e)
-                if opts.exit:
-                    sys.exit(1)
-
-        else:
-            if verbose:
-                print("Ignoring: %s" % path)

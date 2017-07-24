@@ -14,9 +14,8 @@ from conda_verify.utils import all_ascii, get_bad_seq, get_field, get_object_typ
 
 
 class CondaPackageCheck(object):
-    def __init__(self, path, verbose=False):
+    def __init__(self, path):
         self.path = path
-        self.verbose = verbose
         self.archive = tarfile.open(self.path)
         self.dist = self.check_package_name(self.path)
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
@@ -261,8 +260,6 @@ class CondaPackageCheck(object):
                 continue
             if p.endswith('.py') and (p + 'c') not in self.paths:
                 print("WARNING: pyc missing for:", p)
-                if not self.verbose:
-                    return
 
     def menu_names(self):
         menu_json_files = []
@@ -324,9 +321,6 @@ class CondaPackageCheck(object):
             if '-' in fn or fn.endswith('.pyc'):
                 continue
             res.add(fn)
-        if self.verbose:
-            for x in res:
-                print('    %s' % x)
         for pkg_name in 'numpy', 'scipy':
             if self.name != pkg_name and pkg_name in res:
                 raise PackageError("found %s" % pkg_name)

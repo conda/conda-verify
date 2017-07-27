@@ -7,7 +7,7 @@ from conda_verify import __version__
 
 
 if sys.version_info.major == 2:
-    requirements = ['backports-functools-lru-cache']
+    requirements = ['backports.functools_lru_cache']
 else:
     requirements = []
 

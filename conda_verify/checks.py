@@ -8,7 +8,7 @@ import tarfile
 from conda_verify.common import (check_build_number, check_build_string,
                                  check_name, check_specs, check_version,
                                  get_python_version_specs)
-from conda_verify.const import FIELDS, LICENSE_FAMILIES
+from conda_verify.constants import FIELDS, LICENSE_FAMILIES
 from conda_verify.exceptions import PackageError, RecipeError
 from conda_verify.utils import all_ascii, get_bad_seq, get_field, get_object_type
 

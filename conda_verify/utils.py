@@ -4,7 +4,7 @@ import re
 import sys
 import yaml
 
-from conda_verify.const import MAGIC_HEADERS, DLL_TYPES
+from conda_verify.constants import MAGIC_HEADERS, DLL_TYPES
 
 
 class memoized(object):

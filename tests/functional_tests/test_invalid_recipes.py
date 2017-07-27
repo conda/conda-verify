@@ -3,7 +3,7 @@ import os
 import pytest
 
 from conda_verify import utilities
-from conda_verify.exceptions import RecipeError
+from conda_verify.errors import RecipeError
 from conda_verify.verify import Verify
 
 

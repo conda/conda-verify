@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from conda_verify.exceptions import PackageError
+from conda_verify.errors import PackageError
 from conda_verify.verify import Verify
 
 

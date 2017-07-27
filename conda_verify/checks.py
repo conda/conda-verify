@@ -7,7 +7,7 @@ import sys
 import tarfile
 
 from conda_verify.constants import FIELDS, LICENSE_FAMILIES
-from conda_verify.exceptions import PackageError, RecipeError
+from conda_verify.errors import PackageError, RecipeError
 from conda_verify.utilities import all_ascii, get_bad_seq, get_field, get_object_type
 
 

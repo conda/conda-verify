@@ -4,7 +4,7 @@ import sys
 from os.path import isfile, join
 from optparse import OptionParser
 
-from conda_verify.exceptions import RecipeError, PackageError
+from conda_verify.errors import RecipeError, PackageError
 from conda_verify.verify import Verify
 from conda_verify.utilities import render_metadata, iter_cfgs
 

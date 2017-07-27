@@ -1,6 +1,14 @@
 from collections import namedtuple
 
 
+class PackageError(Exception):
+    """Exception to be raised when user wants to exit on error."""
+
+
+class RecipeError(Exception):
+    """Exception to be raised when user wants to exit on error."""
+
+
 class Error(namedtuple('Error', ['file', 'line_number', 'code', 'message'])):
     """Error class creates error codes to be shown to the user."""
 

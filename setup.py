@@ -5,11 +5,11 @@ import sys
 
 from conda_verify import __version__
 
+
 if sys.version_info.major == 2:
     requirements = ['backports-functools-lru-cache']
 else:
     requirements = []
-
 
 setup(
     name="conda-verify",

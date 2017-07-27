@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 
-from conda_verify.utils import get_bad_seq
+from conda_verify.utilities import get_bad_seq
 
 
 name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')

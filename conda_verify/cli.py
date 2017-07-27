@@ -6,7 +6,7 @@ from optparse import OptionParser
 
 from conda_verify.exceptions import RecipeError, PackageError
 from conda_verify.verify import Verify
-from conda_verify.utils import render_metadata, iter_cfgs
+from conda_verify.utilities import render_metadata, iter_cfgs
 
 
 def cli():

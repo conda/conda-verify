@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from conda_verify import utils
+from conda_verify import utilities
 from conda_verify.exceptions import RecipeError
 from conda_verify.verify import Verify
 
@@ -20,7 +20,7 @@ def verifier():
 
 def test_valid_test_file(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'valid_test_file')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     try:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)

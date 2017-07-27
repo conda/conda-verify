@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from conda_verify import utils
+from conda_verify import utilities
 from conda_verify.exceptions import RecipeError
 from conda_verify.verify import Verify
 
@@ -20,7 +20,7 @@ def verifier():
 
 def test_invalid_package_field(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_package_field')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -30,7 +30,7 @@ def test_invalid_package_field(recipe_dir, verifier):
 
 def test_invalid_package_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_package_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -40,7 +40,7 @@ def test_invalid_package_field_key(recipe_dir, verifier):
 
 def test_invalid_source_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_source_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -50,7 +50,7 @@ def test_invalid_source_field_key(recipe_dir, verifier):
 
 def test_invalid_build_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_build_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -60,7 +60,7 @@ def test_invalid_build_field_key(recipe_dir, verifier):
 
 def test_invalid_requirements_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_requirements_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -71,7 +71,7 @@ def test_invalid_requirements_field_key(recipe_dir, verifier):
 
 def test_invalid_test_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_test_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -81,7 +81,7 @@ def test_invalid_test_field_key(recipe_dir, verifier):
 
 def test_invalid_about_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_about_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata,
@@ -92,7 +92,7 @@ def test_invalid_about_field_key(recipe_dir, verifier):
 
 def test_invalid_app_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_app_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -102,7 +102,7 @@ def test_invalid_app_field_key(recipe_dir, verifier):
 
 def test_invalid_extra_field_key(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_extra_field_key')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -112,7 +112,7 @@ def test_invalid_extra_field_key(recipe_dir, verifier):
 
 def test_no_package_name(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'no_package_name')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -122,7 +122,7 @@ def test_no_package_name(recipe_dir, verifier):
 
 def test_invalid_package_name(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_package_name')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -132,7 +132,7 @@ def test_invalid_package_name(recipe_dir, verifier):
 
 def test_invalid_package_sequence(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_package_sequence')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -142,7 +142,7 @@ def test_invalid_package_sequence(recipe_dir, verifier):
 
 def test_no_package_version(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'no_package_version')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -152,7 +152,7 @@ def test_no_package_version(recipe_dir, verifier):
 
 def test_invalid_package_version(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_package_version')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -162,7 +162,7 @@ def test_invalid_package_version(recipe_dir, verifier):
 
 def test_invalid_package_version_prefix(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_package_version_prefix')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -173,7 +173,7 @@ def test_invalid_package_version_prefix(recipe_dir, verifier):
 
 def test_invalid_package_version_sequence(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_package_version_sequence')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -183,7 +183,7 @@ def test_invalid_package_version_sequence(recipe_dir, verifier):
 
 def test_invalid_build_number(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_build_number')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -194,7 +194,7 @@ def test_invalid_build_number(recipe_dir, verifier):
 
 def test_invalid_build_number_negative(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_build_number_negative')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -205,7 +205,7 @@ def test_invalid_build_number_negative(recipe_dir, verifier):
 
 def test_invalid_build_requirement_name(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_build_requirement_name')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -217,7 +217,7 @@ def test_invalid_build_requirement_name(recipe_dir, verifier):
 def test_invalid_build_requirement_version_specification(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir,
                           'invalid_build_requirement_version_specification')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -229,7 +229,7 @@ def test_invalid_build_requirement_version_specification(recipe_dir, verifier):
 def test_invalid_run_requirement_version_specification(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir,
                           'invalid_run_requirement_version_specification')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -239,7 +239,7 @@ def test_invalid_run_requirement_version_specification(recipe_dir, verifier):
 
 def test_invalid_run_requirement_name(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_run_requirement_name')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -250,7 +250,7 @@ def test_invalid_run_requirement_name(recipe_dir, verifier):
 
 def test_invalid_source_url(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_source_url')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -260,7 +260,7 @@ def test_invalid_source_url(recipe_dir, verifier):
 
 def test_invalid_about_summary(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_about_summary')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -270,7 +270,7 @@ def test_invalid_about_summary(recipe_dir, verifier):
 
 def test_invalid_about_url(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_about_url')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -280,7 +280,7 @@ def test_invalid_about_url(recipe_dir, verifier):
 
 def test_invalid_source_hash(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_source_hash')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -290,7 +290,7 @@ def test_invalid_source_hash(recipe_dir, verifier):
 
 def test_invalid_source_giturl(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_source_giturl')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -301,7 +301,7 @@ def test_invalid_source_giturl(recipe_dir, verifier):
 
 def test_invalid_license_family(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_license_family')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -315,7 +315,7 @@ def test_invalid_license_family(recipe_dir, verifier, capfd):
 
 def test_invalid_test_files(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_test_files')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -325,7 +325,7 @@ def test_invalid_test_files(recipe_dir, verifier):
 
 def test_invalid_test_file_path(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_test_file_path')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -336,7 +336,7 @@ def test_invalid_test_file_path(recipe_dir, verifier):
 
 def test_invalid_dir_size(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_dir_size')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -346,7 +346,7 @@ def test_invalid_dir_size(recipe_dir, verifier):
 
 def test_invalid_dir_content(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_dir_content')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -356,7 +356,7 @@ def test_invalid_dir_content(recipe_dir, verifier):
 
 def test_invalid_dir_content_filesize(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'invalid_dir_content_filesize')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -366,7 +366,7 @@ def test_invalid_dir_content_filesize(recipe_dir, verifier):
 
 def test_duplicate_version_specifications(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'duplicate_version_specs')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
@@ -376,7 +376,7 @@ def test_duplicate_version_specifications(recipe_dir, verifier):
 
 def test_many_version_specifications(recipe_dir, verifier):
     recipe = os.path.join(recipe_dir, 'many_version_specs')
-    metadata = utils.render_metadata(recipe, None)
+    metadata = utilities.render_metadata(recipe, None)
 
     with pytest.raises(RecipeError) as excinfo:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)

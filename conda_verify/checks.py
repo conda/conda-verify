@@ -1,3 +1,4 @@
+from collections import defaultdict
 import json
 import os
 import re
@@ -5,16 +6,113 @@ import shlex
 import sys
 import tarfile
 
-from conda_verify.common import (check_build_number, check_build_string,
-                                 check_name, check_specs, check_version,
-                                 get_python_version_specs)
 from conda_verify.constants import FIELDS, LICENSE_FAMILIES
 from conda_verify.exceptions import PackageError, RecipeError
 from conda_verify.utilities import all_ascii, get_bad_seq, get_field, get_object_type
 
 
-class CondaPackageCheck(object):
+class CondaCheck(object):
+
+    def __init__(self):
+        self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
+        self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
+        self.version_pat = re.compile(r'[\w\.]+$')
+        self.ver_spec_pat = re.compile(r'[\w\.,=!<>\*]+$')
+
+    def check_name(self, name):
+        if not name:
+            return "package name missing"
+        name = str(name)
+        if not self.name_pat.match(name) or name.endswith(('.', '-', '_')):
+            return "invalid package name '%s'" % name
+        seq = get_bad_seq(name)
+        if seq:
+            return "'%s' is not allowed in package name: '%s'" % (seq, name)
+        return None
+
+    def check_version(self, ver):
+        if not ver:
+            return "package version missing"
+        ver = str(ver)
+        if not self.version_pat.match(ver):
+            return "invalid version '%s'" % ver
+        if ver.startswith(('_', '.')) or ver.endswith(('_', '.')):
+            return "version cannot start or end with '_' or '.': %s" % ver
+        seq = get_bad_seq(ver)
+        if seq:
+            return "'%s' not allowed in version '%s'" % (seq, ver)
+        return None
+
+    def check_build_string(self, build):
+        build = str(build)
+        if not self.version_pat.match(build):
+            return "invalid build string '%s'" % build
+        if self.hash_pat.search(build):
+            return "hashes not allowed in build string '%s'" % build
+        return None
+
+    def check_spec(self, spec):
+        if not spec:
+            return "spec missing"
+        spec = str(spec)
+        parts = spec.split()
+        nparts = len(parts)
+        if nparts == 0:
+            return "empty spec '%s'" % spec
+        if not self.name_pat.match(parts[0]):
+            return "invalid name spec '%s'" % spec
+        if nparts >= 2 and not self.ver_spec_pat.match(parts[1]):
+            return "invalid version spec '%s'" % spec
+        if nparts == 3 and not self.version_pat.match(parts[1]):
+            return "invalid (pure) version spec '%s'" % spec
+        if len(parts) > 3:
+            return "invalid spec (too many parts) '%s'" % spec
+        return None
+
+    def check_specs(self, specs):
+        name_specs = defaultdict(list)
+        for spec in specs:
+            res = self.check_spec(spec)
+            if res:
+                return res
+            name_specs[spec.split()[0]].append(spec)
+        for name in name_specs:
+            specs = name_specs[name]
+            if len(specs) > 1:
+                return "duplicate specs: %s" % specs
+        return None
+
+    @staticmethod
+    def check_build_number(bn):
+        if not (isinstance(bn, int) and bn >= 0):
+            return "build number '%s' (not a positive integer)" % bn
+
+    @staticmethod
+    def get_python_version_specs(specs):
+        """
+        Return the Python version (as a string "x.y") from a given list of specs.
+        If Python is not a dependency, or if the version does not start with x.y,
+        None is returned
+        """
+        pat = re.compile(r'(\d\.\d)')
+        for spec in specs:
+            spec = str(spec)
+            parts = spec.split()
+            nparts = len(parts)
+            if nparts < 2:
+                continue
+            name, version = parts[:2]
+            if name != 'python':
+                continue
+            m = pat.match(version)
+            if m:
+                return m.group(1)
+        return None
+
+
+class CondaPackageCheck(CondaCheck):
     def __init__(self, path):
+        super(CondaPackageCheck, self).__init__()
         self.path = path
         self.archive = tarfile.open(self.path)
         self.dist = self.check_package_name(self.path)
@@ -112,11 +210,11 @@ class CondaPackageCheck(object):
                                bn)
 
         lst = [
-            check_name(self.info['name']),
-            check_version(self.info['version']),
-            check_build_number(self.info['build_number']),
+            self.check_name(self.info['name']),
+            self.check_version(self.info['version']),
+            self.check_build_number(self.info['build_number']),
         ]
-        lst.append(check_build_string(self.info['build']))
+        lst.append(self.check_build_string(self.info['build']))
         for res in lst:
             if res:
                 raise PackageError("info/index.json: %s" % res)
@@ -124,7 +222,7 @@ class CondaPackageCheck(object):
         depends = self.info.get('depends')
         if depends is None:
             raise PackageError("info/index.json: key 'depends' missing")
-        res = check_specs(self.info['depends'])
+        res = self.check_specs(self.info['depends'])
         if res:
             raise PackageError("info/index.json: %s" % res)
 
@@ -298,7 +396,7 @@ class CondaPackageCheck(object):
                                    (m.name, tp, arch))
 
     def get_sp_location(self):
-        py_ver = get_python_version_specs(self.info['depends'])
+        py_ver = self.get_python_version_specs(self.info['depends'])
         if py_ver is None:
             return '<not a Python package>'
 
@@ -331,8 +429,9 @@ class CondaPackageCheck(object):
                     raise PackageError("found %s" % x)
 
 
-class CondaRecipeCheck(object):
+class CondaRecipeCheck(CondaCheck):
     def __init__(self, meta, recipe_dir):
+        super(CondaRecipeCheck, self).__init__()
         self.meta = meta
         self.recipe_dir = recipe_dir
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
@@ -357,9 +456,9 @@ class CondaRecipeCheck(object):
                                       (section, key))
 
         for res in [
-            check_name(get_field(meta, 'package/name')),
-            check_version(get_field(meta, 'package/version')),
-            check_build_number(get_field(meta, 'build/number', 0)),
+            self.check_name(get_field(meta, 'package/name')),
+            self.check_version(get_field(meta, 'package/version')),
+            self.check_build_number(get_field(meta, 'build/number', 0)),
             ]:
             if res:
                 raise RecipeError(res)
@@ -377,7 +476,7 @@ class CondaRecipeCheck(object):
                     raise RecipeError("invalid build requirement name '%s'" % name)
         for field in 'requirements/build', 'requirements/run':
             specs = get_field(meta, field, [])
-            res = check_specs(specs)
+            res = self.check_specs(specs)
             if res:
                 raise RecipeError(res)
 

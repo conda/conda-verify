@@ -115,7 +115,7 @@ class CondaPackageCheck(CondaCheck):
         super(CondaPackageCheck, self).__init__()
         self.path = path
         self.archive = tarfile.open(self.path)
-        self.dist = self.check_package_name(self.path)
+        self.dist = self.retrieve_package_name(self.path)
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
         self.paths = set(m.path for m in self.archive.getmembers())
         self.index = self.archive.extractfile('info/index.json').read()
@@ -123,7 +123,7 @@ class CondaPackageCheck(CondaCheck):
         self.win_pkg = bool(self.info['platform'] == 'win')
 
     @staticmethod
-    def check_package_name(path):
+    def retrieve_package_name(path):
         path = os.path.basename(path)
         seq = get_bad_seq(path)
         if seq:
@@ -152,7 +152,7 @@ class CondaPackageCheck(CondaCheck):
             if not all_ascii(unicode_path):
                 raise PackageError("non-ASCII path: %r" % m.path)
 
-    def info_files(self):
+    def check_info_files(self):
         raw = self.archive.extractfile('info/files').read()
         if not all_ascii(raw, self.win_pkg):
             raise PackageError("non-ASCII in: info/files")
@@ -178,12 +178,12 @@ class CondaPackageCheck(CondaCheck):
                 print('%r not in tarball' % p)
         raise PackageError("info/files")
 
-    def no_hardlinks(self):
+    def check_for_hardlinks(self):
         for m in self.archive.getmembers():
             if m.islnk():
                 raise PackageError('hardlink found: %s' % m.path)
 
-    def not_allowed_files(self):
+    def check_for_unallowed_files(self):
         not_allowed = {'conda-meta', 'conda-bld',
                        'pkgs', 'pkgs32', 'envs'}
         not_allowed_dirs = tuple(x + '/' for x in not_allowed)
@@ -198,7 +198,7 @@ class CondaPackageCheck(CondaCheck):
                 if self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
                     raise PackageError("file not allowed: %s" % p)
 
-    def index_json(self):
+    def check_index_json(self):
         for varname in 'name', 'version', 'build':
             if self.info[varname] != getattr(self, varname):
                 raise PackageError("info/index.json for %s: %r != %r" %
@@ -230,7 +230,7 @@ class CondaPackageCheck(CondaCheck):
         if lf not in LICENSE_FAMILIES:
             raise PackageError("wrong license family: %s" % lf)
 
-    def no_bat_and_exe(self):
+    def check_for_bat_and_exe(self):
         bats = {p[:-4] for p in self.paths if p.endswith('.bat')}
         exes = {p[:-4] for p in self.paths if p.endswith('.exe')}
         both = bats & exes
@@ -264,7 +264,7 @@ class CondaPackageCheck(CondaCheck):
         else:
             raise PackageError("info/has_prefix: invalid mode")
 
-    def has_prefix(self):
+    def check_prefix_file(self):
         for m in self.archive.getmembers():
             if m.path != 'info/has_prefix':
                 continue
@@ -276,7 +276,7 @@ class CondaPackageCheck(CondaCheck):
             for line in data.decode('utf-8').splitlines():
                 self._check_has_prefix_line(line)
 
-    def warn_post_link(self):
+    def check_for_post_links(self):
         for p in self.paths:
             if p.endswith((
                     '-post-link.sh',  '-pre-link.sh',  '-pre-unlink.sh',
@@ -284,17 +284,8 @@ class CondaPackageCheck(CondaCheck):
                     )):
                 print("WARNING: %s" % p)
 
-    def no_setuptools(self):
+    def check_for_egg(self):
         for p in self.paths:
-            if p.endswith('easy-install.pth'):
-                raise PackageError("easy-install.pth file not allowed")
-
-        if self.name in ('setuptools', 'distribute'):
-            return
-        for p in self.paths:
-            if p.endswith(('MyPyPa-0.1.0-py2.5.egg',
-                           'mytestegg-1.0.0-py3.4.egg')):
-                continue
             if (p.endswith('.egg') or
                     'site-packages/pkg_resources' in p or
                     'site-packages/__pycache__/pkg_resources' in p or
@@ -302,7 +293,7 @@ class CondaPackageCheck(CondaCheck):
                     p.startswith('Scripts/easy_install')):
                 raise PackageError("file '%s' not allowed" % p)
 
-    def no_easy_install_script(self):
+    def check_for_easy_install_script(self):
         for m in self.archive.getmembers():
             if not m.name.startswith(('bin/', 'Scripts/')):
                 continue
@@ -312,19 +303,19 @@ class CondaPackageCheck(CondaCheck):
             if b'EASY-INSTALL-SCRIPT' in data:
                 raise PackageError("easy install script found: %s" % m.name)
 
-    def no_pth(self):
+    def check_for_pth(self):
         for p in self.paths:
             if p.endswith('.pth'):
                 raise PackageError("found namespace .pth file '%s'" % p)
 
-    def warn_pyo(self):
+    def check_for_pyo(self):
         if self.name == 'python':
             return
         for p in self.paths:
             if p.endswith('.pyo'):
                 print("WARNING: .pyo file: %s" % p)
 
-    def no_py_next_so(self):
+    def check_py_next_so(self):
         for p in self.paths:
             if p.endswith('.so'):
                 root = p[:-3]
@@ -336,21 +327,21 @@ class CondaPackageCheck(CondaCheck):
                 if root + ext in self.paths:
                     print("WARNING: %s next to: %s" % (ext, p))
 
-    def no_pyc_in_stdlib(self):
+    def check_for_pyc_in_stdlib(self):
         if self.name in {'python', 'scons', 'conda-build'}:
             return
         for p in self.paths:
             if p.endswith('.pyc') and not 'site-packages' in p:
                 raise PackageError(".pyc found in stdlib: %s" % p)
 
-    def no_2to3_pickle(self):
+    def check_for_2to3_pickle(self):
         if self.name == 'python':
             return
         for p in self.paths:
             if ('lib2to3' in p and p.endswith('.pickle')):
                 raise PackageError("found lib2to3 .pickle: %s" % p)
 
-    def pyc_files(self):
+    def check_pyc_files(self):
         if 'py3' in self.build:
             return
         for p in self.paths:
@@ -359,7 +350,7 @@ class CondaPackageCheck(CondaCheck):
             if p.endswith('.py') and (p + 'c') not in self.paths:
                 print("WARNING: pyc missing for:", p)
 
-    def menu_names(self):
+    def check_menu_names(self):
         menu_json_files = []
         for p in self.paths:
             if p.startswith('Menu/') and p.endswith('.json'):
@@ -405,7 +396,7 @@ class CondaPackageCheck(CondaCheck):
         else:
             return 'lib/python%s/site-packages' % py_ver
 
-    def list_packages(self):
+    def check_site_packages(self):
         sp_location = self.get_sp_location()
         pat = re.compile(r'site-packages/([^/]+)')
         res = set()

@@ -149,3 +149,9 @@ def all_ascii(data, allow_CR=False):
         if not (n in newline or 32 <= n < 127):
             return False
     return True
+
+
+def ensure_list(argument):
+    if isinstance(argument, list):
+        return argument
+    return [argument]

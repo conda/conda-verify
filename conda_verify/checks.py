@@ -1,426 +1,271 @@
-from collections import defaultdict
 import json
 import os
 import re
-import shlex
 import sys
 import tarfile
 
+from conda_verify.errors import Error
 from conda_verify.constants import FIELDS, LICENSE_FAMILIES
-from conda_verify.errors import PackageError, RecipeError
-from conda_verify.utilities import all_ascii, get_bad_seq, get_field, get_object_type
+from conda_verify.utilities import all_ascii, get_bad_seq, get_object_type, ensure_list
 
 
-class CondaCheck(object):
-
-    def __init__(self):
-        self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
-        self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
-        self.version_pat = re.compile(r'[\w\.]+$')
-        self.ver_spec_pat = re.compile(r'[\w\.,=!<>\*]+$')
-
-    def check_name(self, name):
-        if not name:
-            return "package name missing"
-        name = str(name)
-        if not self.name_pat.match(name) or name.endswith(('.', '-', '_')):
-            return "invalid package name '%s'" % name
-        seq = get_bad_seq(name)
-        if seq:
-            return "'%s' is not allowed in package name: '%s'" % (seq, name)
-        return None
-
-    def check_version(self, ver):
-        if not ver:
-            return "package version missing"
-        ver = str(ver)
-        if not self.version_pat.match(ver):
-            return "invalid version '%s'" % ver
-        if ver.startswith(('_', '.')) or ver.endswith(('_', '.')):
-            return "version cannot start or end with '_' or '.': %s" % ver
-        seq = get_bad_seq(ver)
-        if seq:
-            return "'%s' not allowed in version '%s'" % (seq, ver)
-        return None
-
-    def check_build_string(self, build):
-        build = str(build)
-        if not self.version_pat.match(build):
-            return "invalid build string '%s'" % build
-        if self.hash_pat.search(build):
-            return "hashes not allowed in build string '%s'" % build
-        return None
-
-    def check_spec(self, spec):
-        if not spec:
-            return "spec missing"
-        spec = str(spec)
-        parts = spec.split()
-        nparts = len(parts)
-        if nparts == 0:
-            return "empty spec '%s'" % spec
-        if not self.name_pat.match(parts[0]):
-            return "invalid name spec '%s'" % spec
-        if nparts >= 2 and not self.ver_spec_pat.match(parts[1]):
-            return "invalid version spec '%s'" % spec
-        if nparts == 3 and not self.version_pat.match(parts[1]):
-            return "invalid (pure) version spec '%s'" % spec
-        if len(parts) > 3:
-            return "invalid spec (too many parts) '%s'" % spec
-        return None
-
-    def check_specs(self, specs):
-        name_specs = defaultdict(list)
-        for spec in specs:
-            res = self.check_spec(spec)
-            if res:
-                return res
-            name_specs[spec.split()[0]].append(spec)
-        for name in name_specs:
-            specs = name_specs[name]
-            if len(specs) > 1:
-                return "duplicate specs: %s" % specs
-        return None
-
-    @staticmethod
-    def check_build_number(bn):
-        if not (isinstance(bn, int) and bn >= 0):
-            return "build number '%s' (not a positive integer)" % bn
-
-    @staticmethod
-    def get_python_version_specs(specs):
-        """
-        Return the Python version (as a string "x.y") from a given list of specs.
-        If Python is not a dependency, or if the version does not start with x.y,
-        None is returned
-        """
-        pat = re.compile(r'(\d\.\d)')
-        for spec in specs:
-            spec = str(spec)
-            parts = spec.split()
-            nparts = len(parts)
-            if nparts < 2:
-                continue
-            name, version = parts[:2]
-            if name != 'python':
-                continue
-            m = pat.match(version)
-            if m:
-                return m.group(1)
-        return None
-
-
-class CondaPackageCheck(CondaCheck):
+class CondaPackageCheck(object):
     def __init__(self, path):
         super(CondaPackageCheck, self).__init__()
         self.path = path
         self.archive = tarfile.open(self.path)
         self.dist = self.retrieve_package_name(self.path)
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
-        self.paths = set(m.path for m in self.archive.getmembers())
+        self.paths = set(member.path for member in self.archive.getmembers())
         self.index = self.archive.extractfile('info/index.json').read()
         self.info = json.loads(self.index.decode('utf-8'))
+        self.files_file = self.archive.extractfile('info/files').read()
         self.win_pkg = bool(self.info['platform'] == 'win')
+        self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
+        self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
+        self.version_pat = re.compile(r'[\w\.]+$')
+        self.ver_spec_pat = re.compile(r'[\w\.,=!<>\*]+$')
 
     @staticmethod
     def retrieve_package_name(path):
         path = os.path.basename(path)
-        seq = get_bad_seq(path)
-        if seq:
-            raise PackageError("'%s' not allowed in file name '%s'" % (seq, path))
         if path.endswith('.tar.bz2'):
             return path[:-8]
         elif path.endswith('.tar'):
             return path[:-4]
-        raise PackageError("did not expect filename: %s" % path)
 
-    def check_duplicate_members(self):
-        if len(self.archive.getmembers()) != len(self.paths):
-            raise PackageError("duplicate members")
+    def check_package_name(self):
+        package_name = self.info.get('name')
+        if package_name is None:
+            return Error(self.path, 'C100', 'Missing package name in info/index.json')
+
+        if package_name != self.name:
+            return Error(self.path, 'C103', 'Found package name in info/index.json "{}" does not match filename "{}"' .format(package_name, self.name))
+
+        if not self.name_pat.match(package_name) or package_name.endswith(('.', '-', '_')):
+            return Error(self.path, 'C101', 'Found invalid package name in info/index.json')
+
+        seq = get_bad_seq(package_name)
+        if seq:
+            return Error(self.path, 'C102', 'Found invalid sequence {} in package in info/index.json' .format(seq))
+
+    def check_package_version(self):
+        package_version = str(self.info.get('version'))
+        if not package_version:
+            return Error(self.path, 'C103', 'Missing package version in info/index.json')
+        if not self.version_pat.match(package_version) or get_bad_seq(package_version):
+            return Error(self.path, 'C103', 'Found invalid version number in info/index.json')
+        if package_version != self.version:
+            return Error(self.path, 'C104', 'Found package version in info/index.json "{}" does not match filename version "{}"' .format(package_version, self.version))
+        if package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
+            return Error(self.path, 'C104', "Package version in info/index.json cannot start or end with '_' or '.'")
+
+    def check_build_number(self):
+        build_number = self.info.get('build_number')
+        if build_number is not None:
+            try:
+                int(build_number)
+            except ValueError:
+                return Error(self.path, 'C105', 'Build number in info/index.json must be an integer')
+
+            if build_number < 0:
+                return Error(self.path, 'C106', 'Build number in info/index.json cannot be a negative integer')
+
+    def check_build_string(self):
+        build_string = self.info.get('build')
+        if not self.version_pat.match(build_string):
+            return Error(self.path, 'C107', 'Found invalid build string "{}" in info/index.json' .format(build_string))
+        if build_string != self.build:
+            return Error(self.path, 'C106', 'Found build number in info/index.json "{}" does not match build number "{}" in filename' .format(build_string, self.build))
+    
+    def check_index_dependencies(self):
+        depends = self.info.get('depends')
+        if depends is None:
+            return Error(self.path, 'C108', 'Missing "depends" field in info/index.json')
+
+    def check_index_dependencies_specs(self):
+        dependencies = ensure_list(self.info.get('depends'))
+        if dependencies is not [None]:
+            for dependency in dependencies:
+                dependency_parts = dependency.split()
+                if len(dependency_parts) == 0:
+                    return Error(self.path, 'C109', 'Found empty dependencies in info/index.json')
+                elif len(dependency_parts) == 2 and not self.ver_spec_pat.match(dependency_parts[1]) or len(dependency_parts) > 3:
+                    return Error(self.path, 'C110', 'Found invalid dependency "{}" in info/index.json' .format(dependency))
+
+    def check_license_family(self):
+        license = self.info.get('license_family', self.info.get('license'))
+        if license not in LICENSE_FAMILIES:
+            return Error(self.path, 'C111', 'Found invalid license "{}" in info/index.json' .format(license))
 
     def check_index_encoding(self):
         if not all_ascii(self.index, self.win_pkg):
-            raise PackageError("non-ASCII in: info/index.json")
+            return Error(self.path, 'C112', 'Found non-ascii characters inside info/index.json')
+
+    def check_duplicate_members(self):
+        if len(self.archive.getmembers()) != len(self.paths):
+            return Error(self.path, 'C113', 'Found duplicate members inside tar archive')
 
     def check_members(self):
-        for m in self.archive.getmembers():
+        for member in self.archive.getmembers():
             if sys.version_info.major == 2:
-                unicode_path = m.path.decode('utf-8')
+                unicode_path = member.path.decode('utf-8')
             else:
-                unicode_path = m.path.encode('utf-8')
+                unicode_path = member.path.encode('utf-8')
 
             if not all_ascii(unicode_path):
-                raise PackageError("non-ASCII path: %r" % m.path)
+                return Error(self.path, 'C114', 'Found archive member names containing non-ascii characters')
 
-    def check_info_files(self):
-        raw = self.archive.extractfile('info/files').read()
-        if not all_ascii(raw, self.win_pkg):
-            raise PackageError("non-ASCII in: info/files")
-        lista = [p.strip() for p in raw.decode('utf-8').splitlines()]
-        for p in lista:
-            if p.startswith('info/'):
-                raise PackageError("Did not expect '%s' in info/files" % p)
+    def check_files_file_encoding(self):
+        if not all_ascii(self.files_file, self.win_pkg):
+            return Error(self.path, 'C116', 'Found filenames in info/files containing non-ascii characters.')
 
-        seta = set(lista)
-        if len(lista) != len(seta):
-            raise PackageError('info/files: duplicates')
+    def check_files_file_for_info(self):
+        filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
+        for filename in filenames:
+            if filename.startswith('info'):
+                return Error(self.path, 'C117', 'Found filenames in info/files that start with "info"')
 
-        listb = [m.path for m in self.archive.getmembers()
-                 if not (m.path.startswith('info/') or m.isdir())]
-        setb = set(listb)
+    def check_files_file_for_duplicates(self):
+        filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
+        if len(filenames) != len(set(filenames)):
+            return Error(self.path, 'C118', 'Found duplicate filenames in info/files')
 
-        if seta == setb:
-            return
-        for p in sorted(seta | setb):
-            if p not in seta:
-                print('%r not in info/files' % p)
-            if p not in setb:
-                print('%r not in tarball' % p)
-        raise PackageError("info/files")
+    def check_files_file_for_validity(self):
+        members = [member.path for member in self.archive.getmembers()
+                   if not member.isdir() and member.path != 'info/files']
+        filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
+
+        for filename in sorted(set(members).union(set(filenames))):
+            if filename not in members:
+                return Error(self.path, 'C119', 'Found filename in info/files missing from tar archive: {}' .format(filename))
+            elif filename not in filenames:
+                return Error(self.path, 'C120', 'Found filename in tar archive missing from info/files: {}' .format(filename))
 
     def check_for_hardlinks(self):
-        for m in self.archive.getmembers():
-            if m.islnk():
-                raise PackageError('hardlink found: %s' % m.path)
+        for member in self.archive.getmembers():
+            if member.islnk():
+                return Error(self.path, 'C121', 'Found hardlink {} in tar archive' .format(member.path))
 
     def check_for_unallowed_files(self):
-        not_allowed = {'conda-meta', 'conda-bld',
-                       'pkgs', 'pkgs32', 'envs'}
-        not_allowed_dirs = tuple(x + '/' for x in not_allowed)
-        for p in self.paths:
-            if (p.startswith(not_allowed_dirs) or
-                    p in not_allowed or
-                    p.endswith('/.DS_Store') or
-                    p.endswith('~')):
-                raise PackageError("directory or filename not allowed: "
-                                   "%s" % p)
-            if 'info/package_metadata.json' in p or 'info/link.json' in p:
+        unallowed_directories = {'conda-meta', 'conda-bld', 'pkgs', 'pkgs32', 'envs'}
+
+        for filepath in self.paths:
+            if filepath in unallowed_directories or filepath.endswith(('.DS_Store', '~')):
+                return Error(self.path, 'C122', 'Found unallowed file in tar archive: {}' .format(filepath))
+            
+    def check_for_noarch_info(self):
+        for filepath in self.paths:
+            if 'info/package_metadata.json' in filepath or 'info/link.json' in filepath:
                 if self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
-                    raise PackageError("file not allowed: %s" % p)
-
-    def check_index_json(self):
-        for varname in 'name', 'version', 'build':
-            if self.info[varname] != getattr(self, varname):
-                raise PackageError("info/index.json for %s: %r != %r" %
-                                   (varname, self.info[varname],
-                                    getattr(self, varname)))
-        bn = self.info['build_number']
-        if not isinstance(bn, int):
-            raise PackageError("info/index.json: invalid build_number: %s" %
-                               bn)
-
-        lst = [
-            self.check_name(self.info['name']),
-            self.check_version(self.info['version']),
-            self.check_build_number(self.info['build_number']),
-        ]
-        lst.append(self.check_build_string(self.info['build']))
-        for res in lst:
-            if res:
-                raise PackageError("info/index.json: %s" % res)
-
-        depends = self.info.get('depends')
-        if depends is None:
-            raise PackageError("info/index.json: key 'depends' missing")
-        res = self.check_specs(self.info['depends'])
-        if res:
-            raise PackageError("info/index.json: %s" % res)
-
-        lf = self.info.get('license_family', self.info.get('license'))
-        if lf not in LICENSE_FAMILIES:
-            raise PackageError("wrong license family: %s" % lf)
+                    return Error(self.path, 'C123', 'Found {} however package is not a noarch package' .format(filepath))
 
     def check_for_bat_and_exe(self):
-        bats = {p[:-4] for p in self.paths if p.endswith('.bat')}
-        exes = {p[:-4] for p in self.paths if p.endswith('.exe')}
-        both = bats & exes
-        if both:
-            raise PackageError("Both .bat and .exe files: %s" % both)
+        bat_files = [filepath for filepath in self.paths if filepath.endswith('.bat')]
+        exe_files = [filepath for filepath in self.paths if filepath.endswith('.exe')]
 
-    def _check_has_prefix_line(self, line):
-        line = line.strip()
-        try:
-            placeholder, mode, f = [x.strip('"\'') for x in
-                                    shlex.split(line, posix=False)]
-        except ValueError:
-            placeholder, mode, f = '/<dummy>/<placeholder>', 'text', line
-
-        if f not in self.paths:
-            raise PackageError("info/has_prefix: target '%s' not in "
-                               "package" % f)
-
-        if mode == 'binary':
-            if self.name == 'python':
-                raise PackageError("binary placeholder not allowed in Python")
-            if self.win_pkg:
-                raise PackageError("binary placeholder not allowed on Windows")
-
-            if len(placeholder) != 255:
-                msg = ("info/has_prefix: binary placeholder not "
-                       "255 bytes, but: %d" % len(placeholder))
-                raise PackageError(msg)
-        elif mode == 'text':
-            pass
-        else:
-            raise PackageError("info/has_prefix: invalid mode")
+        if len(bat_files) > 0 and len(exe_files) > 0:
+            return Error(self.path, 'C124', 'Found both .bat and .exe files in executable directory')
 
     def check_prefix_file(self):
-        for m in self.archive.getmembers():
-            if m.path != 'info/has_prefix':
-                continue
-            if self.win_pkg:
-                print("WARNING: %s" % m.path)
-            data = self.archive.extractfile(m.path).read()
-            if not all_ascii(data, self.win_pkg):
-                raise PackageError("non-ASCII in: info/has_prefix")
-            for line in data.decode('utf-8').splitlines():
-                self._check_has_prefix_line(line)
+        for member in self.archive.getmembers():
+            if member.path == 'info/has_prefix':
+                prefix_file = self.archive.extractfile(member.path).read()
+     
+                if not all_ascii(prefix_file, self.win_pkg):
+                    return Error(self.path, 'C125', 'Found non-ascii characters in info/has_prefix')
+               
+                for line in prefix_file.decode('utf-8').splitlines():
+                    line = line.strip()
+                    try:
+                        placeholder, mode, filename = line.split()
+                    except ValueError:
+                        placeholder, mode, filename = '/<dummy>/<placeholder>', 'text', line
+                    
+                    if filename not in self.paths:
+                        return Error(self.path, 'C126', 'Found filename in info/has_prefix not included in archive')
+
+                    if mode not in ['binary', 'text']:
+                        return Error(self.path, 'C127', 'Found invalid mode "{}" in info/has_prefix' .format(mode))
+
+                    if mode == 'binary':
+                        if self.name == 'python':
+                            return Error(self.path, 'C128', 'Binary placeholder found in info/has_prefix not allowed when building Python')
+                        elif self.win_pkg:
+                            return Error(self.path, 'C129', 'Binary placeholder found in info/has_prefix not allowed in Windows package')
+                        elif len(placeholder) != 255:
+                            return Error(self.path, 'C130', 'Binary placeholder "{}" found in info/has_prefix does not have a length of 255 bytes' .format(placeholder))
 
     def check_for_post_links(self):
-        for p in self.paths:
-            if p.endswith((
-                    '-post-link.sh',  '-pre-link.sh',  '-pre-unlink.sh',
-                    '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat',
-                    )):
-                print("WARNING: %s" % p)
+        for filepath in self.paths:
+            if filepath.endswith(('-post-link.sh',  '-pre-link.sh',  '-pre-unlink.sh',
+                                  '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat')):
+                return Error(self.path, 'C131', 'Found pre/post link file "{}" in archive' .format(filepath))
 
     def check_for_egg(self):
-        for p in self.paths:
-            if (p.endswith('.egg') or
-                    'site-packages/pkg_resources' in p or
-                    'site-packages/__pycache__/pkg_resources' in p or
-                    p.startswith('bin/easy_install') or
-                    p.startswith('Scripts/easy_install')):
-                raise PackageError("file '%s' not allowed" % p)
+        for filepath in self.paths:
+            if filepath.endswith('.egg'):
+                return Error(self.path, 'C132', 'Found egg file "{}" in archive' .format(filepath))
 
     def check_for_easy_install_script(self):
-        for m in self.archive.getmembers():
-            if not m.name.startswith(('bin/', 'Scripts/')):
-                continue
-            if not m.isfile():
-                continue
-            data = self.archive.extractfile(m.path).read(1024)
-            if b'EASY-INSTALL-SCRIPT' in data:
-                raise PackageError("easy install script found: %s" % m.name)
+        for filepath in self.paths:
+            if filepath.startswith(('bin/easy_install', 'Scripts/easy_install')):
+                return Error(self.path, 'C133', 'Found easy_install script "{}" in archive' .format(filepath))
 
-    def check_for_pth(self):
-        for p in self.paths:
-            if p.endswith('.pth'):
-                raise PackageError("found namespace .pth file '%s'" % p)
+    def check_for_pth_file(self):
+        for filepath in self.paths:
+            if filepath.endswith('.pth'):
+                return Error(self.path, 'C134', 'Found namespace file "{}" in archive' .format(filepath))
 
-    def check_for_pyo(self):
-        if self.name == 'python':
-            return
-        for p in self.paths:
-            if p.endswith('.pyo'):
-                print("WARNING: .pyo file: %s" % p)
+    def check_for_pyo_file(self):
+        for filepath in self.paths:
+            if filepath.endswith('.pyo') and self.name != 'python':
+                return Error(self.path, 'C135', 'Found pyo file "{}" in archive' .format(filepath))
 
-    def check_py_next_so(self):
-        for p in self.paths:
-            if p.endswith('.so'):
-                root = p[:-3]
-            elif p.endswith('.pyd'):
-                root = p[:-4]
-            else:
-                continue
-            for ext in '.py', '.pyc':
-                if root + ext in self.paths:
-                    print("WARNING: %s next to: %s" % (ext, p))
-
-    def check_for_pyc_in_stdlib(self):
-        if self.name in {'python', 'scons', 'conda-build'}:
-            return
-        for p in self.paths:
-            if p.endswith('.pyc') and not 'site-packages' in p:
-                raise PackageError(".pyc found in stdlib: %s" % p)
+    def check_for_pyc_in_site_packages(self):
+        for filepath in self.paths:
+            if filepath.endswith('.pyc') and 'site-packages' not in filepath:
+                return Error(self.path, 'C136', 'Found pyc file "{}" outside of site-packages directory' .format(filepath))
 
     def check_for_2to3_pickle(self):
-        if self.name == 'python':
-            return
-        for p in self.paths:
-            if ('lib2to3' in p and p.endswith('.pickle')):
-                raise PackageError("found lib2to3 .pickle: %s" % p)
+        for filepath in self.paths:
+            if 'lib2to3' in filepath and filepath.endswith('.pickle'):
+                return Error(self.path, 'C137', 'Found lib2to3 .pickle file "{}"' .format(filepath))
 
     def check_pyc_files(self):
-        if 'py3' in self.build:
-            return
-        for p in self.paths:
-            if ('/site-packages/' not in p) or ('/port_v3/' in p):
-                continue
-            if p.endswith('.py') and (p + 'c') not in self.paths:
-                print("WARNING: pyc missing for:", p)
+        for filepath in self.paths:
+            if '/site-packages/' in filepath:
+                if filepath.endswith('.py') and (filepath + 'c') not in self.paths:
+                    return Error(self.path, 'C138', 'Found python file "{}" without a corresponding pyc file' .format(filepath))
 
-    def check_menu_names(self):
-        menu_json_files = []
-        for p in self.paths:
-            if p.startswith('Menu/') and p.endswith('.json'):
-                menu_json_files.append(p)
-        if len(menu_json_files) == 0:
-            pass
-        elif len(menu_json_files) == 1:
-            fn = menu_json_files[0][5:]
-            if fn != '%s.json' % self.name:
-                raise PackageError("wrong Menu json file name: %s" % fn)
-        else:
-            raise PackageError("too many Menu json files: %r" %
-                               menu_json_files)
+    def check_menu_json_name(self):
+        menu_json_files = [filepath for filepath in self.paths
+                           if filepath.startswith('Menu/') and filepath.endswith('.json')]
+
+        if len(menu_json_files) == 1:
+            filename = menu_json_files[0]
+            if filename != '{}.json' .format(self.name):
+                return Error(self.path, 'C139', 'Found invalid Menu json file "{}"' .format(filename))
+        elif len(menu_json_files) > 1:
+            return Error(self.path, 'C140', 'Found more than one Menu json file')
 
     def check_windows_arch(self):
-        if self.name in ('python', 'conda-build', 'pip', 'xlwings',
-                         'phantomjs', 'qt', 'graphviz', 'nsis', 'swig'):
-            return
-        if not self.win_pkg:
-            return
-        arch = self.info['arch']
-        if arch not in ('x86', 'x86_64'):
-            raise PackageError("Unrecognized Windows architecture: %s" %
-                               arch)
-        for m in self.archive.getmembers():
-            if not m.name.lower().endswith(('.exe', '.dll')):
-                continue
-            data = self.archive.extractfile(m.path).read(4096)
-            tp = get_object_type(data)
-            if ((arch == 'x86' and tp != 'DLL I386') or
-                (arch == 'x86_64' and tp != 'DLL AMD64')):
-                raise PackageError("File %s has object type %s, but info/"
-                                   "index.json arch is %s" %
-                                   (m.name, tp, arch))
-
-    def get_sp_location(self):
-        py_ver = self.get_python_version_specs(self.info['depends'])
-        if py_ver is None:
-            return '<not a Python package>'
-
         if self.win_pkg:
-            return 'Lib/site-packages'
-        else:
-            return 'lib/python%s/site-packages' % py_ver
-
-    def check_site_packages(self):
-        sp_location = self.get_sp_location()
-        pat = re.compile(r'site-packages/([^/]+)')
-        res = set()
-        for p in self.paths:
-            m = pat.search(p)
-            if m is None:
-                continue
-            if not p.startswith(sp_location):
-                print("WARNING: found %s" % p)
-            fn = m.group(1)
-            if '-' in fn or fn.endswith('.pyc'):
-                continue
-            res.add(fn)
-        for pkg_name in 'numpy', 'scipy':
-            if self.name != pkg_name and pkg_name in res:
-                raise PackageError("found %s" % pkg_name)
-        if self.name not in ('setuptools', 'distribute', 'python'):
-            for x in ('pkg_resources.py', 'setuptools.pth', 'easy_install.py',
-                      'setuptools'):
-                if x in res:
-                    raise PackageError("found %s" % x)
+            arch = self.info['arch']
+            if arch not in ('x86', 'x86_64'):
+                return Error(self.path, 'C141', 'Found unrecognized Windows architecture "{}"' .format(arch))
+            
+            for member in self.archive.getmembers():
+                if member.path.endswith(('.exe', '.dll')):
+                    file_header = self.archive.extractfile(member.path).read(4096)
+                    file_object_type = get_object_type(file_header)
+                    if ((arch == 'x86' and file_object_type != 'DLL I386') or
+                        (arch == 'x86_64' and file_object_type != 'DLL AMD64')):
+                        
+                        return Error(self.path, 'C142', 'Found file "{}" with object type "{}" but with arch "{}"' .format(member.name, file_object_type, arch))
 
 
-class CondaRecipeCheck(CondaCheck):
+class CondaRecipeCheck(object):
     def __init__(self, meta, recipe_dir):
         super(CondaRecipeCheck, self).__init__()
         self.meta = meta
@@ -432,132 +277,133 @@ class CondaRecipeCheck(CondaCheck):
         self.hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
                          'sha1': re.compile(r'[a-f0-9]{40}$'),
                          'sha256': re.compile(r'[a-f0-9]{64}$')}
+    
+    def check_package_name(self):
+        package_name = self.meta.get('package', {}).get('name', '')
+        
+        if package_name == '':
+            return Error(self.meta, 'C201', 'Missing package name in meta.yaml')
+
+        if not self.name_pat.match(package_name) or package_name.endswith(('.', '-', '_')):
+            return Error(self.meta, 'C202', 'Found invalid package name "{}" in meta.yaml' .format(package_name))
+        
+        seq = get_bad_seq(package_name)
+        if seq:
+            return Error(self.meta, 'C203', 'Found invalid sequence "{}" in package name' .format(seq))
+
+    def check_package_version(self):
+        package_version = self.meta.get('package', {}).get('version', '')
+
+        if package_version == '':
+            return Error(self.meta, 'C204', 'Missing package version in meta.yaml')
+        
+        if not self.version_pat.match(package_version) or package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
+            return Error(self.meta, 'C205', 'Found invalid package version "{}" in meta.yaml' .format(package_version))
+    
+        seq = get_bad_seq(package_version)
+        if seq:
+            return Error(self.meta, 'C206', 'Found invalid sequence "{}" in package version' .format(seq))
+
+    def check_build_number(self):
+        build_number = self.meta.get('build', {}).get('number')
+
+        if build_number is not None:
+            try:
+                int(build_number)
+            except ValueError:
+                return Error(self.path, 'C105', 'Build number in info/index.json must be an integer')
+
+            if build_number < 0:
+                return Error(self.path, 'C106', 'Build number in info/index.json cannot be a negative integer')
 
     def check_fields(self):
-        meta = self.meta
-        for section in meta:
+        for section in self.meta:
             if section not in FIELDS:
-                raise RecipeError("Unknown section: %s" % section)
-            submeta = meta.get(section)
-            if submeta is None:
-                submeta = {}
-            for key in submeta:
-                if key not in FIELDS[section]:
-                    raise RecipeError("in section %r: unknown key %r" %
-                                      (section, key))
+                return Error(self.meta, 'C210', 'Found invalid section "{}"' .format(section))
 
-        for res in [
-            self.check_name(get_field(meta, 'package/name')),
-            self.check_version(get_field(meta, 'package/version')),
-            self.check_build_number(get_field(meta, 'build/number', 0)),
-            ]:
-            if res:
-                raise RecipeError(res)
+            for key in section:
+                if key not in FIELDS[section]:
+                    return Error(self.meta, 'C211', 'Found invalid field "{}" in section "{}"' .format(key, section))
     
     def check_requirements(self):
-        meta = self.meta
-        for req in (get_field(meta, 'requirements/build', []) +
-                    get_field(meta, 'requirements/run', [])):
-            parts = req.split()
-            name = parts[0]
-            if not self.name_pat.match(name):
-                if req in get_field(meta, 'requirements/run', []):
-                    raise RecipeError("invalid run requirement name '%s'" % name)
-                else:
-                    raise RecipeError("invalid build requirement name '%s'" % name)
-        for field in 'requirements/build', 'requirements/run':
-            specs = get_field(meta, field, [])
-            res = self.check_specs(specs)
-            if res:
-                raise RecipeError(res)
+        build_requirements = self.meta.get('requirements', {}).get('build', [])
+        run_requirements = self.meta.get('requirements', {}).get('run', [])
+        
+        for requirement in build_requirements + run_requirements:
+            requirement_parts = requirement.split()
+            requirement_name = requirement_parts[0]
 
-    def check_url(self, url):
-        if not self.url_pat.match(url):
-            raise RecipeError("not a valid URL: %s" % url)
+            if not self.name_pat.match(requirement_name):
+                if requirement in build_requirements:
+                    return Error(self.meta, 'C200', 'Found invalid build requirement "{}"' .format(requirement))
+                elif requirement in run_requirements:
+                    return Error(self.meta, 'C200', 'Found invalid run requirement "{}"' .format(requirement))
+   
+            if len(requirement_parts) == 0:
+                return Error(self.path, 'C209', 'Found empty dependencies in info/index.json')
+            elif len(requirement_parts) == 2 and not self.ver_spec_pat.match(requirement_parts[1]) or len(requirement_parts) > 3:
+                return Error(self.path, 'C210', 'Found invalid dependency "{}" in info/index.json' .format(requirement))
 
     def check_about(self):
-        meta = self.meta
-        summary = get_field(meta, 'about/summary')
-        if summary and len(summary) > 80:
-            msg = "summary exceeds 80 characters"
-            raise RecipeError(msg)
+        summary = self.meta.get('about', {}).get('summary')
 
-        for field in ('about/home', 'about/dev_url', 'about/doc_url',
-                      'about/license_url'):
-            url = get_field(meta, field)
-            if url:
-                self.check_url(url)
+        if summary is not None and len(summary) > 80:
+            return Error(self.meta, 'C220', 'Found summary with length greater than 80 characters')
+
+        home = self.meta.get('about', {}).get('home')
+        dev_url = self.meta.get('about', {}).get('dev_url')
+        doc_url = self.meta.get('about', {}).get('doc_url')
+        license_url = self.meta.get('about', {}).get('license_url')
+
+        for url in [home, dev_url, doc_url, license_url]:
+            if url is not None and not self.url_pat.match(url):
+                return Error(self.meta, 'C200', 'Found invalid URL "{}" in meta.yaml' .format(url))
 
     def check_source(self):
-        meta = self.meta
-        src = meta.get('source')
-        if not src:
-            return
-        url = src.get('url')
-        if url:
-            self.check_url(url)
+        source = self.meta.get('source')
+        url = source.get('url')
+        if url is not None:
+            if self.url_pat.match(url):
 
-            for ht in 'md5', 'sha1', 'sha256':
-                hexgigest = src.get(ht)
-                if hexgigest and not self.hash_pat[ht].match(hexgigest):
-                    raise RecipeError("invalid hash: %s" % hexgigest)
+                for hash_algorithm in ['md5', 'sha1', 'sha256']:
+                    hexdigest = source.get(hash_algorithm)
+                    if hexdigest is not None and not self.hash_pat[hash_algorithm].match(hexdigest):
+                        return Error(self.meta, 'C220', 'Found invalid hash "{}" in meta.yaml' .format(hexdigest))
 
-        git_url = src.get('git_url')
-        if git_url and (src.get('git_tag') and src.get('git_branch')):
-            raise RecipeError("cannot specify both git_branch and git_tag")
+            else:
+                return Error(self.meta, 'C220', 'Found invalid URL "{}" in meta.yaml' .format(url))
+        
+        git_url = source.get('git_url')
+        if git_url and (source.get('git_tag') and source.get('git_branch')):
+            return Error(self.meta, 'C221', 'Found both git_branch and git_tag in meta.yaml source field')
 
     def check_license_family(self):
-        meta = self.meta
-        lf = get_field(meta, 'about/license_family',
-                       get_field(meta, 'about/license'))
-        if lf not in LICENSE_FAMILIES:
-            print("""\
-        Error: license_family is invalid: %s
-        Note that about/license_family falls back to about/license.
-        Allowed license families are:""" % lf)
-            for x in LICENSE_FAMILIES:
-                print("  - %s" % x)
-            raise RecipeError("wrong license family")
+        license_family = (self.meta.get('about', {}).get('license_family',
+                          self.meta.get('about', {}).get('license')))
 
-    def validate_files(self):
-        meta = self.meta
-        for field in 'test/files', 'source/patches', 'test/source_files':
-            flst = get_field(meta, field)
-            if not flst:
-                continue
-            for fn in flst:
-                if fn.startswith('..'):
-                    raise RecipeError("path outsite recipe: %s" % fn)
-                path = os.path.join(self.recipe_dir, fn)
-                if os.path.isfile(path):
-                    continue
-                raise RecipeError("no such file '%s'" % path)
+        if license_family is not None and license_family not in LICENSE_FAMILIES:
+            return Error(self.meta, 'C200', 'Found invalid license family "{}"' .format(license_family))
+
+    def check_for_valid_files(self):
+        test_files = self.meta.get('test', {}).get('files', [])
+        test_source_files = self.meta.get('test', {}).get('source_files', [])
+        source_patches = self.meta.get('source', {}).get('patches', [])
+
+        for field in test_files + test_source_files + source_patches:
+            for filename in field:
+                filepath = os.path.join(self.recipe_dir, filename)
+                if filename.startswith('..'):
+                    return Error(self.meta, 'C200', 'Found file "{}" listed outside recipe directory' .format(filename))
+
+                if not os.path.isfile(filepath):
+                    return Error(self.meta, 'C200', 'Found file "{}" in meta.yaml that doesn\'t exist' .format(filename))
 
     def check_dir_content(self):
-        recipe_dir = self.recipe_dir
-        disallowed_extensions = (
-            '.tar', '.tar.gz', '.tar.bz2', '.tar.xz',
-            '.so', '.dylib', '.la', '.a', '.dll', '.pyd',
-        )
-        for root, unused_dirs, files in os.walk(recipe_dir):
-            for fn in files:
-                fn_lower = fn.lower()
-                path = os.path.join(root, fn)
-                # only allow small archives for testing
-                if (fn_lower.endswith(('.bz2', '.gz')) and
-                            os.path.getsize(path) > 512):
-                    raise RecipeError("found: %s (too large)" % fn)
-                if fn_lower.endswith(disallowed_extensions):
-                    raise RecipeError("found: %s" % fn)
+        disallowed_extensions = ('.tar', '.tar.gz', '.tar.bz2', '.tar.xz',
+                                 '.so', '.dylib', '.la', '.a', '.dll', '.pyd')
 
-        # check total size od recipe directory (recursively)
-        kb_size = self.dir_size(recipe_dir) / 1024
-        kb_limit = 512
-        if kb_size > kb_limit:
-            raise RecipeError("recipe too large: %d KB (limit %d KB)" %
-                              (kb_size, kb_limit))
-
-    @staticmethod
-    def dir_size(dir_path):
-        return sum(sum(os.path.getsize(os.path.join(root, fn)) for fn in files)
-                   for root, unused_dirs, files in os.walk(dir_path))
+        for dirpath, _, filenames in os.walk(self.recipe_dir):
+            for filename in filenames:
+                filepath = os.path.join(dirpath, filename)
+                if filepath.endswith(disallowed_extensions):
+                    return Error(self.meta, 'C200', 'Found disallowed file with extension "{}"' .format(filepath))

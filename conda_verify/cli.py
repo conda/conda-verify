@@ -1,10 +1,9 @@
-from __future__ import print_function, division, absolute_import
-
+import os
 import sys
-from os.path import isfile, join
+
 from optparse import OptionParser
 
-from conda_verify.errors import RecipeError, PackageError
+from conda_verify.errors import RecipeError
 from conda_verify.verify import Verify
 from conda_verify.utilities import render_metadata, iter_cfgs
 
@@ -27,7 +26,7 @@ def cli():
 
     verifier = Verify()
     for path in args:
-        if isfile(join(path, 'meta.yaml')):
+        if os.path.isfile(os.path.join(path, 'meta.yaml')):
             print("==> %s <==" % path)
             for cfg in iter_cfgs():
                 meta = render_metadata(path, cfg)
@@ -36,9 +35,6 @@ def cli():
                 except RecipeError as e:
                     sys.stderr.write("RecipeError: %s\n" % e)
 
-        elif path.endswith('.tar.bz2'):
-            print("==> %s <==" % path)
-            try:
-                verifier.verify_package(path_to_package=path)
-            except PackageError as e:
-                sys.stderr.write("PackageError: %s\n" % e)
+        elif path.endswith(('.tar.bz2', '.tar')):
+            print('Verifying {}...' .format(path))
+            verifier.verify_package(path_to_package=path)

@@ -24,13 +24,13 @@ FIELDS = {
 }
 
 MAGIC_HEADERS = {
-    '\xca\xfe\xba\xbe': 'MachO-universal',
-    '\xce\xfa\xed\xfe': 'MachO-i386',
-    '\xcf\xfa\xed\xfe': 'MachO-x86_64',
-    '\xfe\xed\xfa\xce': 'MachO-ppc',
-    '\xfe\xed\xfa\xcf': 'MachO-ppc64',
-    'MZ\x90\x00': 'DLL',
-    '\x7fELF': 'ELF',
+    b'\xca\xfe\xba\xbe': 'MachO-universal',
+    b'\xce\xfa\xed\xfe': 'MachO-i386',
+    b'\xcf\xfa\xed\xfe': 'MachO-x86_64',
+    b'\xfe\xed\xfa\xce': 'MachO-ppc',
+    b'\xfe\xed\xfa\xcf': 'MachO-ppc64',
+    b'MZ\x90\x00': 'DLL',
+    b'\x7fELF': 'ELF',
 }
 
 DLL_TYPES = {

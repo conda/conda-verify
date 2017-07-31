@@ -276,7 +276,7 @@ class CondaRecipeCheck(object):
         self.recipe_dir = recipe_dir
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.version_pat = re.compile(r'[\w\.]+$')
-        self.ver_spec_pat = re.compile(r'[\w\.,=!<>\*]+$')
+        self.ver_spec_pat = re.compile(r'^[\.,=!<>\*|]{1}[\.,=!<>\*]?$')
         self.url_pat = re.compile(r'(ftp|http(s)?)://')
         self.hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
                          'sha1': re.compile(r'[a-f0-9]{40}$'),
@@ -347,14 +347,21 @@ class CondaRecipeCheck(object):
    
             if len(requirement_parts) == 0:
                 return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in info/index.json')
-            elif len(requirement_parts) == 2 and not self.ver_spec_pat.match(requirement_parts[1]) or len(requirement_parts) > 3:
+
+            elif len(requirement_parts) >= 2 and not self.ver_spec_pat.match(requirement_parts[1]):
                 return Error(self.recipe_dir, 'C2114', 'Found invalid dependency "{}" in info/index.json' .format(requirement))
+
+        if len(build_requirements) != len(set(build_requirements)):
+            return Error(self.recipe_dir, 'C2115', 'Found duplicate build requirements: {}' .format(build_requirements))
+    
+        if len(run_requirements) != len(set(run_requirements)):
+            return Error(self.recipe_dir, 'C2116', 'Found duplicate run requirements: {}' .format(run_requirements))
 
     def check_about(self):
         summary = self.meta.get('about', {}).get('summary')
 
         if summary is not None and len(summary) > 80:
-            return Error(self.recipe_dir, 'C2115', 'Found summary with length greater than 80 characters')
+            return Error(self.recipe_dir, 'C2117', 'Found summary with length greater than 80 characters')
 
         home = self.meta.get('about', {}).get('home')
         dev_url = self.meta.get('about', {}).get('dev_url')
@@ -363,7 +370,7 @@ class CondaRecipeCheck(object):
 
         for url in [home, dev_url, doc_url, license_url]:
             if url is not None and not self.url_pat.match(url):
-                return Error(self.recipe_dir, 'C2116', 'Found invalid URL "{}" in meta.yaml' .format(url))
+                return Error(self.recipe_dir, 'C2118', 'Found invalid URL "{}" in meta.yaml' .format(url))
 
     def check_source(self):
         source = self.meta.get('source', {})
@@ -374,21 +381,21 @@ class CondaRecipeCheck(object):
                 for hash_algorithm in ['md5', 'sha1', 'sha256']:
                     hexdigest = source.get(hash_algorithm)
                     if hexdigest is not None and not self.hash_pat[hash_algorithm].match(hexdigest):
-                        return Error(self.recipe_dir, 'C2117', 'Found invalid hash "{}" in meta.yaml' .format(hexdigest))
+                        return Error(self.recipe_dir, 'C2119', 'Found invalid hash "{}" in meta.yaml' .format(hexdigest))
 
             else:
-                return Error(self.recipe_dir, 'C2118', 'Found invalid URL "{}" in meta.yaml' .format(url))
+                return Error(self.recipe_dir, 'C2120', 'Found invalid URL "{}" in meta.yaml' .format(url))
         
         git_url = source.get('git_url')
         if git_url and (source.get('git_tag') and source.get('git_branch')):
-            return Error(self.recipe_dir, 'C2119', 'Found both git_branch and git_tag in meta.yaml source field')
+            return Error(self.recipe_dir, 'C2121', 'Found both git_branch and git_tag in meta.yaml source field')
 
     def check_license_family(self):
         license_family = (self.meta.get('about', {}).get('license_family',
                           self.meta.get('about', {}).get('license')))
 
         if license_family is not None and license_family not in LICENSE_FAMILIES:
-            return Error(self.recipe_dir, 'C2120', 'Found invalid license family "{}"' .format(license_family))
+            return Error(self.recipe_dir, 'C2122', 'Found invalid license family "{}"' .format(license_family))
 
     def check_for_valid_files(self):
         test_files = self.meta.get('test', {}).get('files', [])
@@ -398,10 +405,10 @@ class CondaRecipeCheck(object):
         for filename in test_files + test_source_files + source_patches:
             filepath = os.path.join(self.recipe_dir, filename)
             if filename.startswith('..'):
-                return Error(self.recipe_dir, 'C2121', 'Found file "{}" listed outside recipe directory' .format(filename))
+                return Error(self.recipe_dir, 'C2123', 'Found file "{}" listed outside recipe directory' .format(filename))
 
             if not os.path.exists(filepath):
-                return Error(self.recipe_dir, 'C2122', 'Found file "{}" in meta.yaml that doesn\'t exist' .format(filename))
+                return Error(self.recipe_dir, 'C2124', 'Found file "{}" in meta.yaml that doesn\'t exist' .format(filename))
 
     def check_dir_content(self):
         disallowed_extensions = ('.tar', '.tar.gz', '.tar.bz2', '.tar.xz',
@@ -411,4 +418,4 @@ class CondaRecipeCheck(object):
             for filename in filenames:
                 filepath = os.path.join(dirpath, filename)
                 if filepath.endswith(disallowed_extensions):
-                    return Error(self.recipe_dir, 'C2123', 'Found disallowed file with extension "{}"' .format(filepath))
+                    return Error(self.recipe_dir, 'C2125', 'Found disallowed file with extension "{}"' .format(filepath))

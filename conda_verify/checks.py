@@ -93,20 +93,20 @@ class CondaPackageCheck(object):
                 if len(dependency_parts) == 0:
                     return Error(self.path, 'C1113', 'Found empty dependencies in info/index.json')
                 elif len(dependency_parts) == 2 and not self.ver_spec_pat.match(dependency_parts[1]) or len(dependency_parts) > 3:
-                    return Error(self.path, 'C1115', 'Found invalid dependency "{}" in info/index.json' .format(dependency))
+                    return Error(self.path, 'C1114', 'Found invalid dependency "{}" in info/index.json' .format(dependency))
 
     def check_license_family(self):
         license = self.info.get('license_family', self.info.get('license'))
         if license not in LICENSE_FAMILIES:
-            return Error(self.path, 'C1114', 'Found invalid license "{}" in info/index.json' .format(license))
+            return Error(self.path, 'C1115', 'Found invalid license "{}" in info/index.json' .format(license))
 
     def check_index_encoding(self):
         if not all_ascii(self.index, self.win_pkg):
-            return Error(self.path, 'C1115', 'Found non-ascii characters inside info/index.json')
+            return Error(self.path, 'C1116', 'Found non-ascii characters inside info/index.json')
 
     def check_duplicate_members(self):
         if len(self.archive.getmembers()) != len(self.paths):
-            return Error(self.path, 'C1116', 'Found duplicate members inside tar archive')
+            return Error(self.path, 'C1117', 'Found duplicate members inside tar archive')
 
     def check_members(self):
         for member in self.archive.getmembers():
@@ -116,22 +116,22 @@ class CondaPackageCheck(object):
                 unicode_path = member.path.encode('utf-8')
 
             if not all_ascii(unicode_path):
-                return Error(self.path, 'C1117', 'Found archive member names containing non-ascii characters')
+                return Error(self.path, 'C1118', 'Found archive member names containing non-ascii characters')
 
     def check_files_file_encoding(self):
         if not all_ascii(self.files_file, self.win_pkg):
-            return Error(self.path, 'C1118', 'Found filenames in info/files containing non-ascii characters')
+            return Error(self.path, 'C1119', 'Found filenames in info/files containing non-ascii characters')
 
     def check_files_file_for_info(self):
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
         for filename in filenames:
             if filename.startswith('info'):
-                return Error(self.path, 'C1119', 'Found filenames in info/files that start with "info"')
+                return Error(self.path, 'C1120', 'Found filenames in info/files that start with "info"')
 
     def check_files_file_for_duplicates(self):
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
         if len(filenames) != len(set(filenames)):
-            return Error(self.path, 'C1120', 'Found duplicate filenames in info/files')
+            return Error(self.path, 'C1121', 'Found duplicate filenames in info/files')
 
     def check_files_file_for_validity(self):
         members = [member.path for member in self.archive.getmembers()
@@ -141,34 +141,34 @@ class CondaPackageCheck(object):
 
         for filename in sorted(set(members).union(set(filenames))):
             if filename not in members:
-                return Error(self.path, 'C1121', 'Found filename in info/files missing from tar archive: {}' .format(filename))
+                return Error(self.path, 'C1122', 'Found filename in info/files missing from tar archive: {}' .format(filename))
             elif filename not in filenames:
-                return Error(self.path, 'C1122', 'Found filename in tar archive missing from info/files: {}' .format(filename))
+                return Error(self.path, 'C1123', 'Found filename in tar archive missing from info/files: {}' .format(filename))
 
     def check_for_hardlinks(self):
         for member in self.archive.getmembers():
             if member.islnk():
-                return Error(self.path, 'C1123', 'Found hardlink {} in tar archive' .format(member.path))
+                return Error(self.path, 'C1124', 'Found hardlink {} in tar archive' .format(member.path))
 
     def check_for_unallowed_files(self):
         unallowed_directories = {'conda-meta', 'conda-bld', 'pkgs', 'pkgs32', 'envs'}
 
         for filepath in self.paths:
             if filepath in unallowed_directories or filepath.endswith(('.DS_Store', '~')):
-                return Error(self.path, 'C1124', 'Found unallowed file in tar archive: {}' .format(filepath))
+                return Error(self.path, 'C1125', 'Found unallowed file in tar archive: {}' .format(filepath))
             
     def check_for_noarch_info(self):
         for filepath in self.paths:
             if 'info/package_metadata.json' in filepath or 'info/link.json' in filepath:
                 if self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
-                    return Error(self.path, 'C1125', 'Found {} however package is not a noarch package' .format(filepath))
+                    return Error(self.path, 'C1126', 'Found {} however package is not a noarch package' .format(filepath))
 
     def check_for_bat_and_exe(self):
         bat_files = [filepath for filepath in self.paths if filepath.endswith('.bat')]
         exe_files = [filepath for filepath in self.paths if filepath.endswith('.exe')]
 
         if len(bat_files) > 0 and len(exe_files) > 0:
-            return Error(self.path, 'C1126', 'Found both .bat and .exe files in executable directory')
+            return Error(self.path, 'C1127', 'Found both .bat and .exe files in executable directory')
 
     def check_prefix_file(self):
         for member in self.archive.getmembers():
@@ -176,7 +176,7 @@ class CondaPackageCheck(object):
                 prefix_file = self.archive.extractfile(member.path).read()
      
                 if not all_ascii(prefix_file, self.win_pkg):
-                    return Error(self.path, 'C1127', 'Found non-ascii characters in info/has_prefix')
+                    return Error(self.path, 'C1128', 'Found non-ascii characters in info/has_prefix')
                
                 for line in prefix_file.decode('utf-8').splitlines():
                     line = line.strip()
@@ -186,61 +186,61 @@ class CondaPackageCheck(object):
                         placeholder, mode, filename = '/<dummy>/<placeholder>', 'text', line
                     
                     if filename not in self.paths:
-                        return Error(self.path, 'C1128', 'Found filename "{}" in info/has_prefix not included in archive' .format(filename))
+                        return Error(self.path, 'C1129', 'Found filename "{}" in info/has_prefix not included in archive' .format(filename))
 
                     if mode not in ['binary', 'text']:
-                        return Error(self.path, 'C1129', 'Found invalid mode "{}" in info/has_prefix' .format(mode))
+                        return Error(self.path, 'C1130', 'Found invalid mode "{}" in info/has_prefix' .format(mode))
 
                     if mode == 'binary':
                         if self.name == 'python':
-                            return Error(self.path, 'C1130', 'Binary placeholder found in info/has_prefix not allowed when building Python')
+                            return Error(self.path, 'C1131', 'Binary placeholder found in info/has_prefix not allowed when building Python')
                         elif self.win_pkg:
-                            return Error(self.path, 'C1131', 'Binary placeholder found in info/has_prefix not allowed in Windows package')
+                            return Error(self.path, 'C1132', 'Binary placeholder found in info/has_prefix not allowed in Windows package')
                         elif len(placeholder) != 255:
-                            return Error(self.path, 'C1132', 'Binary placeholder "{}" found in info/has_prefix does not have a length of 255 bytes' .format(placeholder))
+                            return Error(self.path, 'C1133', 'Binary placeholder "{}" found in info/has_prefix does not have a length of 255 bytes' .format(placeholder))
 
     def check_for_post_links(self):
         for filepath in self.paths:
             if filepath.endswith(('-post-link.sh',  '-pre-link.sh',  '-pre-unlink.sh',
                                   '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat')):
-                return Error(self.path, 'C1133', 'Found pre/post link file "{}" in archive' .format(filepath))
+                return Error(self.path, 'C1134', 'Found pre/post link file "{}" in archive' .format(filepath))
 
     def check_for_egg(self):
         for filepath in self.paths:
             if filepath.endswith('.egg'):
-                return Error(self.path, 'C1134', 'Found egg file "{}" in archive' .format(filepath))
+                return Error(self.path, 'C1135', 'Found egg file "{}" in archive' .format(filepath))
 
     def check_for_easy_install_script(self):
         for filepath in self.paths:
             if filepath.startswith(('bin/easy_install', 'Scripts/easy_install')):
-                return Error(self.path, 'C1135', 'Found easy_install script "{}" in archive' .format(filepath))
+                return Error(self.path, 'C1136', 'Found easy_install script "{}" in archive' .format(filepath))
 
     def check_for_pth_file(self):
         for filepath in self.paths:
             if filepath.endswith('.pth'):
-                return Error(self.path, 'C1136', 'Found namespace file "{}" in archive' .format(filepath))
+                return Error(self.path, 'C1137', 'Found namespace file "{}" in archive' .format(filepath))
 
     def check_for_pyo_file(self):
         for filepath in self.paths:
             if filepath.endswith('.pyo') and self.name != 'python':
-                return Error(self.path, 'C1137', 'Found pyo file "{}" in archive' .format(filepath))
+                return Error(self.path, 'C1138', 'Found pyo file "{}" in archive' .format(filepath))
 
     def check_for_pyc_in_site_packages(self):
         for filepath in self.paths:
             if filepath.endswith('.pyc') and 'site-packages' not in filepath and 'distutils' not in filepath:
-                return Error(self.path, 'C1138', 'Found pyc file "{}" in invalid directory' .format(filepath))
+                return Error(self.path, 'C1139', 'Found pyc file "{}" in invalid directory' .format(filepath))
 
     def check_for_2to3_pickle(self):
         for filepath in self.paths:
             if 'lib2to3' in filepath and filepath.endswith('.pickle'):
-                return Error(self.path, 'C1139', 'Found lib2to3 .pickle file "{}"' .format(filepath))
+                return Error(self.path, 'C1140', 'Found lib2to3 .pickle file "{}"' .format(filepath))
 
     def check_pyc_files(self):
         if 'py3' not in self.build:
             for filepath in self.paths:
                 if '/site-packages/' in filepath:
                     if filepath.endswith('.py') and (filepath + 'c') not in self.paths:
-                        return Error(self.path, 'C1140', 'Found python file "{}" without a corresponding pyc file' .format(filepath))
+                        return Error(self.path, 'C1141', 'Found python file "{}" without a corresponding pyc file' .format(filepath))
 
     def check_menu_json_name(self):
         menu_json_files = [filepath for filepath in self.paths
@@ -249,15 +249,15 @@ class CondaPackageCheck(object):
         if len(menu_json_files) == 1:
             filename = menu_json_files[0]
             if filename != '{}.json' .format(self.name):
-                return Error(self.path, 'C1141', 'Found invalid Menu json file "{}"' .format(filename))
+                return Error(self.path, 'C1142', 'Found invalid Menu json file "{}"' .format(filename))
         elif len(menu_json_files) > 1:
-            return Error(self.path, 'C1142', 'Found more than one Menu json file')
+            return Error(self.path, 'C1143', 'Found more than one Menu json file')
 
     def check_windows_arch(self):
         if self.win_pkg:
             arch = self.info['arch']
             if arch not in ('x86', 'x86_64'):
-                return Error(self.path, 'C1143', 'Found unrecognized Windows architecture "{}"' .format(arch))
+                return Error(self.path, 'C1144', 'Found unrecognized Windows architecture "{}"' .format(arch))
             
             for member in self.archive.getmembers():
                 if member.path.endswith(('.exe', '.dll')):
@@ -266,7 +266,7 @@ class CondaPackageCheck(object):
                     if ((arch == 'x86' and file_object_type != 'DLL I386') or
                         (arch == 'x86_64' and file_object_type != 'DLL AMD64')):
                         
-                        return Error(self.path, 'C1144', 'Found file "{}" with object type "{}" but with arch "{}"' .format(member.name, file_object_type, arch))
+                        return Error(self.path, 'C1145', 'Found file "{}" with object type "{}" but with arch "{}"' .format(member.name, file_object_type, arch))
 
 
 class CondaRecipeCheck(object):

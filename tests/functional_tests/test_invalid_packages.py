@@ -46,7 +46,7 @@ def test_duplicate_members(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1116 Found duplicate members inside tar archive' in error
+    assert 'C1117 Found duplicate members inside tar archive' in error
 
 
 def test_index_unicode(package_dir, verifier, capfd):
@@ -57,7 +57,7 @@ def test_index_unicode(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1115 Found non-ascii characters inside info/index.json' in error
+    assert 'C1116 Found non-ascii characters inside info/index.json' in error
 
 
 def test_info_in_files_file(package_dir, verifier, capfd):
@@ -68,7 +68,7 @@ def test_info_in_files_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1119 Found filenames in info/files that start with "info"' in error
+    assert 'C1120 Found filenames in info/files that start with "info"' in error
 
 
 def test_duplicates_in_files_file(package_dir, verifier, capfd):
@@ -79,7 +79,7 @@ def test_duplicates_in_files_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1120 Found duplicate filenames in info/files' in error
+    assert 'C1121 Found duplicate filenames in info/files' in error
 
 
 def test_not_in_files_file(package_dir, verifier, capfd):
@@ -90,7 +90,7 @@ def test_not_in_files_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1122 Found filename in tar archive missing from info/files: lib/testfile.txt' in error
+    assert 'C1123 Found filename in tar archive missing from info/files: lib/testfile.txt' in error
 
 
 def test_not_in_tarball(package_dir, verifier, capfd):
@@ -101,7 +101,7 @@ def test_not_in_tarball(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1121 Found filename in info/files missing from tar archive: testfile.txt' in error
+    assert 'C1122 Found filename in info/files missing from tar archive: testfile.txt' in error
 
 
 def test_not_allowed_files(package_dir, verifier, capfd):
@@ -112,7 +112,7 @@ def test_not_allowed_files(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1124 Found unallowed file in tar archive: info/testfile~' in error
+    assert 'C1125 Found unallowed file in tar archive: info/testfile~' in error
 
 
 def test_file_not_allowed(package_dir, verifier, capfd):
@@ -123,7 +123,7 @@ def test_file_not_allowed(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1125 Found info/link.json however package is not a noarch package' in error
+    assert 'C1126 Found info/link.json however package is not a noarch package' in error
 
 
 def test_invalid_package_name(package_dir, verifier, capfd):
@@ -156,7 +156,7 @@ def test_duplicates_in_bin(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1126 Found both .bat and .exe files in executable directory' in error
+    assert 'C1127 Found both .bat and .exe files in executable directory' in error
 
 
 def test_win_package_warning(package_dir, verifier, capfd):
@@ -167,7 +167,7 @@ def test_win_package_warning(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1128 Found filename "bin/testfile" in info/has_prefix not included in archive' in error
+    assert 'C1129 Found filename "bin/testfile" in info/has_prefix not included in archive' in error
 
 
 def test_win_package_binary_warning(package_dir, verifier, capfd):
@@ -178,7 +178,7 @@ def test_win_package_binary_warning(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1131 Binary placeholder found in info/has_prefix not allowed in Windows package' in error
+    assert 'C1132 Binary placeholder found in info/has_prefix not allowed in Windows package' in error
 
 
 def test_package_placeholder_warning(package_dir, verifier, capfd):
@@ -189,7 +189,7 @@ def test_package_placeholder_warning(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1132 Binary placeholder' in error
+    assert 'C1133 Binary placeholder' in error
     assert 'found in info/has_prefix does not have a length of 255 bytes' in error
 
 
@@ -201,7 +201,7 @@ def test_invalid_prefix_mode(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1129 Found invalid mode "wrong_mode" in info/has_prefix' in error
+    assert 'C1130 Found invalid mode "wrong_mode" in info/has_prefix' in error
 
 
 def test_unicode_prefix(package_dir, verifier, capfd):
@@ -212,7 +212,7 @@ def test_unicode_prefix(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1127 Found non-ascii characters in info/has_prefix' in error
+    assert 'C1128 Found non-ascii characters in info/has_prefix' in error
 
 
 def test_invalid_script_name(package_dir, verifier, capfd):
@@ -223,7 +223,7 @@ def test_invalid_script_name(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'Found pre/post link file "bin/test-pre-unlink.bat" in archive' in error
+    assert 'C1134 Found pre/post link file "bin/test-pre-unlink.bat" in archive' in error
 
 
 def test_invalid_setuptools(package_dir, verifier, capfd):
@@ -234,8 +234,8 @@ def test_invalid_setuptools(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
     
-    assert 'C1135 Found easy_install script "bin/easy_install.pth" in archive' in error
-    assert 'C1136 Found namespace file "bin/easy_install.pth" in archive' in error
+    assert 'C1136 Found easy_install script "bin/easy_install.pth" in archive' in error
+    assert 'C1137 Found namespace file "bin/easy_install.pth" in archive' in error
 
 
 def test_invalid_eggfile(package_dir, verifier, capfd):
@@ -246,7 +246,7 @@ def test_invalid_eggfile(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1134 Found egg file "bin/test.egg" in archive' in error
+    assert 'C1135 Found egg file "bin/test.egg" in archive' in error
 
 
 def test_invalid_namespace_file(package_dir, verifier, capfd):
@@ -257,7 +257,7 @@ def test_invalid_namespace_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1136 Found namespace file "bin/test-nspkg.pth" in archive' in error
+    assert 'C1137 Found namespace file "bin/test-nspkg.pth" in archive' in error
 
 
 def test_invalid_pyo_file(package_dir, verifier, capfd):
@@ -268,7 +268,7 @@ def test_invalid_pyo_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1137 Found pyo file "bin/test.pyo" in archive' in error
+    assert 'C1138 Found pyo file "bin/test.pyo" in archive' in error
 
 
 def test_invalid_pyc_and_so_files(package_dir, verifier, capfd):
@@ -279,8 +279,8 @@ def test_invalid_pyc_and_so_files(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1137 Found pyo file "bin/test.pyo" in archive' in error
-    assert 'C1138 Found pyc file "bin/test.pyc" in invalid directory' in error
+    assert 'C1138 Found pyo file "bin/test.pyo" in archive' in error
+    assert 'C1139 Found pyc file "bin/test.pyc" in invalid directory' in error
 
 
 def test_invalid_pickle_file(package_dir, verifier, capfd):
@@ -291,7 +291,7 @@ def test_invalid_pickle_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1139 Found lib2to3 .pickle file "lib/lib2to3/test.pickle"' in error
+    assert 'C1140 Found lib2to3 .pickle file "lib/lib2to3/test.pickle"' in error
 
 
 def test_missing_pyc_file(package_dir, verifier, capfd):
@@ -302,7 +302,7 @@ def test_missing_pyc_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert  'C1140 Found python file "lib/site-packages/python2.7/test.py" without a corresponding pyc file' in error
+    assert  'C1141 Found python file "lib/site-packages/python2.7/test.py" without a corresponding pyc file' in error
 
 
 def test_invalid_windows_architecture(package_dir, verifier, capfd):
@@ -313,7 +313,7 @@ def test_invalid_windows_architecture(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1143 Found unrecognized Windows architecture "x84"' in error
+    assert 'C1144 Found unrecognized Windows architecture "x84"' in error
 
 
 def test_invalid_windows_dll(package_dir, verifier, capfd):
@@ -324,7 +324,7 @@ def test_invalid_windows_dll(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1144 Found file "bin/testfile.dll" with object type "None" but with arch "x86_64"' in error
+    assert 'C1145 Found file "bin/testfile.dll" with object type "None" but with arch "x86_64"' in error
 
 
 def test_invalid_easy_install_file(package_dir, verifier, capfd):
@@ -335,7 +335,7 @@ def test_invalid_easy_install_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1136 Found namespace file "bin/easy-install.pth" in archive' in error
+    assert 'C1137 Found namespace file "bin/easy-install.pth" in archive' in error
 
 
 def test_non_ascii_path(package_dir, verifier, capfd):
@@ -346,7 +346,7 @@ def test_non_ascii_path(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1117 Found archive member names containing non-ascii characters' in error
+    assert 'C1118 Found archive member names containing non-ascii characters' in error
 
 
 def test_ascii_in_files_file(package_dir, verifier, capfd):
@@ -357,7 +357,7 @@ def test_ascii_in_files_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'Found filenames in info/files containing non-ascii characters' in error
+    assert 'C1119 Found filenames in info/files containing non-ascii characters' in error
 
 
 def test_missing_depends_key(package_dir, verifier, capfd):

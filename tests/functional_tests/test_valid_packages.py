@@ -2,7 +2,6 @@ import os
 
 import pytest
 
-from conda_verify.errors import PackageError
 from conda_verify.verify import Verify
 
 
@@ -22,16 +21,7 @@ def test_valid_package(package_dir, verifier):
 
     try:
         verifier.verify_package(path_to_package=package)
-    except PackageError as error:
-        pytest.fail(error)
-
-
-def test_valid_setuptools_package(package_dir, verifier):
-    package = os.path.join(package_dir, 'distribute-0.0.1-py27_0.tar.bz2')
-
-    try:
-        verifier.verify_package(path_to_package=package)
-    except PackageError as error:
+    except SystemExit as error:
         pytest.fail(error)
 
 
@@ -40,7 +30,7 @@ def test_valid_empty_directory(package_dir, verifier):
 
     try:
         verifier.verify_package(path_to_package=package)
-    except PackageError as error:
+    except SystemExit as error:
         pytest.fail(error)
 
 
@@ -49,7 +39,7 @@ def test_valid_python_package(package_dir, verifier):
 
     try:
         verifier.verify_package(path_to_package=package)
-    except PackageError as error:
+    except SystemExit as error:
         pytest.fail(error)
 
 
@@ -58,7 +48,7 @@ def test_valid_pyd_file(package_dir, verifier):
 
     try:
         verifier.verify_package(path_to_package=package)
-    except PackageError as error:
+    except SystemExit as error:
         pytest.fail(error)
 
 
@@ -67,7 +57,7 @@ def test_valid_script_file(package_dir, verifier):
 
     try:
         verifier.verify_package(path_to_package=package)
-    except PackageError as error:
+    except SystemExit as error:
         pytest.fail(error)
 
 
@@ -76,7 +66,7 @@ def test_valid_noarch_link(package_dir, verifier):
 
     try:
         verifier.verify_package(path_to_package=package)
-    except PackageError as error:
+    except SystemExit as error:
         pytest.fail(error)
 
 
@@ -85,5 +75,5 @@ def test_valid_preferred_env(package_dir, verifier):
 
     try:
         verifier.verify_package(path_to_package=package)
-    except PackageError as error:
+    except SystemExit as error:
         pytest.fail(error)

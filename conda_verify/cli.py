@@ -26,8 +26,9 @@ def cli():
 
     verifier = Verify()
     for path in args:
-        if os.path.isfile(os.path.join(path, 'meta.yaml')):
-            print("==> %s <==" % path)
+        meta_file = os.path.join(path, 'meta.yaml')
+        if os.path.isfile(meta_file):
+            print('Verifying {}...' .format(meta_file))
             for cfg in iter_cfgs():
                 meta = render_metadata(path, cfg)
                 try:

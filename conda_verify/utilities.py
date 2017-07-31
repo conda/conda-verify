@@ -97,17 +97,6 @@ def render_metadata(recipe_dir, cfg):
     return parse(data, cfg)
 
 
-def get_field(meta, field, default=None):
-    section, key = field.split('/')
-    submeta = meta.get(section)
-    if submeta is None:
-        submeta = {}
-    res = submeta.get(key)
-    if res is None:
-        res = default
-    return res
-
-
 def iter_cfgs():
     for py in 27, 34, 35:
         for plat in 'linux-64', 'linux-32', 'osx-64', 'win-32', 'win-64':
@@ -120,10 +109,10 @@ def get_object_type(data):
         return None
     lookup = MAGIC_HEADERS.get(head)
     if lookup == 'DLL':
-        pos = data.find('PE\0\0')
+        pos = data.find(b'PE\0\0')
         if pos < 0:
             return "<no PE header found>"
-        i = ord(data[pos + 4]) + 256 * ord(data[pos + 5])
+        i = data[pos + 4] + 256 * data[pos + 5]
         return "DLL " + DLL_TYPES.get(i)
     elif lookup.startswith('MachO'):
         return lookup

@@ -284,13 +284,13 @@ class CondaRecipeCheck(object):
 
     def check_package_name(self):
         package_name = self.meta.get('package', {}).get('name', '')
-        
+
         if package_name == '':
             return Error(self.recipe_dir, 'C2101', 'Missing package name in meta.yaml')
 
         if not self.name_pat.match(package_name) or package_name.endswith(('.', '-', '_')):
             return Error(self.recipe_dir, 'C2102', 'Found invalid package name "{}" in meta.yaml' .format(package_name))
-        
+
         seq = get_bad_seq(package_name)
         if seq:
             return Error(self.recipe_dir, 'C2103', 'Found invalid sequence "{}" in package name' .format(seq))
@@ -300,25 +300,26 @@ class CondaRecipeCheck(object):
 
         if package_version == '':
             return Error(self.recipe_dir, 'C2104', 'Missing package version in meta.yaml')
-        
-        if not self.version_pat.match(package_version) or package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
-            return Error(self.recipe_dir, 'C2105', 'Found invalid package version "{}" in meta.yaml' .format(package_version))
-    
-        seq = get_bad_seq(package_version)
-        if seq:
-            return Error(self.recipe_dir, 'C2106', 'Found invalid sequence "{}" in package version' .format(seq))
+
+        if isinstance(package_version, str):
+            if not self.version_pat.match(package_version) or package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
+                return Error(self.recipe_dir, 'C2105', 'Found invalid package version "{}" in meta.yaml' .format(package_version))
+
+            seq = get_bad_seq(package_version)
+            if seq:
+                return Error(self.recipe_dir, 'C2106', 'Found invalid sequence "{}" in package version' .format(seq))
 
     def check_build_number(self):
         build_number = self.meta.get('build', {}).get('number')
 
         if build_number is not None:
             try:
-                int(build_number)
+                build_number = int(build_number)
+                if build_number < 0:
+                    return Error(self.recipe_dir, 'C2108', 'Build number in info/index.json cannot be a negative integer')
+
             except ValueError:
                 return Error(self.recipe_dir, 'C2107', 'Build number in info/index.json must be an integer')
-
-            if build_number < 0:
-                return Error(self.recipe_dir, 'C2108', 'Build number in info/index.json cannot be a negative integer')
 
     def check_fields(self):
         for section in self.meta:
@@ -345,9 +346,9 @@ class CondaRecipeCheck(object):
                     return Error(self.recipe_dir, 'C2112', 'Found invalid run requirement "{}"' .format(requirement))
    
             if len(requirement_parts) == 0:
-                return Error(self.path, 'C2113', 'Found empty dependencies in info/index.json')
+                return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in info/index.json')
             elif len(requirement_parts) == 2 and not self.ver_spec_pat.match(requirement_parts[1]) or len(requirement_parts) > 3:
-                return Error(self.path, 'C2114', 'Found invalid dependency "{}" in info/index.json' .format(requirement))
+                return Error(self.recipe_dir, 'C2114', 'Found invalid dependency "{}" in info/index.json' .format(requirement))
 
     def check_about(self):
         summary = self.meta.get('about', {}).get('summary')
@@ -365,7 +366,7 @@ class CondaRecipeCheck(object):
                 return Error(self.recipe_dir, 'C2116', 'Found invalid URL "{}" in meta.yaml' .format(url))
 
     def check_source(self):
-        source = self.meta.get('source')
+        source = self.meta.get('source', {})
         url = source.get('url')
         if url is not None:
             if self.url_pat.match(url):

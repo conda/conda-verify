@@ -12,6 +12,6 @@ class RecipeError(Exception):
 class Error(namedtuple('Error', ['file', 'code', 'message'])):
     """Error class creates error codes to be shown to the user."""
 
-    def __repr__(self):
-        """Override namedtuple's __repr__ so that error codes are readable."""
+    def __str__(self):
+        """Override namedtuple's __str__ so that error codes are readable."""
         return '{}: {} {}' .format(self.file, self.code, self.message)

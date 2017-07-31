@@ -23,9 +23,9 @@ def test_invalid_package_sequence(package_dir, verifier):
     with pytest.raises(PackageError) as excinfo:
         verifier.verify_package(path_to_package=package)
 
-    assert ("PackageError: "
-            "'_-' not allowed in file name "
-            "'test_-file.tar.bz2'" in str(excinfo))
+    assert ('PackageError: '
+            'Found invalid sequence "_-" '
+            'in package in info/index.json' in str(excinfo))
 
 
 def test_invalid_package_extension(package_dir, verifier):
@@ -35,7 +35,7 @@ def test_invalid_package_extension(package_dir, verifier):
         verifier.verify_package(path_to_package=package)
 
     assert ("PackageError: "
-            "did not expect filename: testfile.zip" in str(excinfo))
+            'Found package with invalid extension ".zip"' in str(excinfo))
 
 
 def test_duplicate_members(package_dir, verifier):

@@ -249,17 +249,6 @@ def test_invalid_eggfile(package_dir, verifier, capfd):
     assert 'C1134 Found egg file "bin/test.egg" in archive' in error
 
 
-def test_invalid_script_header(package_dir, verifier, capfd):
-    package = os.path.join(package_dir, 'testfile-0.0.20-py36_0.tar.bz2')
-
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
-
-    output, error = capfd.readouterr()
-
-    assert 'Csomething easy_install_script found' in error
-
-
 def test_invalid_namespace_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.21-py36_0.tar.bz2')
 

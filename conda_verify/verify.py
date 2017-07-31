@@ -30,7 +30,7 @@ class Verify(object):
         recipe_check.check_fields()
         recipe_check.check_source()
         recipe_check.check_requirements()
-        recipe_check.validate_files()
+        recipe_check.check_for_valid_files()
         recipe_check.check_about()
         recipe_check.check_license_family()
         recipe_check.check_dir_content()

@@ -3,7 +3,6 @@ import os
 import pytest
 
 from conda_verify import utilities
-from conda_verify.errors import RecipeError
 from conda_verify.verify import Verify
 
 
@@ -24,5 +23,5 @@ def test_valid_test_file(recipe_dir, verifier):
 
     try:
         verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-    except RecipeError as error:
+    except SystemExit as error:
         pytest.fail(error)

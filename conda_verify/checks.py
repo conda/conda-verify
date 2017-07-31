@@ -66,12 +66,12 @@ class CondaPackageCheck(object):
         build_number = self.info.get('build_number')
         if build_number is not None:
             try:
-                int(build_number)
+                build_number = int(build_number)
+                if build_number < 0:
+                    return Error(self.path, 'C1109', 'Build number in info/index.json cannot be a negative integer')
+
             except ValueError:
                 return Error(self.path, 'C1108', 'Build number in info/index.json must be an integer')
-
-            if build_number < 0:
-                return Error(self.path, 'C1109', 'Build number in info/index.json cannot be a negative integer')
 
     def check_build_string(self):
         build_string = self.info.get('build')
@@ -87,7 +87,7 @@ class CondaPackageCheck(object):
 
     def check_index_dependencies_specs(self):
         dependencies = ensure_list(self.info.get('depends'))
-        if dependencies is not [None]:
+        if dependencies != [None]:
             for dependency in dependencies:
                 dependency_parts = dependency.split()
                 if len(dependency_parts) == 0:
@@ -120,7 +120,7 @@ class CondaPackageCheck(object):
 
     def check_files_file_encoding(self):
         if not all_ascii(self.files_file, self.win_pkg):
-            return Error(self.path, 'C1118', 'Found filenames in info/files containing non-ascii characters.')
+            return Error(self.path, 'C1118', 'Found filenames in info/files containing non-ascii characters')
 
     def check_files_file_for_info(self):
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
@@ -186,7 +186,7 @@ class CondaPackageCheck(object):
                         placeholder, mode, filename = '/<dummy>/<placeholder>', 'text', line
                     
                     if filename not in self.paths:
-                        return Error(self.path, 'C1128', 'Found filename in info/has_prefix not included in archive')
+                        return Error(self.path, 'C1128', 'Found filename "{}" in info/has_prefix not included in archive' .format(filename))
 
                     if mode not in ['binary', 'text']:
                         return Error(self.path, 'C1129', 'Found invalid mode "{}" in info/has_prefix' .format(mode))

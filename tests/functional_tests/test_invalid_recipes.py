@@ -257,7 +257,7 @@ def test_invalid_build_requirement_version_specification(recipe_dir, verifier, c
 
     output, error = capfd.readouterr()
 
-    assert 'C2111 Found invalid build requirement "python >== 2.7"' in error
+    assert 'C2114 Found invalid dependency "python >== 2.7"' in error
 
 
 def test_invalid_run_requirement_version_specification(recipe_dir, verifier, capfd):
@@ -294,7 +294,7 @@ def test_invalid_source_url(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2118 Found invalid URL "www.continuum.io" in meta.yaml' in error
+    assert 'C2120 Found invalid URL "www.continuum.io" in meta.yaml' in error
 
 
 def test_invalid_about_summary(recipe_dir, verifier, capfd):
@@ -306,7 +306,7 @@ def test_invalid_about_summary(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2115 Found summary with length greater than 80 characters' in error
+    assert 'C2117 Found summary with length greater than 80 characters' in error
 
 
 def test_invalid_about_url(recipe_dir, verifier, capfd):
@@ -318,7 +318,7 @@ def test_invalid_about_url(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2116 Found invalid URL "www.continuum.io" in meta.yaml' in error
+    assert 'C2118 Found invalid URL "www.continuum.io" in meta.yaml' in error
 
 
 def test_invalid_source_hash(recipe_dir, verifier, capfd):
@@ -330,7 +330,7 @@ def test_invalid_source_hash(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2117 Found invalid hash "abc123" in meta.yaml' in error
+    assert 'C2119 Found invalid hash "abc123" in meta.yaml' in error
 
 
 def test_invalid_source_giturl(recipe_dir, verifier, capfd):
@@ -342,7 +342,7 @@ def test_invalid_source_giturl(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2119 Found both git_branch and git_tag in meta.yaml source field' in error
+    assert 'C2121 Found both git_branch and git_tag in meta.yaml source field' in error
 
 
 def test_invalid_license_family(recipe_dir, verifier, capfd):
@@ -354,7 +354,7 @@ def test_invalid_license_family(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2120 Found invalid license family "The Extra License"' in error
+    assert 'C2122 Found invalid license family "The Extra License"' in error
 
 
 def test_invalid_test_files(recipe_dir, verifier, capfd):
@@ -366,7 +366,7 @@ def test_invalid_test_files(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2122 Found file "test-data.txt" in meta.yaml that doesn\'t exist' in error
+    assert 'C2124 Found file "test-data.txt" in meta.yaml that doesn\'t exist' in error
 
 
 def test_invalid_test_file_path(recipe_dir, verifier, capfd):
@@ -378,7 +378,7 @@ def test_invalid_test_file_path(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2121 Found file "../test-data.txt" listed outside recipe directory' in error
+    assert 'C2123 Found file "../test-data.txt" listed outside recipe directory' in error
 
 
 def test_invalid_dir_content(recipe_dir, verifier, capfd):
@@ -390,8 +390,8 @@ def test_invalid_dir_content(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2123 Found disallowed file with extension' in error
-    assert 'testfile.a' in error
+    assert 'C2125 Found disallowed file with extension' in error
+    assert 'testfile.tar' in error
 
 
 def test_invalid_dir_content_filesize(recipe_dir, verifier, capfd):
@@ -403,7 +403,7 @@ def test_invalid_dir_content_filesize(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2123 Found disallowed file with extension' in error
+    assert 'C2125 Found disallowed file with extension' in error
     assert 'test.tar.bz2' in error
 
 
@@ -416,7 +416,7 @@ def test_duplicate_version_specifications(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert "duplicate specs: ['python', 'python']" in str(error)
+    assert "C2116 Found duplicate run requirements: ['python', 'python']" in error
 
 
 def test_many_version_specifications(recipe_dir, verifier, capfd):

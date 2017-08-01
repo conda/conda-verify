@@ -1,3 +1,6 @@
+notifications:
+  email: false
+
 os: linux
 
 dist: trusty

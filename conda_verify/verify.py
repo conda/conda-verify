@@ -19,13 +19,14 @@ class Verify(object):
         return_code = 0
 
         if len(checks_to_display) > 0:
-            return_code = 1
             for check in sorted(checks_to_display):
                 if check.code not in ensure_list(checks_to_ignore):
                     if exit_on_error:
                         raise PackageError(check)
                     else:
                         print(check, file=sys.stderr)
+
+                    return_code = 1
 
         if return_code > 0:
             sys.exit(return_code)
@@ -42,13 +43,14 @@ class Verify(object):
         return_code = 0
 
         if len(checks_to_display) > 0:
-            return_code = 1
             for check in sorted(checks_to_display):
                 if check.code not in ensure_list(checks_to_ignore):
                     if exit_on_error:
                         raise RecipeError(check)
                     else:
                         print(check, file=sys.stderr)
+
+                    return_code = 1
 
         if return_code > 0:
             sys.exit(return_code)

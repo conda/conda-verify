@@ -1,6 +1,8 @@
 import os
 import re
 import sys
+
+import jinja2
 import yaml
 
 from conda_verify.constants import MAGIC_HEADERS, DLL_TYPES
@@ -77,8 +79,6 @@ def parse(data, cfg):
 
 
 def render_jinja2(recipe_dir):
-    import jinja2
-
     loaders = [jinja2.FileSystemLoader(recipe_dir)]
     env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
     template = env.get_or_select_template('meta.yaml')
@@ -86,14 +86,7 @@ def render_jinja2(recipe_dir):
 
 
 def render_metadata(recipe_dir, cfg):
-    meta_path = os.path.join(recipe_dir, 'meta.yaml')
-    with open(meta_path, 'rb') as fi:
-        data = fi.read()
-    if b'{{' in data:
-        data = render_jinja2(recipe_dir)
-    else:
-        data = data.decode('utf-8')
-
+    data = render_jinja2(recipe_dir)
     return parse(data, cfg)
 
 

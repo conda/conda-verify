@@ -7,9 +7,10 @@ from conda_verify import __version__
 
 
 if sys.version_info.major == 2:
-    requirements = ['backports.functools_lru_cache >= 1.4', 'click >= 6.7']
+    requirements = ['backports.functools_lru_cache >= 1.4', 'click >= 6.7',
+                    'jinja2 >= 2.9.6']
 else:
-    requirements = ['click >= 6.7']
+    requirements = ['click >= 6.7', 'jinja2 >= 2.9.6']
 
 setup(
     name="conda-verify",

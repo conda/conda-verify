@@ -276,7 +276,7 @@ class CondaRecipeCheck(object):
         self.recipe_dir = recipe_dir
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.version_pat = re.compile(r'[\w\.]+$')
-        self.ver_spec_pat = re.compile(r'^[\.,=!<>\*|]{1}[\.,=!<>\*]?$')
+        self.ver_spec_pat = re.compile(r'^[\.,=!<>\*|]{1}[\.,=!<>\*]?(\d?\.\d)*?$')
         self.url_pat = re.compile(r'(ftp|http(s)?)://')
         self.hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
                          'sha1': re.compile(r'[a-f0-9]{40}$'),

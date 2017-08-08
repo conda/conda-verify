@@ -1,3 +1,13 @@
+"""The checks module contains two classes that are used to verify
+conda packages and recipes: CondaPackageCheck and CondaRecipeCheck.
+
+Each class contains specific checks that relate to validating packages
+and recipes. These checks start with the letter 'C', which is an
+abbreviation for 'conda'.
+
+Checks C1101 through C1145 are housed in CondaPackageCheck.
+Checks C2101 through C2125 are housed in CondaRecipeCheck.
+"""
 import json
 import os
 import re
@@ -10,7 +20,10 @@ from conda_verify.utilities import all_ascii, get_bad_seq, get_object_type, ensu
 
 
 class CondaPackageCheck(object):
+    """Create checks in order to validate conda package tarballs."""
+
     def __init__(self, path):
+        """Initialize conda package information for use with package checks."""    
         super(CondaPackageCheck, self).__init__()
         self.path = path
         self.archive = tarfile.open(self.path)
@@ -28,6 +41,7 @@ class CondaPackageCheck(object):
 
     @staticmethod
     def retrieve_package_name(path):
+        """Retrieve the package name from the conda package path."""
         path = os.path.basename(path)
         seq = get_bad_seq(path)
         if seq:
@@ -41,6 +55,7 @@ class CondaPackageCheck(object):
             raise PackageError('Found package with invalid extension "{}"' .format(os.path.splitext(path)[1]))
 
     def check_package_name(self):
+        """Check the package name located in info/index.json."""
         package_name = self.info.get('name')
         if package_name is None:
             return Error(self.path, 'C1101', 'Missing package name in info/index.json')
@@ -52,6 +67,7 @@ class CondaPackageCheck(object):
             return Error(self.path, 'C1103', 'Found invalid package name in info/index.json')
 
     def check_package_version(self):
+        """Check the package version located in info/index.json."""
         package_version = str(self.info.get('version'))
         if not package_version:
             return Error(self.path, 'C1104', 'Missing package version in info/index.json')
@@ -63,6 +79,7 @@ class CondaPackageCheck(object):
             return Error(self.path, 'C1107', "Package version in info/index.json cannot start or end with '_' or '.'")
 
     def check_build_number(self):
+        """Check the build number located in info/index.json."""
         build_number = self.info.get('build_number')
         if build_number is not None:
             try:
@@ -74,6 +91,7 @@ class CondaPackageCheck(object):
                 return Error(self.path, 'C1108', 'Build number in info/index.json must be an integer')
 
     def check_build_string(self):
+        """Check the build string in info/index.json."""
         build_string = self.info.get('build')
         if not self.version_pat.match(build_string):
             return Error(self.path, 'C1110', 'Found invalid build string "{}" in info/index.json' .format(build_string))
@@ -81,11 +99,13 @@ class CondaPackageCheck(object):
             return Error(self.path, 'C1111', 'Found build number in info/index.json "{}" does not match build number "{}" in filename' .format(build_string, self.build))
     
     def check_index_dependencies(self):
+        """Check that the dependencies field is present in info/index.json."""
         depends = self.info.get('depends')
         if depends is None:
             return Error(self.path, 'C1112', 'Missing "depends" field in info/index.json')
 
     def check_index_dependencies_specs(self):
+        """Check that the dependencies in info/index.json are properly formatted."""
         dependencies = ensure_list(self.info.get('depends'))
         if dependencies != [None]:
             for dependency in dependencies:
@@ -96,19 +116,23 @@ class CondaPackageCheck(object):
                     return Error(self.path, 'C1114', 'Found invalid dependency "{}" in info/index.json' .format(dependency))
 
     def check_license_family(self):
+        """Check that the license family in info/index.json is valid."""
         license = self.info.get('license_family', self.info.get('license'))
         if license not in LICENSE_FAMILIES:
             return Error(self.path, 'C1115', 'Found invalid license "{}" in info/index.json' .format(license))
 
     def check_index_encoding(self):
+        """Check that contents of info/index.json are all ascii characters."""
         if not all_ascii(self.index, self.win_pkg):
             return Error(self.path, 'C1116', 'Found non-ascii characters inside info/index.json')
 
     def check_duplicate_members(self):
+        """Check for duplicate members inside the package tarball."""
         if len(self.archive.getmembers()) != len(self.paths):
             return Error(self.path, 'C1117', 'Found duplicate members inside tar archive')
 
     def check_members(self):
+        """Check the tar archive members for non ascii characters."""
         for member in self.archive.getmembers():
             if sys.version_info.major == 2:
                 unicode_path = member.path.decode('utf-8')
@@ -119,21 +143,25 @@ class CondaPackageCheck(object):
                 return Error(self.path, 'C1118', 'Found archive member names containing non-ascii characters')
 
     def check_files_file_encoding(self):
+        """Check the info/files file for non ascii characters."""
         if not all_ascii(self.files_file, self.win_pkg):
             return Error(self.path, 'C1119', 'Found filenames in info/files containing non-ascii characters')
 
     def check_files_file_for_info(self):
+        """Check that the info/files file does not contain any files found within the info directory."""
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
         for filename in filenames:
             if filename.startswith('info'):
                 return Error(self.path, 'C1120', 'Found filenames in info/files that start with "info"')
 
     def check_files_file_for_duplicates(self):
+        """Check the info/files file for duplicates."""
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()]
         if len(filenames) != len(set(filenames)):
             return Error(self.path, 'C1121', 'Found duplicate filenames in info/files')
 
     def check_files_file_for_validity(self):
+        """Check that the files listed in info/files exist in the tar archive and vice versa."""
         members = [member.path for member in self.archive.getmembers()
                    if not member.isdir() and not member.path.startswith('info')]
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()
@@ -146,11 +174,13 @@ class CondaPackageCheck(object):
                 return Error(self.path, 'C1123', 'Found filename in tar archive missing from info/files: {}' .format(filename))
 
     def check_for_hardlinks(self):
+        """Check the tar archive for hardlinks."""
         for member in self.archive.getmembers():
             if member.islnk():
                 return Error(self.path, 'C1124', 'Found hardlink {} in tar archive' .format(member.path))
 
     def check_for_unallowed_files(self):
+        """Check the tar archive for unallowed directories."""
         unallowed_directories = {'conda-meta', 'conda-bld', 'pkgs', 'pkgs32', 'envs'}
 
         for filepath in self.paths:
@@ -158,12 +188,14 @@ class CondaPackageCheck(object):
                 return Error(self.path, 'C1125', 'Found unallowed file in tar archive: {}' .format(filepath))
             
     def check_for_noarch_info(self):
+        """Check that noarch Python packages contain the proper files."""
         for filepath in self.paths:
             if 'info/package_metadata.json' in filepath or 'info/link.json' in filepath:
                 if self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
                     return Error(self.path, 'C1126', 'Found {} however package is not a noarch package' .format(filepath))
 
     def check_for_bat_and_exe(self):
+        """Check that both .bat and .exe files don't exist in the same package."""
         bat_files = [filepath for filepath in self.paths if filepath.endswith('.bat')]
         exe_files = [filepath for filepath in self.paths if filepath.endswith('.exe')]
 
@@ -171,6 +203,7 @@ class CondaPackageCheck(object):
             return Error(self.path, 'C1127', 'Found both .bat and .exe files in executable directory')
 
     def check_prefix_file(self):
+        """Check the info/has_prefix file for proper formatting."""
         for member in self.archive.getmembers():
             if member.path == 'info/has_prefix':
                 prefix_file = self.archive.extractfile(member.path).read()
@@ -200,42 +233,50 @@ class CondaPackageCheck(object):
                             return Error(self.path, 'C1133', 'Binary placeholder "{}" found in info/has_prefix does not have a length of 255 bytes' .format(placeholder))
 
     def check_for_post_links(self):
+        """Check the tar archive for pre and post link files."""
         for filepath in self.paths:
             if filepath.endswith(('-post-link.sh',  '-pre-link.sh',  '-pre-unlink.sh',
                                   '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat')):
                 return Error(self.path, 'C1134', 'Found pre/post link file "{}" in archive' .format(filepath))
 
     def check_for_egg(self):
+        """Check the tar archive for egg files."""
         for filepath in self.paths:
             if filepath.endswith('.egg'):
                 return Error(self.path, 'C1135', 'Found egg file "{}" in archive' .format(filepath))
 
     def check_for_easy_install_script(self):
+        """Check the tar archive for easy_install scripts."""
         for filepath in self.paths:
             if filepath.startswith(('bin/easy_install', 'Scripts/easy_install')):
                 return Error(self.path, 'C1136', 'Found easy_install script "{}" in archive' .format(filepath))
 
     def check_for_pth_file(self):
+        """Check the tar archive for .pth files."""
         for filepath in self.paths:
             if filepath.endswith('.pth'):
                 return Error(self.path, 'C1137', 'Found namespace file "{}" in archive' .format(filepath))
 
     def check_for_pyo_file(self):
+        """Check the tar archive for .pyo files"""
         for filepath in self.paths:
             if filepath.endswith('.pyo') and self.name != 'python':
                 return Error(self.path, 'C1138', 'Found pyo file "{}" in archive' .format(filepath))
 
     def check_for_pyc_in_site_packages(self):
+        """Check that .pyc files are only found within the site-packages or disutils directories."""
         for filepath in self.paths:
             if filepath.endswith('.pyc') and 'site-packages' not in filepath and 'distutils' not in filepath:
                 return Error(self.path, 'C1139', 'Found pyc file "{}" in invalid directory' .format(filepath))
 
     def check_for_2to3_pickle(self):
+        """Check the tar archive for .pickle files."""
         for filepath in self.paths:
             if 'lib2to3' in filepath and filepath.endswith('.pickle'):
                 return Error(self.path, 'C1140', 'Found lib2to3 .pickle file "{}"' .format(filepath))
 
     def check_pyc_files(self):
+        """Check that a .pyc file exists for every .py file in a Python 2 package."""
         if 'py3' not in self.build:
             for filepath in self.paths:
                 if '/site-packages/' in filepath:
@@ -243,6 +284,7 @@ class CondaPackageCheck(object):
                         return Error(self.path, 'C1141', 'Found python file "{}" without a corresponding pyc file' .format(filepath))
 
     def check_menu_json_name(self):
+        """Check that the Menu/package.json filename is identical to the package name."""
         menu_json_files = [filepath for filepath in self.paths
                            if filepath.startswith('Menu/') and filepath.endswith('.json')]
 
@@ -254,6 +296,7 @@ class CondaPackageCheck(object):
             return Error(self.path, 'C1143', 'Found more than one Menu json file')
 
     def check_windows_arch(self):
+        """Check that Windows package .exes and .dlls contain the correct headers."""
         if self.win_pkg:
             arch = self.info['arch']
             if arch not in ('x86', 'x86_64'):
@@ -270,7 +313,10 @@ class CondaPackageCheck(object):
 
 
 class CondaRecipeCheck(object):
+    """Create checks in order to validate conda recipes."""
+
     def __init__(self, meta, recipe_dir):
+        """Initialize conda recipe information for use with recipe checks.""" 
         super(CondaRecipeCheck, self).__init__()
         self.meta = meta
         self.recipe_dir = recipe_dir
@@ -283,6 +329,7 @@ class CondaRecipeCheck(object):
                          'sha256': re.compile(r'[a-f0-9]{64}$')}
 
     def check_package_name(self):
+        """Check the package name in meta.yaml for proper formatting."""
         package_name = self.meta.get('package', {}).get('name', '')
 
         if package_name == '':
@@ -296,6 +343,7 @@ class CondaRecipeCheck(object):
             return Error(self.recipe_dir, 'C2103', 'Found invalid sequence "{}" in package name' .format(seq))
 
     def check_package_version(self):
+        """Check the package version in meta.yaml for proper formatting."""
         package_version = self.meta.get('package', {}).get('version', '')
 
         if package_version == '':
@@ -310,6 +358,7 @@ class CondaRecipeCheck(object):
                 return Error(self.recipe_dir, 'C2106', 'Found invalid sequence "{}" in package version' .format(seq))
 
     def check_build_number(self):
+        """Check the build number in meta.yaml for proper formatting."""
         build_number = self.meta.get('build', {}).get('number')
 
         if build_number is not None:
@@ -322,6 +371,7 @@ class CondaRecipeCheck(object):
                 return Error(self.recipe_dir, 'C2107', 'Build number in info/index.json must be an integer')
 
     def check_fields(self):
+        """Check that the fields listed in meta.yaml are valid."""
         for section in self.meta:
             if section not in FIELDS:
                 return Error(self.recipe_dir, 'C2109', 'Found invalid section "{}"' .format(section))
@@ -332,6 +382,7 @@ class CondaRecipeCheck(object):
                     return Error(self.recipe_dir, 'C2110', 'Found invalid field "{}" in section "{}"' .format(key, section))
     
     def check_requirements(self):
+        """Check that the requirements listed in meta.yaml are valid."""
         build_requirements = self.meta.get('requirements', {}).get('build', [])
         run_requirements = self.meta.get('requirements', {}).get('run', [])
         
@@ -358,6 +409,7 @@ class CondaRecipeCheck(object):
             return Error(self.recipe_dir, 'C2116', 'Found duplicate run requirements: {}' .format(run_requirements))
 
     def check_about(self):
+        """Check the about field in meta.yaml for proper formatting."""
         summary = self.meta.get('about', {}).get('summary')
 
         if summary is not None and len(summary) > 80:
@@ -373,6 +425,7 @@ class CondaRecipeCheck(object):
                 return Error(self.recipe_dir, 'C2118', 'Found invalid URL "{}" in meta.yaml' .format(url))
 
     def check_source(self):
+        """Check the source field in meta.yaml for proper formatting."""
         source = self.meta.get('source', {})
         url = source.get('url')
         if url is not None:
@@ -391,6 +444,7 @@ class CondaRecipeCheck(object):
             return Error(self.recipe_dir, 'C2121', 'Found both git_branch and git_tag in meta.yaml source field')
 
     def check_license_family(self):
+        """Check that the license family listed in meta.yaml is valid."""
         license_family = (self.meta.get('about', {}).get('license_family',
                           self.meta.get('about', {}).get('license')))
 
@@ -398,6 +452,7 @@ class CondaRecipeCheck(object):
             return Error(self.recipe_dir, 'C2122', 'Found invalid license family "{}"' .format(license_family))
 
     def check_for_valid_files(self):
+        """Check that the files listed in meta.yaml exist."""
         test_files = self.meta.get('test', {}).get('files', [])
         test_source_files = self.meta.get('test', {}).get('source_files', [])
         source_patches = self.meta.get('source', {}).get('patches', [])
@@ -411,6 +466,7 @@ class CondaRecipeCheck(object):
                 return Error(self.recipe_dir, 'C2124', 'Found file "{}" in meta.yaml that doesn\'t exist' .format(filename))
 
     def check_dir_content(self):
+        """Check for disallowed files inside the recipe directory."""
         disallowed_extensions = ('.tar', '.tar.gz', '.tar.bz2', '.tar.xz',
                                  '.so', '.dylib', '.la', '.a', '.dll', '.pyd')
 

@@ -23,7 +23,7 @@ class CondaPackageCheck(object):
     """Create checks in order to validate conda package tarballs."""
 
     def __init__(self, path):
-        """Initialize conda package information for use with package checks."""    
+        """Initialize conda package information for use with package checks."""
         super(CondaPackageCheck, self).__init__()
         self.path = path
         self.archive = tarfile.open(self.path)
@@ -97,7 +97,7 @@ class CondaPackageCheck(object):
             return Error(self.path, 'C1110', 'Found invalid build string "{}" in info/index.json' .format(build_string))
         if build_string != self.build:
             return Error(self.path, 'C1111', 'Found build number in info/index.json "{}" does not match build number "{}" in filename' .format(build_string, self.build))
-    
+
     def check_index_dependencies(self):
         """Check that the dependencies field is present in info/index.json."""
         depends = self.info.get('depends')
@@ -186,7 +186,7 @@ class CondaPackageCheck(object):
         for filepath in self.paths:
             if filepath in unallowed_directories or filepath.endswith(('.DS_Store', '~')):
                 return Error(self.path, 'C1125', 'Found unallowed file in tar archive: {}' .format(filepath))
-            
+
     def check_for_noarch_info(self):
         """Check that noarch Python packages contain the proper files."""
         for filepath in self.paths:
@@ -207,17 +207,17 @@ class CondaPackageCheck(object):
         for member in self.archive.getmembers():
             if member.path == 'info/has_prefix':
                 prefix_file = self.archive.extractfile(member.path).read()
-     
+
                 if not all_ascii(prefix_file, self.win_pkg):
                     return Error(self.path, 'C1128', 'Found non-ascii characters in info/has_prefix')
-               
+
                 for line in prefix_file.decode('utf-8').splitlines():
                     line = line.strip()
                     try:
                         placeholder, mode, filename = line.split()
                     except ValueError:
                         placeholder, mode, filename = '/<dummy>/<placeholder>', 'text', line
-                    
+
                     if filename not in self.paths:
                         return Error(self.path, 'C1129', 'Found filename "{}" in info/has_prefix not included in archive' .format(filename))
 
@@ -235,7 +235,7 @@ class CondaPackageCheck(object):
     def check_for_post_links(self):
         """Check the tar archive for pre and post link files."""
         for filepath in self.paths:
-            if filepath.endswith(('-post-link.sh',  '-pre-link.sh',  '-pre-unlink.sh',
+            if filepath.endswith(('-post-link.sh', '-pre-link.sh', '-pre-unlink.sh',
                                   '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat')):
                 return Error(self.path, 'C1134', 'Found pre/post link file "{}" in archive' .format(filepath))
 
@@ -301,14 +301,14 @@ class CondaPackageCheck(object):
             arch = self.info['arch']
             if arch not in ('x86', 'x86_64'):
                 return Error(self.path, 'C1144', 'Found unrecognized Windows architecture "{}"' .format(arch))
-            
+
             for member in self.archive.getmembers():
                 if member.path.endswith(('.exe', '.dll')):
                     file_header = self.archive.extractfile(member.path).read(4096)
                     file_object_type = get_object_type(file_header)
                     if ((arch == 'x86' and file_object_type != 'DLL I386') or
                         (arch == 'x86_64' and file_object_type != 'DLL AMD64')):
-                        
+
                         return Error(self.path, 'C1145', 'Found file "{}" with object type "{}" but with arch "{}"' .format(member.name, file_object_type, arch))
 
 
@@ -316,7 +316,7 @@ class CondaRecipeCheck(object):
     """Create checks in order to validate conda recipes."""
 
     def __init__(self, meta, recipe_dir):
-        """Initialize conda recipe information for use with recipe checks.""" 
+        """Initialize conda recipe information for use with recipe checks."""
         super(CondaRecipeCheck, self).__init__()
         self.meta = meta
         self.recipe_dir = recipe_dir
@@ -380,12 +380,12 @@ class CondaRecipeCheck(object):
             for key in subfield:
                 if key not in FIELDS[section]:
                     return Error(self.recipe_dir, 'C2110', 'Found invalid field "{}" in section "{}"' .format(key, section))
-    
+
     def check_requirements(self):
         """Check that the requirements listed in meta.yaml are valid."""
         build_requirements = self.meta.get('requirements', {}).get('build', [])
         run_requirements = self.meta.get('requirements', {}).get('run', [])
-        
+
         for requirement in build_requirements + run_requirements:
             requirement_parts = requirement.split()
             requirement_name = requirement_parts[0]
@@ -395,7 +395,7 @@ class CondaRecipeCheck(object):
                     return Error(self.recipe_dir, 'C2111', 'Found invalid build requirement "{}"' .format(requirement))
                 elif requirement in run_requirements:
                     return Error(self.recipe_dir, 'C2112', 'Found invalid run requirement "{}"' .format(requirement))
-   
+
             if len(requirement_parts) == 0:
                 return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in info/index.json')
 
@@ -404,7 +404,7 @@ class CondaRecipeCheck(object):
 
         if len(build_requirements) != len(set(build_requirements)):
             return Error(self.recipe_dir, 'C2115', 'Found duplicate build requirements: {}' .format(build_requirements))
-    
+
         if len(run_requirements) != len(set(run_requirements)):
             return Error(self.recipe_dir, 'C2116', 'Found duplicate run requirements: {}' .format(run_requirements))
 
@@ -438,7 +438,7 @@ class CondaRecipeCheck(object):
 
             else:
                 return Error(self.recipe_dir, 'C2120', 'Found invalid URL "{}" in meta.yaml' .format(url))
-        
+
         git_url = source.get('git_url')
         if git_url and (source.get('git_tag') and source.get('git_branch')):
             return Error(self.recipe_dir, 'C2121', 'Found both git_branch and git_tag in meta.yaml source field')

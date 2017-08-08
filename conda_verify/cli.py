@@ -12,7 +12,14 @@ from conda_verify.utilities import render_metadata, iter_cfgs
 @click.option('--exit', is_flag=True)
 @click.version_option(prog_name='conda-verify')
 def cli(path, ignore, exit):
-    """"""
+    """conda-verify is a tool for validating conda packages and recipes.
+
+    To validate a package:\n
+    $  conda-verify path/to/package.tar.bz2
+
+    To validate a recipe:\n
+    $  conda-verify path/to/recipe_directory/
+    """
     verifier = Verify()
     if ignore:
         ignore = ignore.split(',')

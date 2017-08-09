@@ -429,3 +429,15 @@ def test_many_version_specifications(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2114 Found invalid dependency "python 3.6 * 2 * 3" in info/index.json' in error
+
+
+def test_conda_forge_example_recipe(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'conda_forge')
+    metadata = utilities.render_metadata(recipe, None)
+
+    with pytest.raises(SystemExit):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert 'C2126 Found conda-forge comment in meta.yaml file' in error

@@ -6,7 +6,7 @@ and recipes. These checks start with the letter 'C', which is an
 abbreviation for 'conda'.
 
 Checks C1101 through C1145 are housed in CondaPackageCheck.
-Checks C2101 through C2125 are housed in CondaRecipeCheck.
+Checks C2101 through C2126 are housed in CondaRecipeCheck.
 """
 import json
 import os
@@ -15,7 +15,7 @@ import sys
 import tarfile
 
 from conda_verify.errors import Error, PackageError
-from conda_verify.constants import FIELDS, LICENSE_FAMILIES
+from conda_verify.constants import FIELDS, LICENSE_FAMILIES, CONDA_FORGE_COMMENTS
 from conda_verify.utilities import all_ascii, get_bad_seq, get_object_type, ensure_list
 
 
@@ -475,3 +475,13 @@ class CondaRecipeCheck(object):
                 filepath = os.path.join(dirpath, filename)
                 if filepath.endswith(disallowed_extensions):
                     return Error(self.recipe_dir, 'C2125', 'Found disallowed file with extension "{}"' .format(filepath))
+
+    def check_recipes_comments(self):
+        """Check for default comments in conda-forge example recipe."""
+        meta = os.path.join(self.recipe_dir, 'meta.yaml')
+        with open(meta) as meta_file:
+            recipe = meta_file.read().splitlines()
+
+        for line in recipe:
+            if line.startswith('#') and line in CONDA_FORGE_COMMENTS.splitlines():
+                return Error(self.recipe_dir, 'C2126', 'Found conda-forge comment in meta.yaml file')

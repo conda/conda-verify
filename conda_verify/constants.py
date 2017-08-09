@@ -40,3 +40,29 @@ DLL_TYPES = {
     0x1f1: 'POWERPCFP', 0x166: 'R4000', 0x1a2: 'SH3', 0x1a3: 'SH3DSP',
     0x1a6: 'SH4', 0x1a8: 'SH5', 0x1c2: 'THUMB', 0x169: 'WCEMIPSV2',
 }
+
+CONDA_FORGE_COMMENTS = """
+# Note: there are many handy hints in comments in this example -- remove them when you've finalized your recipe
+# Jinja variables help maintain the recipe as you'll update the version only here.
+# sha256 is the prefered checksum -- you can get it for a file with:
+#  `openssl sha256 <file name>`.
+# You may need the openssl package, available on conda-forge
+#  `conda install openssl -c conda-forge``
+# If the installation is complex, or different between Unix and Windows, use separate bld.bat and build.sh files instead of this key.
+# By default, the package will be built for the Python versions supported by conda-forge and for all major OSs.
+# Add the line "skip: True  # [py<35]" (for example) to limit to Python 3.5 and newer, or "skip: True  # [not win]" to limit to Windows.
+# When setuptools is available add the `--single-version-externally-managed --record record.txt` above.
+# if your project compiles code (such as a C extension) then add `toolchain` as a build requirement.
+# Some package might need a `test/commands` key to check CLI.
+# List all the packages/modules that `run_test.py` imports.
+# Remember to specify the license variants for BSD, Apache, GPL, and LGLP.
+# Prefer the short version, e.g: GPL-2.0 instead of GNU General Public License version 2.0
+# See https://opensource.org/licenses/alphabetical
+# The license_family, i.e. "BSD" if license is "BSD-3-Clause". (optional)
+# It is strongly encouraged to include a license file in the package,
+# (even if the license doesn't require it) using the license_file entry.
+# See http://conda.pydata.org/docs/building/meta-yaml.html#license-file
+# The remaining entries in this section are optional, but recommended
+# GitHub IDs for maintainers of the recipe.
+# Always check with the people listed below if they are OK becoming maintainers of the recipe. (There will be spam!)
+"""

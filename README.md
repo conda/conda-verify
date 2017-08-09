@@ -182,3 +182,4 @@ Checks
     C2123 - Found file "{}" listed outside recipe directory
     C2124 - Found file "{}" in meta.yaml that doesn't exist
     C2125 - Found disallowed file with extension "{}"
+    C2126 - Found conda-forge comment in meta.yaml file

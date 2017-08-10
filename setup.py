@@ -1,16 +1,17 @@
 # (c) 2017 Continuum Analytics, Inc. / http://continuum.io
 # All Rights Reserved
-from setuptools import setup
 import sys
+
+from setuptools import setup
 
 from conda_verify import __version__
 
 
 if sys.version_info.major == 2:
-    requirements = ['backports.functools_lru_cache >= 1.4', 'click >= 6.7',
-                    'jinja2 >= 2.9.6']
-else:
-    requirements = ['click >= 6.7', 'jinja2 >= 2.9.6']
+    requirements = ['backports.functools_lru_cache >= 1.4']
+
+requirements.extend(['click >= 6.7', 'jinja2 >= 2.9'])
+
 
 setup(
     name="conda-verify",

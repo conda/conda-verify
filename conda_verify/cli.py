@@ -2,6 +2,7 @@ import os
 
 import click
 
+from conda_verify import __version__
 from conda_verify.verify import Verify
 from conda_verify.utilities import render_metadata, iter_cfgs
 
@@ -10,7 +11,7 @@ from conda_verify.utilities import render_metadata, iter_cfgs
 @click.argument('path', type=click.Path(exists=True))
 @click.option('--ignore', nargs=1, type=str)
 @click.option('--exit', is_flag=True)
-@click.version_option(prog_name='conda-verify')
+@click.version_option(prog_name='conda-verify', version=__version__)
 def cli(path, ignore, exit):
     """conda-verify is a tool for validating conda packages and recipes.
 

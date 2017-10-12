@@ -12,8 +12,10 @@ build:
   noarch: python
 
 requirements:
-  build: python
-  run: python
+  build: 
+    - python
+  run: 
+    - python
 
 about:
   license: BSD

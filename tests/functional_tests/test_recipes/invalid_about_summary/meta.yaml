@@ -9,8 +9,10 @@ source:
   path: ./
 
 requirements:
-  build: python
-  run: python
+  build: 
+    - python
+  run: 
+    - python
 
 about:
   summary: Maybe we should extend the summary limit to one hundred and fourty characters instead of checking for eighty characters.

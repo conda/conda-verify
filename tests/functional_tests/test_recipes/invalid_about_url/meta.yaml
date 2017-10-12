@@ -9,8 +9,10 @@ source:
   path: ./
 
 requirements:
-  build: python
-  run: python
+  build: 
+    - python
+  run: 
+    - python
 
 about:
   home: www.continuum.io

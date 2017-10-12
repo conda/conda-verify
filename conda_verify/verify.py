@@ -26,6 +26,7 @@ class Verify(object):
         if len(checks_to_display) > 0:
             for check in sorted(checks_to_display):
                 if check.code not in ensure_list(checks_to_ignore):
+                    check = u'{}' .format(check)
                     if exit_on_error:
                         raise PackageError(check)
                     else:

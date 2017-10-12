@@ -12,4 +12,4 @@ build:
   noarch: python
 
 requirements:
-  jibber_jabber: False
+  extra_field: True

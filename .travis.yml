@@ -34,7 +34,7 @@ install:
   - conda update -q --all
   - conda install pytest pytest-cov pytest-mock pyyaml click jinja2
   - if [[ "$CONDA_BUILD" == "1" ]]; then
-      conda install -q conda-build && conda remove -q conda-build && git clone https://github.com/conda/conda-build && pushd conda-build && pip install -e . && popd;
+      conda install -q conda-build && conda remove -q conda-build && git clone https://github.com/conda/conda-build && pushd conda-build && pip install -e . && popd && conda remove -q conda-verify;
     fi
   - python setup.py install
 

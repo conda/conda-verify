@@ -32,10 +32,10 @@ install:
   - conda config --set always_yes yes
   - conda config --set auto_update_conda False
   - conda update -q --all
-  - conda install pytest pytest-cov pytest-mock pyyaml
+  - conda install pytest pytest-cov pytest-mock pyyaml click jinja2
   # test functionality both with and without conda-build present
   - if [[ "$CONDA_BUILD" == "1" ]]; then
-      conda install conda-build;
+      conda install -q conda-build;
     fi
   - python setup.py install
 

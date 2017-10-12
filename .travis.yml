@@ -33,9 +33,8 @@ install:
   - conda config --set auto_update_conda False
   - conda update -q --all
   - conda install pytest pytest-cov pytest-mock pyyaml click jinja2
-  # test functionality both with and without conda-build present
   - if [[ "$CONDA_BUILD" == "1" ]]; then
-      conda install -q conda-build;
+      conda install -q conda-build && conda remove -q conda-build && git clone https://github.com/conda/conda-build && pushd conda-build && pip install -e . && popd;
     fi
   - python setup.py install
 

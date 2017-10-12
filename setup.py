@@ -7,10 +7,9 @@ from setuptools import setup
 from conda_verify import __version__
 
 
+requirements = ['click >= 6.7', 'jinja2 >= 2.9']
 if sys.version_info.major == 2:
-    requirements = ['backports.functools_lru_cache >= 1.4']
-
-requirements.extend(['click >= 6.7', 'jinja2 >= 2.9'])
+    requirements.append('backports.functools_lru_cache >= 1.4')
 
 
 setup(

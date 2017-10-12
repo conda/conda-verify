@@ -29,8 +29,9 @@ def cli(path, ignore, exit):
         print('Verifying {}...' .format(meta_file))
         for cfg in iter_cfgs():
             meta = render_metadata(path, cfg)
-            verifier.verify_recipe(rendered_meta=meta, recipe_dir=path,
-                                   checks_to_ignore=ignore, exit_on_error=exit)
+            if meta.get('build', {}).get('skip', '').lower() != 'true':
+                verifier.verify_recipe(rendered_meta=meta, recipe_dir=path,
+                                    checks_to_ignore=ignore, exit_on_error=exit)
 
     elif path.endswith(('.tar.bz2', '.tar')):
         print('Verifying {}...' .format(path))

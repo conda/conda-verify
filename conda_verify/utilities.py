@@ -22,36 +22,36 @@ def yamlize(data):
 
 
 def ns_cfg(cfg):
-    plat = cfg['plat']
-    py = cfg['PY']
-    np = cfg['NPY']
+    plat = '-'.join((cfg['platform'], cfg['arch']))
+    py = int(''.join(cfg['python'].split('.')))
+    np = int(''.join(cfg['numpy'].split('.')))
 
     return dict(
-        nomkl = False,
-        debug = False,
-        linux = plat.startswith('linux-'),
-        linux32 = bool(plat == 'linux-32'),
-        linux64 = bool(plat == 'linux-64'),
-        armv7l = False,
-        arm = False,
-        ppc64le = False,
-        osx = plat.startswith('osx-'),
-        unix = plat.startswith(('linux-', 'osx-')),
-        win = plat.startswith('win-'),
-        win32 = bool(plat == 'win-32'),
-        win64 = bool(plat == 'win-64'),
-        x86 = plat.endswith(('-32', '-64')),
-        x86_64 = plat.endswith('-64'),
-        py = py,
-        py3k = bool(30 <= py < 40),
-        py2k = bool(20 <= py < 30),
-        py26 = bool(py == 26),
-        py27 = bool(py == 27),
-        py33 = bool(py == 33),
-        py34 = bool(py == 34),
-        py35 = bool(py == 35),
-        py36 = bool(py == 36),
-        np = np,
+        nomkl=False,
+        debug=False,
+        linux=plat.startswith('linux-'),
+        linux32=bool(plat == 'linux-32'),
+        linux64=bool(plat == 'linux-64'),
+        armv7l=bool(plat == 'linux-armv7l'),
+        arm=bool(plat == 'linux-armv7l'),
+        ppc64le=bool(plat == 'linux-ppc64le'),
+        osx=plat.startswith('osx-'),
+        unix=plat.startswith(('linux-', 'osx-')),
+        win=plat.startswith('win-'),
+        win32=bool(plat == 'win-32'),
+        win64=bool(plat == 'win-64'),
+        x86=plat.endswith(('-32', '-64')),
+        x86_64=plat.endswith('-64'),
+        py=py,
+        py3k=bool(30 <= py < 40),
+        py2k=bool(20 <= py < 30),
+        py26=bool(py == 26),
+        py27=bool(py == 27),
+        py33=bool(py == 33),
+        py34=bool(py == 34),
+        py35=bool(py == 35),
+        py36=bool(py == 36),
+        np=np,
     )
 
 
@@ -84,15 +84,24 @@ def render_jinja2(recipe_dir):
     return template.render(environment=env)
 
 
-def render_metadata(recipe_dir, cfg):
-    data = render_jinja2(recipe_dir)
-    return parse(data, cfg)
+try:
+    # circular dependency.  We only try this import so that conda-build is an optional
+    #      conda-verify dep
+    from conda_build import api
+    render_metadata = lambda recipe_dir, cfg: api.render(recipe_dir, finalize=False,
+                                                         bypass_env_check=True,
+                                                         **(cfg if cfg else {}))[0][0].meta
+except ImportError:
+    def render_metadata(recipe_dir, cfg):
+        data = render_jinja2(recipe_dir)
+        return parse(data, cfg)
 
 
 def iter_cfgs():
-    for py in 27, 34, 35:
+    for py in "27", "34", "35":
         for plat in 'linux-64', 'linux-32', 'osx-64', 'win-32', 'win-64':
-            yield dict(plat=plat, PY=py, NPY=111)
+            platform, arch = plat.split('-')
+            yield dict(platform=platform, arch=arch, python=py, numpy="1.11")
 
 
 def get_object_type(data):
@@ -122,9 +131,9 @@ def get_bad_seq(s):
 
 
 def all_ascii(data, allow_CR=False):
-    newline = [10] # LF
+    newline = [10]  # LF
     if allow_CR:
-        newline.append(13) # CR
+        newline.append(13)  # CR
     for c in data:
         n = ord(c) if sys.version_info[0] == 2 else c
         if not (n in newline or 32 <= n < 127):

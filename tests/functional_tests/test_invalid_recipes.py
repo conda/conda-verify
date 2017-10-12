@@ -127,18 +127,6 @@ def test_invalid_extra_field_key(recipe_dir, verifier, capfd):
     assert 'C2110 Found invalid field "some_nonsense" in section "extra"' in error
 
 
-def test_no_package_name(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir, 'no_package_name')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2101 Missing package name in meta.yaml' in error
-
-
 def test_invalid_package_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_name')
     metadata = utilities.render_metadata(recipe, None)
@@ -235,56 +223,6 @@ def test_invalid_build_number_negative(recipe_dir, verifier, capfd):
     assert 'C2108 Build number in info/index.json cannot be a negative integer' in error
 
 
-def test_invalid_build_requirement_name(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir, 'invalid_build_requirement_name')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2111 Found invalid build requirement "python!"' in error
-
-
-def test_invalid_build_requirement_version_specification(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir,
-                          'invalid_build_requirement_version_specification')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2114 Found invalid dependency "python >== 2.7"' in error
-
-
-def test_invalid_run_requirement_version_specification(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir,
-                          'invalid_run_requirement_version_specification')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2114 Found invalid dependency "python \\>=" in info/index.json' in error
-
-
-def test_invalid_run_requirement_name(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir, 'invalid_run_requirement_name')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2112 Found invalid run requirement "python@#"' in error
-
-
 def test_invalid_source_url(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_source_url')
     metadata = utilities.render_metadata(recipe, None)
@@ -331,18 +269,6 @@ def test_invalid_source_hash(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2119 Found invalid hash "abc123" in meta.yaml' in error
-
-
-def test_invalid_source_giturl(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir, 'invalid_source_giturl')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2121 Found both git_branch and git_tag in meta.yaml source field' in error
 
 
 def test_invalid_license_family(recipe_dir, verifier, capfd):
@@ -417,18 +343,6 @@ def test_duplicate_version_specifications(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert "C2116 Found duplicate run requirements: ['python', 'python']" in error
-
-
-def test_many_version_specifications(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir, 'many_version_specs')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2114 Found invalid dependency "python 3.6 * 2 * 3" in info/index.json' in error
 
 
 def test_conda_forge_example_recipe(recipe_dir, verifier, capfd):

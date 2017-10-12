@@ -15,6 +15,10 @@ matrix:
       os: linux
     - python: '3.6'
       os: linux
+    - python: '3.6'
+      os: linux
+      env:
+        - CONDA_BUILD=1
 
 install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -29,6 +33,10 @@ install:
   - conda config --set auto_update_conda False
   - conda update -q --all
   - conda install pytest pytest-cov pytest-mock pyyaml
+  # test functionality both with and without conda-build present
+  - if [[ "$CONDA_BUILD" == "1" ]]; then
+      conda install conda-build;
+    fi
   - python setup.py install
 
 script:

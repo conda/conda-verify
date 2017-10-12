@@ -75,7 +75,7 @@ def test_invalid_requirements_field_key(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2110 Found invalid field "extra_field" in section "requirements"' in error
+    assert 'C2110 Found invalid field "jibber_jabber" in section "requirements"' in error
 
 
 def test_invalid_test_field_key(recipe_dir, verifier, capfd):

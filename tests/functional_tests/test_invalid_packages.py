@@ -380,3 +380,25 @@ def test_invalid_license_family(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'Found invalid license "FAKELICENSE" in info/index.json' in error
+
+
+def test_invalid_file_hash(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.43-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1146 Found file "lib/python3.6/site-packages/test/__main__.py" with sha256 hash different than listed in paths.json' in error
+
+
+def test_invalid_file_size(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.44-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1147 Found file "lib/python3.6/site-packages/test/__main__.py" with filesize different than listed in paths.json' in error

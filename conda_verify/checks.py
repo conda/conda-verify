@@ -8,6 +8,7 @@ abbreviation for 'conda'.
 Checks C1101 through C1145 are housed in CondaPackageCheck.
 Checks C2101 through C2126 are housed in CondaRecipeCheck.
 """
+import hashlib
 import json
 import os
 import re
@@ -33,6 +34,7 @@ class CondaPackageCheck(object):
         self.index = self.archive.extractfile('info/index.json').read()
         self.info = json.loads(self.index.decode('utf-8'))
         self.files_file = self.archive.extractfile('info/files').read()
+        self.paths_file = self.archive.extractfile('info/paths.json').read()
         self.win_pkg = bool(self.info['platform'] == 'win')
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
@@ -311,6 +313,21 @@ class CondaPackageCheck(object):
                         (arch == 'x86_64' and file_object_type != 'DLL AMD64')):
 
                         return Error(self.path, 'C1145', u'Found file "{}" with object type "{}" but with arch "{}"' .format(member.name, file_object_type, arch))
+
+    def check_package_hashes_and_size(self):
+        """Check the sha256 checksum and filesize of each file in the package."""
+        paths_json = json.loads(self.paths_file.decode('utf-8'))
+
+        for member in self.archive.getmembers():
+            if member.isfile():
+                file_object = self.archive.extractfile(member.name).read()
+                sha256_digest = hashlib.sha256(file_object).hexdigest()
+                for path in paths_json['paths']:
+                    if member.name == path['_path']:
+                        if sha256_digest != path['sha256']:
+                            return Error(self.path, 'C1146', 'Found file "{}" with sha256 hash different than listed in paths.json' .format(member.name))
+                        elif member.size != path['size_in_bytes']:
+                            return Error(self.path, 'C1147', 'Found file "{}" with filesize different than listed in paths.json' .format(member.name))
 
 
 class CondaRecipeCheck(object):

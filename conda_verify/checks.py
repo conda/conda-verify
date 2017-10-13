@@ -434,22 +434,23 @@ class CondaRecipeCheck(object):
 
     def check_source(self):
         """Check the source field in meta.yaml for proper formatting."""
-        source = self.meta.get('source', {})
-        url = source.get('url')
-        if url is not None:
-            if self.url_pat.match(url):
+        sources = ensure_list(self.meta.get('source', {}))
+        for source in sources:
+            url = source.get('url')
+            if url is not None:
+                if self.url_pat.match(url):
 
-                for hash_algorithm in ['md5', 'sha1', 'sha256']:
-                    hexdigest = source.get(hash_algorithm)
-                    if hexdigest is not None and not self.hash_pat[hash_algorithm].match(hexdigest):
-                        return Error(self.recipe_dir, 'C2119', u'Found invalid hash "{}" in meta.yaml' .format(hexdigest))
+                    for hash_algorithm in ['md5', 'sha1', 'sha256']:
+                        hexdigest = source.get(hash_algorithm)
+                        if hexdigest is not None and not self.hash_pat[hash_algorithm].match(hexdigest):
+                            return Error(self.recipe_dir, 'C2119', u'Found invalid hash "{}" in meta.yaml' .format(hexdigest))
 
-            else:
-                return Error(self.recipe_dir, 'C2120', u'Found invalid URL "{}" in meta.yaml' .format(url))
+                else:
+                    return Error(self.recipe_dir, 'C2120', u'Found invalid URL "{}" in meta.yaml' .format(url))
 
-        git_url = source.get('git_url')
-        if git_url and (source.get('git_tag') and source.get('git_branch')):
-            return Error(self.recipe_dir, 'C2121', 'Found both git_branch and git_tag in meta.yaml source field')
+            git_url = source.get('git_url')
+            if git_url and (source.get('git_tag') and source.get('git_branch')):
+                return Error(self.recipe_dir, 'C2121', 'Found both git_branch and git_tag in meta.yaml source field')
 
     def check_license_family(self):
         """Check that the license family listed in meta.yaml is valid."""
@@ -463,7 +464,10 @@ class CondaRecipeCheck(object):
         """Check that the files listed in meta.yaml exist."""
         test_files = self.meta.get('test', {}).get('files', [])
         test_source_files = self.meta.get('test', {}).get('source_files', [])
-        source_patches = self.meta.get('source', {}).get('patches', [])
+        sources = ensure_list(self.meta.get('source', {}))
+        source_patches = []
+        for source in sources:
+            source_patches.extend(source.get('patches', []))
 
         for filename in test_files + test_source_files + source_patches:
             filepath = os.path.join(self.recipe_dir, filename)

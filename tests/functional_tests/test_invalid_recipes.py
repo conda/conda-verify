@@ -3,7 +3,6 @@ import os
 import pytest
 
 from conda_verify import utilities
-from conda_verify.errors import RecipeError
 from conda_verify.verify import Verify
 
 
@@ -52,6 +51,18 @@ def test_invalid_source_field_key(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2110 Found invalid field "sha3" in section "source"' in error
+
+
+def test_invalid_multiple_source_field_key(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'invalid_multiple_sources')
+    metadata = utilities.render_metadata(recipe, None)
+
+    with pytest.raises(SystemExit):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert 'C2110 Found invalid field "gti_url" in section "source"' in error
 
 
 def test_invalid_build_field_key(recipe_dir, verifier, capfd):
@@ -355,3 +366,15 @@ def test_conda_forge_example_recipe(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2126 Found conda-forge comment in meta.yaml file' in error
+
+
+def test_invalid_outputs(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'invalid_output')
+    metadata = utilities.render_metadata(recipe, None)
+
+    with pytest.raises(SystemExit):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert 'C2110 Found invalid field "srcitp" in section "outputs"' in error

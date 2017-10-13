@@ -3,6 +3,8 @@ conda-verify
 
 [![Travis branch](https://img.shields.io/travis/conda/conda-verify/master.svg?style=flat-square)](https://travis-ci.org/conda/conda-verify)
 
+[![Codecov branch](https://img.shields.io/codecov/c/github/conda/conda-verify/master.svg)](https://codecov.io/gh/conda/conda-verify)
+
 conda-verify is a tool for (passively) verifying conda recipes and
 conda packages. The purpose of this verification process is to ensure that
 recipes don't contain obvious bugs, and that the conda packages we distribute

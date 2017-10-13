@@ -1,3 +1,9 @@
+2017-10-13   3.0.0:
+-------------------
+  * rewrite to use more integrated code, less plugin code
+  * fix setup.py not including any packages (and thus doing nothing)
+  * expand test coverage
+
 2016-11-07   2.0.0:
 -------------------
   * fork project from anaconda-verify as new conda-verify name

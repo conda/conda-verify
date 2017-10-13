@@ -5,15 +5,23 @@ import sys
 from conda_verify.checks import CondaPackageCheck, CondaRecipeCheck
 from conda_verify.errors import PackageError, RecipeError
 from conda_verify.utilities import ensure_list
+from logging import getLogger
 
 
 class Verify(object):
     """Verify class is called by the CLI but may be used as an API as well."""
 
     @staticmethod
-    def verify_package(path_to_package=None, checks_to_ignore=None, exit_on_error=False):
+    def verify_package(path_to_package=None, checks_to_ignore=None, exit_on_error=False,
+                       **kw):
         """Run all package checks in order to verify a conda package."""
         package_check = CondaPackageCheck(path_to_package)
+
+        if (('ignore_scripts' in kw and kw['ignore_scripts']) or
+                ('run_scripts' in kw and kw['run_scripts'])):
+            getLogger(__name__).warn('Ignoring legacy ignore_scripts or run_scripts.  These have '
+                    'been replaced by the checks_to_ignore argument, which takes a'
+                    'list of codes, documented at https://github.com/conda/conda-verify#checks')
 
         # collect all CondaPackageCheck methods that start with the word 'check'
         # this should later be a decorator that is placed on each check
@@ -41,9 +49,17 @@ class Verify(object):
 
     @staticmethod
     def verify_recipe(rendered_meta=None, recipe_dir=None, checks_to_ignore=None,
-                      exit_on_error=False):
-        """Run all recipe checks in order to verify a conda recipe."""
+                      exit_on_error=False, **kw):
+        """Run all recipe checks in order to verify a conda recipe.
+        checks_to_ignore should be a list, tuple, or set of codes, such as ['C2102', 'C2104'].
+        Codes are listed in readme.md"""
         recipe_check = CondaRecipeCheck(rendered_meta, recipe_dir)
+
+        if (('ignore_scripts' in kw and kw['ignore_scripts']) or
+                ('run_scripts' in kw and kw['run_scripts'])):
+            getLogger(__name__).warn('Ignoring legacy ignore_scripts or run_scripts.  These have '
+                    'been replaced by the checks_to_ignore argument, which takes a'
+                    'list of codes, documented at https://github.com/conda/conda-verify#checks')
 
         # collect all CondaRecipeCheck methods that start with the word 'check'
         # this should later be a decorator that is placed on each check

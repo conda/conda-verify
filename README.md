@@ -2,21 +2,11 @@ conda-verify
 ============
 
 conda-verify is a tool for (passively) verifying conda recipes and
-conda packages.
+conda packages. The purpose of this verification process is to ensure that
+recipes don't contain obvious bugs, and that the conda packages we distribute
+to millions of users meet our high quality standards.
 
-Using conda-verify:
-
-    $ conda install conda-verify
-    $ conda-verify -h
-    $ conda-verify <path to recipes or packages>
-
-
-The purpose of this verification process is to ensure that recipes don't
-contain obvious bugs, and that the conda packages we distribute to millions
-of users meet our high quality standards.
-
-
-Packages
+Features
 --------
 
 Another aspect of `conda-verify` is the ability to verify conda packages.
@@ -84,11 +74,112 @@ or useful.
     the `pandas` package.  This would happen when the `pandas` build
     dependencies have missing `.pyc` files.
 
-Here is an example of running the tool on conda packages:
+Installation
+------------
 
-    $ conda-verify bitarray-0.8.1-py35_0.tar.bz2
-    ==> /Users/ilan/aroot/tars64/bitarray-0.8.1-py35_0.tar.bz2 <==
-        bitarray
+conda-verify can be installed with conda with the following command:
+```
+$  conda install conda-verify
+```
 
-In this case all is fine, and we see that only the `bitarray` directory is
-created in `site-packages`.
+If you would rather install from source, the following commands may be used:
+```
+$  git clone https://github.com/conda/conda-verify.git
+$  cd conda-verify
+$  python setup.py install
+```
+
+
+Usage
+-----
+
+    usage: conda-verify [options] path
+
+    positional arguments:
+        path                    The filepath to the conda package or the path to the recipe directory
+
+    optional arguments:
+        --ignore                Ignore specific checks. Each check must be separated by a single comma
+        --exit                  Raise an exception after the first error is found
+
+
+For example, to verify the conda-build recipe while ignoring the field check
+and the license check one could run:
+
+    $  conda-verify conda-build/conda.recipe --ignore=C2109,C2124
+
+
+Checks
+------
+
+    C1101 - Missing package name in info/index.json
+    C1102 - Found package name in info/index.json "{}" does not match filename "{}"
+    C1103 - Found invalid package name in info/index.json
+    C1104 - Missing package version in info/index.json
+    C1105 - Found invalid version number in info/index.json
+    C1106 - Found package version in info/index.json "{}" does not match filename version "{}"
+    C1107 - Package version in info/index.json cannot start or end with '_' or '.'
+    C1108 - Build number in info/index.json must be an integer
+    C1109 - Build number in info/index.json cannot be a negative integer
+    C1110 - Found invalid build string "{}" in info/index.json
+    C1111 - Found build number in info/index.json "{}" does not match build number "{}" in filename
+    C1112 - Missing "depends" field in info/index.json
+    C1113 - Found empty dependencies in info/index.json
+    C1114 - Found invalid dependency "{}" in info/index.json
+    C1115 - Found invalid license "{}" in info/index.json
+    C1116 - Found non-ascii characters inside info/index.json
+    C1117 - Found duplicate members inside tar archive
+    C1118 - Found archive member names containing non-ascii characters
+    C1119 - Found filenames in info/files containing non-ascii characters
+    C1120 - Found filenames in info/files that start with "info"
+    C1121 - Found duplicate filenames in info/files
+    C1122 - Found filename in info/files missing from tar archive: {}
+    C1123 - Found filename in tar archive missing from info/files: {}
+    C1124 - Found hardlink {} in tar archive
+    C1125 - Found unallowed file in tar archive: {}
+    C1126 - Found {} however package is not a noarch package
+    C1127 - Found both .bat and .exe files in executable directory
+    C1128 - Found non-ascii characters in info/has_prefix
+    C1129 - Found filename "{}" in info/has_prefix not included in archive
+    C1130 - Found invalid mode "{}" in info/has_prefix
+    C1131 - Binary placeholder found in info/has_prefix not allowed when building Python
+    C1132 - Binary placeholder found in info/has_prefix not allowed in Windows package
+    C1133 - Binary placeholder "{}" found in info/has_prefix does not have a length of 255 bytes
+    C1134 - Found pre/post link file "{}" in archive
+    C1135 - Found egg file "{}" in archive
+    C1136 - Found easy_install script "{}" in archive
+    C1137 - Found namespace file "{}" in archive
+    C1138 - Found pyo file "{}" in archive
+    C1139 - Found pyc file "{}" in invalid directory
+    C1140 - Found lib2to3 .pickle file "{}"
+    C1141 - Found python file "{}" without a corresponding pyc file
+    C1142 - Found invalid Menu json file "{}"
+    C1143 - Found more than one Menu json file
+    C1144 - Found unrecognized Windows architecture "{}"
+    C1145 - Found file "{}" with object type "{}" but with arch "{}"
+    C2101 - Missing package name in meta.yaml
+    C2102 - Found invalid package name "{}" in meta.yaml
+    C2103 - Found invalid sequence "{}" in package name
+    C2104 - Missing package version in meta.yaml
+    C2105 - Found invalid package version "{}" in meta.yaml
+    C2106 - Found invalid sequence "{}" in package version
+    C2107 - Build number in info/index.json must be an integer
+    C2108 - Build number in info/index.json cannot be a negative integer
+    C2109 - Found invalid section "{}"
+    C2110 - Found invalid field "{}" in section "{}"
+    C2111 - Found invalid build requirement "{}"
+    C2112 - Found invalid run requirement "{}"
+    C2113 - Found empty dependencies in info/index.json
+    C2114 - Found invalid dependency "{}" in info/index.json
+    C2115 - Found duplicate build requirements: {}
+    C2116 - Found duplicate run requirements: {}
+    C2117 - Found summary with length greater than 80 characters
+    C2118 - Found invalid URL "{}" in meta.yaml
+    C2119 - Found invalid hash "{}" in meta.yaml
+    C2120 - Found invalid URL "{}" in meta.yaml
+    C2121 - Found both git_branch and git_tag in meta.yaml source field
+    C2122 - Found invalid license family "{}"
+    C2123 - Found file "{}" listed outside recipe directory
+    C2124 - Found file "{}" in meta.yaml that doesn't exist
+    C2125 - Found disallowed file with extension "{}"
+    C2126 - Found conda-forge comment in meta.yaml file

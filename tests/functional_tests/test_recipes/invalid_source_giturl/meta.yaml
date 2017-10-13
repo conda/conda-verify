@@ -1,0 +1,21 @@
+# this file is manually built and uploaded to the conda_build_test anaconda.org account.
+#   Its purpose is to provide a package dependency that is only available on our test account.
+
+package:
+  name: "some_package"
+  version: '1.0.0rc3'
+
+source:
+  git_url: https://pypi.python.org/packages/source/b/bsdiff4/bsdiff4-1.1.4.tar.gz
+  git_tag: 1.1.4
+  git_branch: 'master'
+
+build:
+  noarch: python
+
+requirements:
+  build: python
+  run: python
+
+app:
+  icon: icon_64x64.png

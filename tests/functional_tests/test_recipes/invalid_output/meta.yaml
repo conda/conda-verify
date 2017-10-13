@@ -1,0 +1,7 @@
+package:
+  name: invalid_outputs
+  version: 1.0
+
+outputs:
+  - name: steve
+    srcitp: install.sh

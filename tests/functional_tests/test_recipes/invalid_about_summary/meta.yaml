@@ -1,0 +1,21 @@
+# this file is manually built and uploaded to the conda_build_test anaconda.org account.
+#   Its purpose is to provide a package dependency that is only available on our test account.
+
+package:
+  name: "some_package"
+  version: '1.0.0rc3'
+
+source:
+  path: ./
+
+requirements:
+  build: 
+    - python
+  run: 
+    - python
+
+about:
+  summary: Maybe we should extend the summary limit to one hundred and fourty characters instead of checking for eighty characters.
+
+app:
+  icon: icon_64x64.png

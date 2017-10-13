@@ -1,76 +1,69 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
+from __future__ import print_function
+import sys
 
-from logging import getLogger
-from os.path import dirname, join, lexists
-import pkgutil
-import tarfile
-from tempfile import mkdtemp
-
-from conda.exports import rm_rf
-
-log = getLogger(__name__)
+from conda_verify.checks import CondaPackageCheck, CondaRecipeCheck
+from conda_verify.errors import PackageError, RecipeError
+from conda_verify.utilities import ensure_list
 
 
 class Verify(object):
-    def __init__(self):
-        pass
+    """Verify class is called by the CLI but may be used as an API as well."""
 
-    def list_script(self, path_to_script, run_scripts=None, ignore_scripts=None):
-        verify_modules = pkgutil.iter_modules([path_to_script])
-        files = []
-        for _, name, _ in verify_modules:
-            files.append(name)
+    @staticmethod
+    def verify_package(path_to_package=None, checks_to_ignore=None, exit_on_error=False):
+        """Run all package checks in order to verify a conda package."""
+        package_check = CondaPackageCheck(path_to_package)
 
-        if ignore_scripts is not None:
-            return [script for script in files if script not in ignore_scripts]
-        elif run_scripts is not None:
-            return [script for script in files if script in run_scripts]
-        else:
-            return files
+        # collect all CondaPackageCheck methods that start with the word 'check'
+        # this should later be a decorator that is placed on each check
+        checks_to_display = [getattr(package_check, method)() for method
+                             in dir(package_check) if method.startswith('check') and
+                             getattr(package_check, method)() is not None]
 
-    def verify_recipe(self, run_scripts=None, ignore_scripts=None, **kwargs):
-        rec_path = join(dirname(__file__), "recipe")
-        files = self.list_script(rec_path, run_scripts=run_scripts, ignore_scripts=ignore_scripts)
-        for script in files:
-            mod = getattr(__import__("conda_verify.recipe", fromlist=[script]), script)
-            print("Running script: %s" % script)
-            mod.verify(**kwargs)
+        return_code = 0
 
-    def verify_package(self, run_scripts=None, ignore_scripts=None, **kwargs):
-        path_to_package = kwargs['path_to_package']
-        extracted_package_dir = mkdtemp()
+        if len(checks_to_display) > 0:
+            for check in sorted(checks_to_display):
+                if check.code not in ensure_list(checks_to_ignore):
+                    check = u'{}' .format(check)
+                    if exit_on_error:
+                        raise PackageError(check)
+                    else:
+                        print(check, file=sys.stderr)
 
-        try:
-            extract_tarball(path_to_package, extracted_package_dir)
-            kwargs['extracted_package_dir'] = extracted_package_dir
+                    return_code = 1
 
-            pkg_path = join(dirname(__file__), "package")
-            files = self.list_script(pkg_path, run_scripts=run_scripts, ignore_scripts=ignore_scripts)
-            for script in files:
-                mod = getattr(__import__("conda_verify.package", fromlist=[script]), script)
-                print("Running script: %s" % script)
-                mod.verify(**kwargs)
+        # by exiting at a return code greater than 0 we can assure failures
+        # in logs or continuous integration services
+        if return_code > 0:
+            sys.exit(return_code)
 
-        finally:
-            rm_rf(extracted_package_dir)
+    @staticmethod
+    def verify_recipe(rendered_meta=None, recipe_dir=None, checks_to_ignore=None,
+                      exit_on_error=False):
+        """Run all recipe checks in order to verify a conda recipe."""
+        recipe_check = CondaRecipeCheck(rendered_meta, recipe_dir)
 
+        # collect all CondaRecipeCheck methods that start with the word 'check'
+        # this should later be a decorator that is placed on each check
+        checks_to_display = [getattr(recipe_check, method)() for method
+                             in dir(recipe_check) if method.startswith('check') and
+                             getattr(recipe_check, method)() is not None]
 
-def extract_tarball(tarball_full_path, destination_directory=None, progress_update_callback=None):
-    if destination_directory is None:
-        destination_directory = tarball_full_path[:-8]
-    log.debug("extracting %s\n  to %s", tarball_full_path, destination_directory)
+        return_code = 0
 
-    assert not lexists(destination_directory), destination_directory
+        if len(checks_to_display) > 0:
+            for check in sorted(checks_to_display):
+                if check.code not in ensure_list(checks_to_ignore):
+                    if exit_on_error:
+                        raise RecipeError(check)
+                    else:
+                        print(check, file=sys.stderr)
 
-    with tarfile.open(tarball_full_path) as t:
-        members = t.getmembers()
-        num_members = len(members)
+                    return_code = 1
 
-        def members_with_progress():
-            for q, member in enumerate(members):
-                if progress_update_callback:
-                    progress_update_callback(q / num_members)
-                yield member
-
-        t.extractall(path=destination_directory, members=members_with_progress())
+        # by exiting at a return code greater than 0 we can assure failures
+        # in logs or continuous integration services
+        if return_code > 0:
+            sys.exit(return_code)

@@ -1,3 +1,8 @@
+2017-10-13   3.0.1:
+-------------------
+  * show warning when legacy arguments are passed to verify functions (rather than fail)  #16
+  * clean up dead code  #17
+
 2017-10-13   3.0.0:
 -------------------
   * rewrite to use more integrated code, less plugin code

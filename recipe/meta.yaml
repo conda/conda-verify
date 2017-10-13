@@ -1,6 +1,8 @@
+{% set setup_data = load_setup_py_data() %}
+
 package:
   name: conda-verify
-  version: "3.0.0"
+  version: {{ setup_data['version'] }}
 
 source:
   path: ../
@@ -9,12 +11,23 @@ requirements:
   build:
     - python
     - setuptools
+    - pip
   run:
     - python
-
+    - jinja2
+    - click
+    - pyyaml
+    - backports.functools_lru_cache  # [py<33]
 
 build:
   script: pip install . --no-deps
+
+test:
+  imports:
+    - conda_verify
+  commands:
+    - conda-verify --version
+    - conda-verify --help
 
 about:
   home: https://github.com/conda/conda-verify

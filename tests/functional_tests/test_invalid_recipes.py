@@ -378,3 +378,15 @@ def test_invalid_outputs(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2110 Found invalid field "srcitp" in section "outputs"' in error
+
+
+def test_invalid_sources(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'invalid_sources')
+    metadata = utilities.render_metadata(recipe, None)
+
+    with pytest.raises(SystemExit):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert 'C2121 Found both git_branch and git_tag in meta.yaml source field' in error

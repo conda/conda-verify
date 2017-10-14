@@ -458,7 +458,7 @@ class CondaRecipeCheck(object):
                     return Error(self.recipe_dir, 'C2112', u'Found invalid run requirement "{}"' .format(requirement))
 
             if len(requirement_parts) == 0:
-                return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in info/index.json')
+                return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in meta.yaml')
 
             elif len(requirement_parts) >= 2 and not fullmatch(self.ver_spec_pat, requirement_parts[1]):
                 return Error(self.recipe_dir, 'C2114', u'Found invalid dependency "{}" in info/index.json' .format(requirement))

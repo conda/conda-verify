@@ -402,3 +402,14 @@ def test_invalid_file_size(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C1147 Found file "lib/python3.6/site-packages/test/__main__.py" with filesize different than listed in paths.json' in error
+
+
+def test_duplicate_menu_json(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.45-py36_0.tar')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1143 Found more than one Menu json file' in error

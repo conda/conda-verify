@@ -438,3 +438,15 @@ def test_invalid_run_requirement_name(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2112 Found invalid run requirement "python@#"' in error
+
+
+def test_no_package_name(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'no_package_name')
+    metadata = utilities.render_metadata(recipe, None)
+
+    with pytest.raises(SystemExit):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert 'C2101 Missing package name in meta.yaml' in error

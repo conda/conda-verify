@@ -426,3 +426,15 @@ def test_invalid_build_requirement_version(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2114 Found invalid dependency "setuptools >= 3.4 < 3045" in meta.yaml' in error
+
+
+def test_invalid_run_requirement_name(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'invalid_run_requirement_name')
+    metadata = utilities.render_metadata(recipe, None)
+
+    with pytest.raises(SystemExit):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert 'C2112 Found invalid run requirement "python@#"' in error

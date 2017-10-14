@@ -390,3 +390,15 @@ def test_invalid_sources(recipe_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C2121 Found both git_branch and git_tag in meta.yaml source field' in error
+
+
+def test_duplicate_build_requirements(recipe_dir, verifier, capfd):
+    recipe = os.path.join(recipe_dir, 'duplicate_build_requirements')
+    metadata = utilities.render_metadata(recipe, None)
+
+    with pytest.raises(SystemExit):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+
+    output, error = capfd.readouterr()
+
+    assert "C2115 Found duplicate build requirements: ['python', 'python']" in error

@@ -425,4 +425,4 @@ def test_invalid_build_requirement_version(recipe_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C2114 Found invalid dependency "setuptools >= 3.4 < 3045' in error
+    assert 'C2114 Found invalid dependency "setuptools >= 3.4 < 3045" in meta.yaml' in error

@@ -435,3 +435,14 @@ def test_python_binary_warning(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C1131 Binary placeholder found in info/has_prefix not allowed when building Python' in error
+
+
+def test_invalid_package_placeholder(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.47-py27_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1129 Found filename "/opt/anaconda1anaconda2anaconda3 text testfile testfile" in info/has_prefix not included in archive' in error

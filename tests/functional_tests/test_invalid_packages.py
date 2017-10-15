@@ -457,3 +457,14 @@ def test_invalid_dependency_specs(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C1114 Found invalid dependency "python 3.6@**&*&(&@!" in info/index.json' in error
+
+
+def test_empty_dependencies(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.49-py27_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1113 Found empty dependencies in info/index.json' in error

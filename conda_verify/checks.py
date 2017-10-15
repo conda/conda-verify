@@ -63,11 +63,11 @@ class CondaPackageCheck(object):
         if package_name is None:
             return Error(self.path, 'C1101', 'Missing package name in info/index.json')
 
-        if package_name != self.name:
-            return Error(self.path, 'C1102', u'Found package name in info/index.json "{}" does not match filename "{}"' .format(package_name, self.name))
-
         if not self.name_pat.match(package_name) or package_name.endswith(('.', '-', '_')):
             return Error(self.path, 'C1103', 'Found invalid package name in info/index.json')
+
+        if package_name != self.name:
+            return Error(self.path, 'C1102', u'Found package name in info/index.json "{}" does not match filename "{}"' .format(package_name, self.name))
 
     def check_package_version(self):
         """Check the package version located in info/index.json."""

@@ -490,3 +490,14 @@ def test_invalid_build_number_negative(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C1109 Build number in info/index.json cannot be a negative integer' in error
+
+
+def test_invalid_version_suffix(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.52-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert "C1107 Package version in info/index.json cannot start or end with '_' or '.'" in error

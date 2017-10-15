@@ -74,12 +74,12 @@ class CondaPackageCheck(object):
         package_version = str(self.info.get('version'))
         if not package_version:
             return Error(self.path, 'C1104', 'Missing package version in info/index.json')
+        if package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
+            return Error(self.path, 'C1107', "Package version in info/index.json cannot start or end with '_' or '.'")
         if not self.version_pat.match(package_version) or get_bad_seq(package_version):
             return Error(self.path, 'C1105', 'Found invalid version number in info/index.json')
         if package_version != self.version:
             return Error(self.path, 'C1106', u'Found package version in info/index.json "{}" does not match filename version "{}"' .format(package_version, self.version))
-        if package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
-            return Error(self.path, 'C1107', "Package version in info/index.json cannot start or end with '_' or '.'")
 
     def check_build_number(self):
         """Check the build number located in info/index.json."""

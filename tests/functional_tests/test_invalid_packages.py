@@ -468,3 +468,14 @@ def test_empty_dependencies(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C1113 Found empty dependencies in info/index.json' in error
+
+
+def test_invalid_build_string(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.50-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1110 Found invalid build string "py36_0!" in info/index.json' in error

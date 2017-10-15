@@ -534,3 +534,14 @@ def test_invalid_package_name_pattern(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert "C1103 Found invalid package name in info/index.json" in error
+
+
+def test_missing_package_name(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.56-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert "C1101 Missing package name in info/index.json" in error

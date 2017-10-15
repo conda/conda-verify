@@ -424,3 +424,14 @@ def test_invalid_menu_json(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C1142 Found invalid Menu json file "Menu/wrongname.json"' in error
+
+
+def test_python_binary_warning(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'python-0.0.1-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1131 Binary placeholder found in info/has_prefix not allowed when building Python' in error

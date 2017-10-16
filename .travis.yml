@@ -32,7 +32,7 @@ install:
   - conda config --set always_yes yes
   - conda config --set auto_update_conda False
   - conda update -q --all
-  - conda install pytest pytest-cov pytest-mock pyyaml click jinja2
+  - conda install pytest pytest-cov pytest-mock pyyaml click future jinja2
   - conda install -c conda-forge pytest-catchlog
   - if [[ "$CONDA_BUILD" == "1" ]]; then
       conda install -q conda-build && conda remove -q conda-build && git clone https://github.com/conda/conda-build && pushd conda-build && pip install -e . && popd && conda remove -q conda-verify;

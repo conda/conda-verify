@@ -4,6 +4,8 @@ import sys
 import jinja2
 import yaml
 
+import future.builtins
+
 from conda_verify.constants import MAGIC_HEADERS, DLL_TYPES
 
 try:
@@ -113,6 +115,7 @@ def get_object_type(data):
         pos = data.find(b'PE\0\0')
         if pos < 0:
             return "<no PE header found>"
+        data = future.builtins.bytes(data)
         i = data[pos + 4] + 256 * data[pos + 5]
         return "DLL " + DLL_TYPES.get(i)
     elif lookup.startswith('MachO'):

@@ -17,6 +17,7 @@ requirements:
     - jinja2
     - click
     - pyyaml
+    - future
     - backports.functools_lru_cache  # [py<33]
 
 build:

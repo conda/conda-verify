@@ -7,7 +7,7 @@ from setuptools import setup
 from conda_verify import __version__
 
 
-requirements = ['click >= 6.7', 'jinja2 >= 2.9', 'pyyaml >= 3.12']
+requirements = ['click >= 6.7', 'future >= 0.12.0', 'jinja2 >= 2.9', 'pyyaml >= 3.12']
 if sys.version_info.major == 2:
     requirements.append('backports.functools_lru_cache >= 1.4')
 

@@ -39,7 +39,7 @@ class CondaPackageCheck(object):
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
         self.version_pat = re.compile(r'[\w\.]+$')
-        self.ver_spec_pat = re.compile(r'[\w\.,=!<>\*]+$')
+        self.ver_spec_pat = re.compile(r'(>=|<=|==|<|>)(\d\.?\*?)*,?(>=|<=|==|<|>?)(\d\.?\*?)*|(\d\.?\*?)*\|(\d\.?\*?)*|(\d\.?\*?)*')
 
     @staticmethod
     def retrieve_package_name(path):
@@ -115,6 +115,7 @@ class CondaPackageCheck(object):
                 if len(dependency_parts) == 0:
                     return Error(self.path, 'C1113', 'Found empty dependencies in info/index.json')
                 elif len(dependency_parts) == 2 and not self.ver_spec_pat.match(dependency_parts[1]) or len(dependency_parts) > 3:
+
                     return Error(self.path, 'C1114', 'Found invalid dependency "{}" in info/index.json' .format(dependency))
 
     def check_license_family(self):
@@ -340,7 +341,7 @@ class CondaRecipeCheck(object):
         self.recipe_dir = recipe_dir
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.version_pat = re.compile(r'[\w\.]+$')
-        self.ver_spec_pat = re.compile(r'((?<![><=])[\w\d\.\-\_\*]+?(?!\*))$')
+        self.ver_spec_pat = re.compile(r'(>=|<=|==|<|>)(\d\.?\*?)*,?(>=|<=|==|<|>?)(\d\.?\*?)*|(\d\.?\*?)*\|(\d\.?\*?)*|(\d\.?\*?)*')
         self.url_pat = re.compile(r'(ftp|http(s)?)://')
         self.hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
                          'sha1': re.compile(r'[a-f0-9]{40}$'),

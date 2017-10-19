@@ -115,7 +115,6 @@ class CondaPackageCheck(object):
                 if len(dependency_parts) == 0:
                     return Error(self.path, 'C1113', 'Found empty dependencies in info/index.json')
                 elif len(dependency_parts) == 2 and not self.ver_spec_pat.match(dependency_parts[1]) or len(dependency_parts) > 3:
-
                     return Error(self.path, 'C1114', 'Found invalid dependency "{}" in info/index.json' .format(dependency))
 
     def check_license_family(self):

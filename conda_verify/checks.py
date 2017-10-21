@@ -218,6 +218,8 @@ class CondaPackageCheck(object):
                     line = line.strip()
                     try:
                         placeholder, mode, filename = line.split()
+                        placeholder = placeholder.strip("'\"")
+                        filename = filename.strip("'\"")
                     except ValueError:
                         placeholder, mode, filename = '/<dummy>/<placeholder>', 'text', line
 

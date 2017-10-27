@@ -205,37 +205,70 @@ class CondaPackageCheck(object):
         if len(bat_files) > 0 and len(exe_files) > 0:
             return Error(self.path, 'C1127', 'Found both .bat and .exe files in executable directory')
 
-    def check_prefix_file(self):
-        """Check the info/has_prefix file for proper formatting."""
+    @property
+    def prefix_file(self):
+        """Extract the has_prefix file from the archive and return it.
+
+        If the file does not exist in the archive, None is returned.
+        """
+        prefix_file = None
         for member in self.archive.getmembers():
             if member.path == 'info/has_prefix':
                 prefix_file = self.archive.extractfile(member.path).read()
+        return prefix_file
 
-                if not all_ascii(prefix_file, self.win_pkg):
-                    return Error(self.path, 'C1128', 'Found non-ascii characters in info/has_prefix')
+    def check_prefix_file(self):
+        """Check the info/has_prefix file for proper formatting."""
+        if self.prefix_file is not None:
+            if not all_ascii(self.prefix_file, self.win_pkg):
+                return Error(self.path, 'C1128', 'Found non-ascii characters in info/has_prefix')
 
-                for line in prefix_file.decode('utf-8').splitlines():
-                    line = line.strip()
-                    try:
-                        placeholder, mode, filename = line.split()
-                        placeholder = placeholder.strip("'\"")
-                        filename = filename.strip("'\"")
-                    except ValueError:
-                        placeholder, mode, filename = '/<dummy>/<placeholder>', 'text', line
+    @property
+    def prefix_file_contents(self):
+        """Extract the contents of the has_prefix file and return them.
 
-                    if filename not in self.paths:
-                        return Error(self.path, 'C1129', u'Found filename "{}" in info/has_prefix not included in archive' .format(filename))
+        If the has_prefix file does not exist, None is returned.
+        """
+        if self.prefix_file is not None:
+            for line in self.prefix_file.decode('utf-8').splitlines():
+                line = line.strip()
+                try:
+                    placeholder, mode, filename = line.split()
+                    placeholder = placeholder.strip("'\"")
+                    filename = filename.strip("'\"")
+                except ValueError:
+                    placeholder, mode, filename = '/<dummy>/<placeholder>', 'text', line
 
-                    if mode not in ['binary', 'text']:
-                        return Error(self.path, 'C1130', u'Found invalid mode "{}" in info/has_prefix' .format(mode))
+                return (placeholder, mode, filename)
+        return None
 
-                    if mode == 'binary':
-                        if self.name == 'python':
-                            return Error(self.path, 'C1131', 'Binary placeholder found in info/has_prefix not allowed when building Python')
-                        elif self.win_pkg:
-                            return Error(self.path, 'C1132', 'Binary placeholder found in info/has_prefix not allowed in Windows package')
-                        elif len(placeholder) != 255:
-                            return Error(self.path, 'C1133', u'Binary placeholder "{}" found in info/has_prefix does not have a length of 255 bytes' .format(placeholder))
+    def check_prefix_file_filename(self):
+        """Check that the filenames in has_prefix exist in the archive."""
+        if self.prefix_file_contents is not None:
+            _, _, filename = self.prefix_file_contents
+            if filename not in self.paths:
+                return Error(self.path, 'C1129', u'Found filename "{}" in info/has_prefix not included in archive' .format(filename))
+
+    def check_prefix_file_mode(self):
+        """Check that the has_prefix mode is either binary or text."""
+        if self.prefix_file_contents is not None:
+            _, mode, _ = self.prefix_file_contents
+
+            if mode not in ['binary', 'text']:
+                return Error(self.path, 'C1130', u'Found invalid mode "{}" in info/has_prefix' .format(mode))
+
+    def check_prefix_file_binary_mode(self):
+        """Check that the has_prefix file binary mode is correct."""
+        if self.prefix_file_contents is not None:
+            placeholder, mode, _ = self.prefix_file_contents
+
+            if mode == 'binary':
+                if self.name == 'python':
+                    return Error(self.path, 'C1131', 'Binary placeholder found in info/has_prefix not allowed when building Python')
+                elif self.win_pkg:
+                    return Error(self.path, 'C1132', 'Binary placeholder found in info/has_prefix not allowed in Windows package')
+                elif len(placeholder) != 255:
+                    return Error(self.path, 'C1133', u'Binary placeholder "{}" found in info/has_prefix does not have a length of 255 bytes' .format(placeholder))
 
     def check_for_post_links(self):
         """Check the tar archive for pre and post link files."""

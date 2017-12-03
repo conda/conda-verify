@@ -148,3 +148,11 @@ def ensure_list(argument):
     if isinstance(argument, list):
         return argument
     return [argument]
+
+
+def fullmatch(regex, string, flags=0):
+    """Emulate python-3.4 re.fullmatch().
+
+    Credit: https://stackoverflow.com/questions/30212413/
+    """
+    return re.match("(?:" + regex + r")\Z", string, flags=flags)

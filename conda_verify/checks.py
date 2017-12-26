@@ -461,7 +461,7 @@ class CondaRecipeCheck(object):
                 return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in meta.yaml')
 
             elif len(requirement_parts) >= 2 and not fullmatch(self.ver_spec_pat, requirement_parts[1]):
-                return Error(self.recipe_dir, 'C2114', u'Found invalid dependency "{}" in info/index.json' .format(requirement))
+                return Error(self.recipe_dir, 'C2114', u'Found invalid dependency "{}" in meta.yaml' .format(requirement))
 
         if len(build_requirements) != len(set(build_requirements)):
             return Error(self.recipe_dir, 'C2115', u'Found duplicate build requirements: {}' .format(build_requirements))

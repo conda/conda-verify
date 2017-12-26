@@ -380,9 +380,8 @@ def test_invalid_outputs(recipe_dir, verifier, capfd):
     assert 'C2110 Found invalid field "srcitp" in section "outputs"' in error
 
 
-@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1')
-# skip test on conda_build env due to conda build handling
-# invalid sources itself
+@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1',
+    reason='conda build handles invalid sources at runtime')
 def test_invalid_sources(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_sources')
     metadata = utilities.render_metadata(recipe, None)
@@ -408,8 +407,8 @@ def test_duplicate_build_requirements(recipe_dir, verifier, capfd):
            "C2115 Found duplicate build requirements: ['python 3.6.*', 'python 3.6.*']" in error)
 
 
-@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1')
-# skip test on conda_build env as conda build handles invalid characters itself
+@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1',
+    reason='conda build handles invalid characters at runtime')
 def test_invalid_build_requirement_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_build_requirement_name')
     metadata = utilities.render_metadata(recipe, None)
@@ -422,8 +421,8 @@ def test_invalid_build_requirement_name(recipe_dir, verifier, capfd):
     assert 'C2111 Found invalid build requirement "python!"' in error
 
 
-@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1')
-# skip test on conda_build env as conda build handles invalid requirement versions itself
+@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1',
+    reason='conda build handles invalid requirement versions at runtime')
 def test_invalid_build_requirement_version(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_build_requirement_version')
     metadata = utilities.render_metadata(recipe, None)
@@ -436,8 +435,8 @@ def test_invalid_build_requirement_version(recipe_dir, verifier, capfd):
     assert 'C2114 Found invalid dependency "setuptools >= 3.4 < 3045" in meta.yaml' in error
 
 
-@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1')
-# skip test on conda_build env as conda build handles invalid characters itself
+@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1',
+    reason='conda build handles invalid characters at runtime')
 def test_invalid_run_requirement_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_run_requirement_name')
     metadata = utilities.render_metadata(recipe, None)
@@ -450,8 +449,8 @@ def test_invalid_run_requirement_name(recipe_dir, verifier, capfd):
     assert 'C2112 Found invalid run requirement "python@#"' in error
 
 
-@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1')
-# skip test on conda_build env as conda build handles missing package names itself
+@pytest.mark.skipif(os.getenv('CONDA_BUILD') == '1',
+    reason='conda build handles missing package names at runtime')
 def test_no_package_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'no_package_name')
     metadata = utilities.render_metadata(recipe, None)

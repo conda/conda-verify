@@ -63,23 +63,23 @@ class CondaPackageCheck(object):
         if package_name is None:
             return Error(self.path, 'C1101', 'Missing package name in info/index.json')
 
-        if package_name != self.name:
-            return Error(self.path, 'C1102', u'Found package name in info/index.json "{}" does not match filename "{}"' .format(package_name, self.name))
-
         if not self.name_pat.match(package_name) or package_name.endswith(('.', '-', '_')):
             return Error(self.path, 'C1103', 'Found invalid package name in info/index.json')
+
+        if package_name != self.name:
+            return Error(self.path, 'C1102', u'Found package name in info/index.json "{}" does not match filename "{}"' .format(package_name, self.name))
 
     def check_package_version(self):
         """Check the package version located in info/index.json."""
         package_version = str(self.info.get('version'))
-        if not package_version:
+        if package_version == 'None':
             return Error(self.path, 'C1104', 'Missing package version in info/index.json')
+        if package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
+            return Error(self.path, 'C1107', "Package version in info/index.json cannot start or end with '_' or '.'")
         if not self.version_pat.match(package_version) or get_bad_seq(package_version):
             return Error(self.path, 'C1105', 'Found invalid version number in info/index.json')
         if package_version != self.version:
             return Error(self.path, 'C1106', u'Found package version in info/index.json "{}" does not match filename version "{}"' .format(package_version, self.version))
-        if package_version.startswith(('_', '.')) or package_version.endswith(('_', '.')):
-            return Error(self.path, 'C1107', "Package version in info/index.json cannot start or end with '_' or '.'")
 
     def check_build_number(self):
         """Check the build number located in info/index.json."""
@@ -458,10 +458,10 @@ class CondaRecipeCheck(object):
                     return Error(self.recipe_dir, 'C2112', u'Found invalid run requirement "{}"' .format(requirement))
 
             if len(requirement_parts) == 0:
-                return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in info/index.json')
+                return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in meta.yaml')
 
             elif len(requirement_parts) >= 2 and not fullmatch(self.ver_spec_pat, requirement_parts[1]):
-                return Error(self.recipe_dir, 'C2114', u'Found invalid dependency "{}" in info/index.json' .format(requirement))
+                return Error(self.recipe_dir, 'C2114', u'Found invalid dependency "{}" in meta.yaml' .format(requirement))
 
         if len(build_requirements) != len(set(build_requirements)):
             return Error(self.recipe_dir, 'C2115', u'Found duplicate build requirements: {}' .format(build_requirements))

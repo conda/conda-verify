@@ -402,3 +402,146 @@ def test_invalid_file_size(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert 'C1147 Found file "lib/python3.6/site-packages/test/__main__.py" with filesize different than listed in paths.json' in error
+
+
+def test_duplicate_menu_json(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.45-py36_0.tar')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1143 Found more than one Menu json file' in error
+
+
+def test_invalid_menu_json(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.46-py36_0.tar')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1142 Found invalid Menu json file "Menu/wrongname.json"' in error
+
+
+def test_python_binary_warning(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'python-0.0.1-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1131 Binary placeholder found in info/has_prefix not allowed when building Python' in error
+
+
+def test_invalid_package_placeholder(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.47-py27_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1129 Found filename "/opt/anaconda1anaconda2anaconda3 text testfile testfile" in info/has_prefix not included in archive' in error
+
+
+def test_invalid_dependency_specs(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.48-py27_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1114 Found invalid dependency "python 3.6@**&*&(&@!" in info/index.json' in error
+
+
+def test_empty_dependencies(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.49-py27_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1113 Found empty dependencies in info/index.json' in error
+
+
+def test_invalid_build_string(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.50-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1110 Found invalid build string "py36_0!" in info/index.json' in error
+
+
+def test_invalid_build_number_negative(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.51-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1109 Build number in info/index.json cannot be a negative integer' in error
+
+
+def test_invalid_version_suffix(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.52-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert "C1107 Package version in info/index.json cannot start or end with '_' or '.'" in error
+
+
+def test_invalid_version(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.53-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert "C1105 Found invalid version number in info/index.json" in error
+
+
+def test_missing_version(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.54-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert "C1104 Missing package version in info/index.json" in error
+
+
+def test_invalid_package_name_pattern(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.55-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert "C1103 Found invalid package name in info/index.json" in error
+
+
+def test_missing_package_name(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.56-py36_0.tar.bz2')
+
+    with pytest.raises(SystemExit):
+        verifier.verify_package(path_to_package=package)
+
+    output, error = capfd.readouterr()
+
+    assert "C1101 Missing package name in info/index.json" in error

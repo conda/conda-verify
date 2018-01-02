@@ -126,18 +126,6 @@ def test_invalid_app_field_key(recipe_dir, verifier, capfd):
     assert 'C2110 Found invalid field "noentry" in section "app"' in error
 
 
-def test_invalid_extra_field_key(recipe_dir, verifier, capfd):
-    recipe = os.path.join(recipe_dir, 'invalid_extra_field_key')
-    metadata = utilities.render_metadata(recipe, None)
-
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
-
-    output, error = capfd.readouterr()
-
-    assert 'C2110 Found invalid field "some_nonsense" in section "extra"' in error
-
-
 def test_invalid_package_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_name')
     metadata = utilities.render_metadata(recipe, None)

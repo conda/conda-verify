@@ -430,17 +430,18 @@ class CondaRecipeCheck(object):
             if section not in FIELDS:
                 return Error(self.recipe_dir, 'C2109', u'Found invalid section "{}"' .format(section))
 
-            subfield = self.meta.get(section)
-            if hasattr(subfield, 'keys'):
-                for key in subfield:
-                    if key not in FIELDS[section]:
-                        return Error(self.recipe_dir, 'C2110', u'Found invalid field "{}" in section "{}"' .format(key, section))
-            else:
-                # list of dicts.  Used in source and outputs.
-                for entry in subfield:
-                    for key in entry:
+            if section != 'extra':
+                subfield = self.meta.get(section)
+                if hasattr(subfield, 'keys'):
+                    for key in subfield:
                         if key not in FIELDS[section]:
                             return Error(self.recipe_dir, 'C2110', u'Found invalid field "{}" in section "{}"' .format(key, section))
+                else:
+                    # list of dicts.  Used in source and outputs.
+                    for entry in subfield:
+                        for key in entry:
+                            if key not in FIELDS[section]:
+                                return Error(self.recipe_dir, 'C2110', u'Found invalid field "{}" in section "{}"' .format(key, section))
 
     def check_requirements(self):
         """Check that the requirements listed in meta.yaml are valid."""

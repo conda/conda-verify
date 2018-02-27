@@ -21,6 +21,8 @@ from conda_verify.utilities import (all_ascii, get_bad_seq, get_object_type,
                                     ensure_list, fullmatch)
 
 
+ver_spec_pat = '^(?:[><=]{0,2}(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}'
+
 class CondaPackageCheck(object):
     """Create checks in order to validate conda package tarballs."""
 
@@ -40,7 +42,6 @@ class CondaPackageCheck(object):
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
         self.version_pat = re.compile(r'[\w\.]+$')
-        self.ver_spec_pat = '^((==|>=|<=|<|>)(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)\,(==|>=|<=|<|>)(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)|(==|>=|<=|<|>)(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)|(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)\|(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)|(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?))'
 
     @staticmethod
     def retrieve_package_name(path):
@@ -115,7 +116,8 @@ class CondaPackageCheck(object):
                 dependency_parts = dependency.split()
                 if len(dependency_parts) == 0:
                     return Error(self.path, 'C1113', 'Found empty dependencies in info/index.json')
-                elif len(dependency_parts) == 2 and not fullmatch(self.ver_spec_pat, dependency_parts[1]) or len(dependency_parts) > 3:
+                elif len(dependency_parts) == 2 and not fullmatch(ver_spec_pat,
+                                                    dependency_parts[1]) or len(dependency_parts) > 3:
                     return Error(self.path, 'C1114', 'Found invalid dependency "{}" in info/index.json' .format(dependency))
 
     def check_license_family(self):
@@ -376,7 +378,6 @@ class CondaRecipeCheck(object):
         self.recipe_dir = recipe_dir
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.version_pat = re.compile(r'[\w\.]+$')
-        self.ver_spec_pat = '^((==|>=|<=|<|>)(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)\,(==|>=|<=|<|>)(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)|(==|>=|<=|<|>)(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)|(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)\|(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?)|(\d+(\.\d+)*(\.)*(\w{1,2}\d)?\*?))'
         self.url_pat = re.compile(r'(ftp|http(s)?)://')
         self.hash_pat = {'md5': re.compile(r'[a-f0-9]{32}$'),
                          'sha1': re.compile(r'[a-f0-9]{40}$'),
@@ -461,7 +462,7 @@ class CondaRecipeCheck(object):
             if len(requirement_parts) == 0:
                 return Error(self.recipe_dir, 'C2113', 'Found empty dependencies in meta.yaml')
 
-            elif len(requirement_parts) >= 2 and not fullmatch(self.ver_spec_pat, requirement_parts[1]):
+            elif len(requirement_parts) >= 2 and not fullmatch(ver_spec_pat, requirement_parts[1]):
                 return Error(self.recipe_dir, 'C2114', u'Found invalid dependency "{}" in meta.yaml' .format(requirement))
 
         if len(build_requirements) != len(set(build_requirements)):

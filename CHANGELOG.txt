@@ -1,3 +1,26 @@
+2018-03-02   3.0.2:
+-------------------
+  * fix hash and filesize verification  #19
+  * line up object types as bytes  #20
+  * add pyyaml install req  #22
+  * Add several additional recipe verifications  #23
+  * add version spec regex  #29, #36
+  * backport fullmatch re function from python 3.4; use it  #29
+  * fix C1129 being thrown when filename is enclosed in quotes  #31
+  * separate check_prefix_file into multiple functions  #32
+  * add test for duplicate build reqs
+  * add test for invalid git sources
+  * Change error message in C2113 and C2114 to show meta.yaml instead of index.json
+  * Allow custom keys in the extra section  #34
+
+Contributors:
+-------------
+
+* @mandeep
+* @msarahan
+* @nehaljwani
+
+
 2017-10-13   3.0.1:
 -------------------
   * show warning when legacy arguments are passed to verify functions (rather than fail)  #16

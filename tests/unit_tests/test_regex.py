@@ -16,13 +16,8 @@ def recipe_dir():
 
 
 def test_ver_spec_pat(package_dir, recipe_dir):
-    package = os.path.join(package_dir, 'testfile-0.0.30-py27_0.tar.bz2')
-    recipe = os.path.join(recipe_dir, 'valid_test_file')
-    metadata = utilities.render_metadata(recipe, None)
-    package_check = checks.CondaPackageCheck(package)
-    recipe_check = checks.CondaRecipeCheck(metadata, recipe)
-    package_ver_spec_pat = package_check.ver_spec_pat
-    recipe_ver_spec_pat = recipe_check.ver_spec_pat
+    package_ver_spec_pat = checks.ver_spec_pat
+    recipe_ver_spec_pat = checks.ver_spec_pat
 
     extra_spec = '>===3.5'
     ge_version = '>=1.2'

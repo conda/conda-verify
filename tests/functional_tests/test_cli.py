@@ -35,4 +35,4 @@ def test_recipe_cli(recipe_dir):
 def test_cli_version():
     runner = CliRunner()
     result = runner.invoke(cli, ['--version'])
-    assert 'conda-verify, version 3.0.0' in result.output
+    assert 'conda-verify, version 3.0.2' in result.output

@@ -4,3 +4,5 @@ omit =
     setup.py
     tests/*
     *__main__.py
+    versioneer.py
+    *_version.py

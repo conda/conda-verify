@@ -4,6 +4,7 @@ from click.testing import CliRunner
 import pytest
 
 from conda_verify.cli import cli
+from conda_verify import __version__
 
 
 @pytest.fixture
@@ -35,4 +36,4 @@ def test_recipe_cli(recipe_dir):
 def test_cli_version():
     runner = CliRunner()
     result = runner.invoke(cli, ['--version'])
-    assert 'conda-verify, version 3.0.0' in result.output
+    assert 'conda-verify, version {}' .format(__version__) in result.output

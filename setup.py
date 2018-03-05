@@ -4,8 +4,7 @@ import sys
 
 from setuptools import setup
 
-from conda_verify import __version__
-
+import versioneer
 
 requirements = ['click >= 6.7', 'future >= 0.12.0', 'jinja2 >= 2.9', 'pyyaml >= 3.12']
 if sys.version_info.major == 2:
@@ -14,7 +13,8 @@ if sys.version_info.major == 2:
 
 setup(
     name="conda-verify",
-    version=__version__,
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     author="Continuum Analytics, Inc.",
     author_email="conda@continuum.io",
     url="https://github.com/conda/conda-verify",

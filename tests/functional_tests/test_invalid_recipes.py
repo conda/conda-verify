@@ -4,6 +4,7 @@ import pytest
 
 from conda_verify import utilities
 from conda_verify.verify import Verify
+from conda_verify.errors import RecipeError
 
 
 @pytest.fixture
@@ -21,8 +22,8 @@ def test_invalid_package_field(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_field')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -33,8 +34,8 @@ def test_invalid_package_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_field_key')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -45,8 +46,8 @@ def test_invalid_source_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_source_field_key')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -57,8 +58,8 @@ def test_invalid_multiple_source_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_multiple_sources')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -69,8 +70,8 @@ def test_invalid_build_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_build_field_key')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -81,8 +82,8 @@ def test_invalid_requirements_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_requirements_field_key')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -93,8 +94,8 @@ def test_invalid_test_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_test_field_key')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -105,9 +106,9 @@ def test_invalid_about_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_about_field_key')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(RecipeError):
         verifier.verify_recipe(rendered_meta=metadata,
-                               recipe_dir=recipe)
+                               recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -118,8 +119,8 @@ def test_invalid_app_field_key(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_app_field_key')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -130,8 +131,8 @@ def test_invalid_package_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_name')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -142,8 +143,8 @@ def test_invalid_package_sequence(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_sequence')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -154,8 +155,8 @@ def test_no_package_version(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'no_package_version')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -166,8 +167,8 @@ def test_invalid_package_version(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_version')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -178,8 +179,8 @@ def test_invalid_package_version_prefix(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_version_prefix')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -190,8 +191,8 @@ def test_invalid_package_version_sequence(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_package_version_sequence')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -202,8 +203,8 @@ def test_invalid_build_number(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_build_number')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -214,8 +215,8 @@ def test_invalid_build_number_negative(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_build_number_negative')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -226,8 +227,8 @@ def test_invalid_source_url(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_source_url')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -238,8 +239,8 @@ def test_invalid_about_summary(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_about_summary')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -250,8 +251,8 @@ def test_invalid_about_url(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_about_url')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -262,8 +263,8 @@ def test_invalid_source_hash(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_source_hash')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -274,8 +275,8 @@ def test_invalid_license_family(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_license_family')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -286,8 +287,8 @@ def test_invalid_test_files(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_test_files')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -298,8 +299,8 @@ def test_invalid_test_file_path(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_test_file_path')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -310,8 +311,8 @@ def test_invalid_dir_content(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_dir_content')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -323,8 +324,8 @@ def test_invalid_dir_content_filesize(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_dir_content_filesize')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -336,8 +337,8 @@ def test_duplicate_version_specifications(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'duplicate_version_specs')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -348,8 +349,8 @@ def test_conda_forge_example_recipe(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'conda_forge')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -360,8 +361,8 @@ def test_invalid_outputs(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_output')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -374,8 +375,8 @@ def test_invalid_sources(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_sources')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -386,8 +387,8 @@ def test_duplicate_build_requirements(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'duplicate_build_requirements')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -401,8 +402,8 @@ def test_invalid_build_requirement_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_build_requirement_name')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -415,8 +416,8 @@ def test_invalid_build_requirement_version(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_build_requirement_version')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -429,8 +430,8 @@ def test_invalid_run_requirement_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'invalid_run_requirement_name')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -443,8 +444,8 @@ def test_no_package_name(recipe_dir, verifier, capfd):
     recipe = os.path.join(recipe_dir, 'no_package_name')
     metadata = utilities.render_metadata(recipe, None)
 
-    with pytest.raises(SystemExit):
-        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe)
+    with pytest.raises(RecipeError):
+        verifier.verify_recipe(rendered_meta=metadata, recipe_dir=recipe, exit_on_error=True)
 
     output, error = capfd.readouterr()
 

@@ -21,7 +21,7 @@ def test_invalid_package_sequence(package_dir, verifier):
     package = os.path.join(package_dir, 'test_-file.tar.bz2')
 
     with pytest.raises(PackageError) as excinfo:
-        verifier.verify_package(path_to_package=package)
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     assert ('PackageError: '
             'Found invalid sequence "_-" '
@@ -32,7 +32,7 @@ def test_invalid_package_extension(package_dir, verifier):
     package = os.path.join(package_dir, 'testfile.zip')
 
     with pytest.raises(PackageError) as excinfo:
-        verifier.verify_package(path_to_package=package)
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     assert ("PackageError: "
             'Found package with invalid extension ".zip"' in str(excinfo))
@@ -41,8 +41,8 @@ def test_invalid_package_extension(package_dir, verifier):
 def test_duplicate_members(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.1-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -52,8 +52,8 @@ def test_duplicate_members(package_dir, verifier, capfd):
 def test_index_unicode(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.2-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -63,8 +63,8 @@ def test_index_unicode(package_dir, verifier, capfd):
 def test_info_in_files_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.3-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -74,8 +74,8 @@ def test_info_in_files_file(package_dir, verifier, capfd):
 def test_duplicates_in_files_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.4-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -85,8 +85,8 @@ def test_duplicates_in_files_file(package_dir, verifier, capfd):
 def test_not_in_files_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.5-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -96,8 +96,8 @@ def test_not_in_files_file(package_dir, verifier, capfd):
 def test_not_in_tarball(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.6-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -107,8 +107,8 @@ def test_not_in_tarball(package_dir, verifier, capfd):
 def test_not_allowed_files(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.7-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -118,8 +118,8 @@ def test_not_allowed_files(package_dir, verifier, capfd):
 def test_file_not_allowed(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.8-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -129,8 +129,8 @@ def test_file_not_allowed(package_dir, verifier, capfd):
 def test_invalid_package_name(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.9-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -140,8 +140,8 @@ def test_invalid_package_name(package_dir, verifier, capfd):
 def test_invalid_build_number(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.10-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -151,8 +151,8 @@ def test_invalid_build_number(package_dir, verifier, capfd):
 def test_duplicates_in_bin(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.11-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -162,8 +162,8 @@ def test_duplicates_in_bin(package_dir, verifier, capfd):
 def test_win_package_warning(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.12-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -173,8 +173,8 @@ def test_win_package_warning(package_dir, verifier, capfd):
 def test_win_package_binary_warning(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.13-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -184,8 +184,8 @@ def test_win_package_binary_warning(package_dir, verifier, capfd):
 def test_package_placeholder_warning(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.14-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -196,8 +196,8 @@ def test_package_placeholder_warning(package_dir, verifier, capfd):
 def test_invalid_prefix_mode(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.15-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -207,8 +207,8 @@ def test_invalid_prefix_mode(package_dir, verifier, capfd):
 def test_unicode_prefix(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.16-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -218,8 +218,8 @@ def test_unicode_prefix(package_dir, verifier, capfd):
 def test_invalid_script_name(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.17-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -229,8 +229,8 @@ def test_invalid_script_name(package_dir, verifier, capfd):
 def test_invalid_setuptools(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.18-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
     
@@ -241,8 +241,8 @@ def test_invalid_setuptools(package_dir, verifier, capfd):
 def test_invalid_eggfile(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.19-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -252,8 +252,8 @@ def test_invalid_eggfile(package_dir, verifier, capfd):
 def test_invalid_namespace_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.21-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -263,8 +263,8 @@ def test_invalid_namespace_file(package_dir, verifier, capfd):
 def test_invalid_pyo_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.22-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -274,8 +274,8 @@ def test_invalid_pyo_file(package_dir, verifier, capfd):
 def test_invalid_pyc_and_so_files(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.23-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -286,8 +286,8 @@ def test_invalid_pyc_and_so_files(package_dir, verifier, capfd):
 def test_invalid_pickle_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.24-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -297,8 +297,8 @@ def test_invalid_pickle_file(package_dir, verifier, capfd):
 def test_missing_pyc_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.25-py27_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -308,8 +308,8 @@ def test_missing_pyc_file(package_dir, verifier, capfd):
 def test_invalid_windows_architecture(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.26-py27_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -319,8 +319,8 @@ def test_invalid_windows_architecture(package_dir, verifier, capfd):
 def test_invalid_windows_dll(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.27-py27_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -330,8 +330,8 @@ def test_invalid_windows_dll(package_dir, verifier, capfd):
 def test_invalid_easy_install_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.31-py27_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -341,8 +341,8 @@ def test_invalid_easy_install_file(package_dir, verifier, capfd):
 def test_non_ascii_path(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.39-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -352,19 +352,19 @@ def test_non_ascii_path(package_dir, verifier, capfd):
 def test_ascii_in_files_file(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.40-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
-    assert 'C1119 Found filenames in info/files containing non-ascii characters' in error
+    assert 'C1119' in error
 
 
 def test_missing_depends_key(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.41-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -374,8 +374,8 @@ def test_missing_depends_key(package_dir, verifier, capfd):
 def test_invalid_license_family(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.42-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -385,8 +385,8 @@ def test_invalid_license_family(package_dir, verifier, capfd):
 def test_invalid_file_hash(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.43-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -396,8 +396,8 @@ def test_invalid_file_hash(package_dir, verifier, capfd):
 def test_invalid_file_size(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.44-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -407,8 +407,8 @@ def test_invalid_file_size(package_dir, verifier, capfd):
 def test_duplicate_menu_json(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.45-py36_0.tar')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -418,8 +418,8 @@ def test_duplicate_menu_json(package_dir, verifier, capfd):
 def test_invalid_menu_json(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.46-py36_0.tar')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -429,8 +429,8 @@ def test_invalid_menu_json(package_dir, verifier, capfd):
 def test_python_binary_warning(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'python-0.0.1-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -440,8 +440,8 @@ def test_python_binary_warning(package_dir, verifier, capfd):
 def test_invalid_package_placeholder(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.47-py27_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -451,8 +451,8 @@ def test_invalid_package_placeholder(package_dir, verifier, capfd):
 def test_invalid_dependency_specs(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.48-py27_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -462,8 +462,8 @@ def test_invalid_dependency_specs(package_dir, verifier, capfd):
 def test_empty_dependencies(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.49-py27_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -473,8 +473,8 @@ def test_empty_dependencies(package_dir, verifier, capfd):
 def test_invalid_build_string(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.50-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -484,8 +484,8 @@ def test_invalid_build_string(package_dir, verifier, capfd):
 def test_invalid_build_number_negative(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.51-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -495,8 +495,8 @@ def test_invalid_build_number_negative(package_dir, verifier, capfd):
 def test_invalid_version_suffix(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.52-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -506,8 +506,8 @@ def test_invalid_version_suffix(package_dir, verifier, capfd):
 def test_invalid_version(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.53-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -517,8 +517,8 @@ def test_invalid_version(package_dir, verifier, capfd):
 def test_missing_version(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.54-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -528,8 +528,8 @@ def test_missing_version(package_dir, verifier, capfd):
 def test_invalid_package_name_pattern(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.55-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
@@ -539,8 +539,8 @@ def test_invalid_package_name_pattern(package_dir, verifier, capfd):
 def test_missing_package_name(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.56-py36_0.tar.bz2')
 
-    with pytest.raises(SystemExit):
-        verifier.verify_package(path_to_package=package)
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 

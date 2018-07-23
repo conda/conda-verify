@@ -3,6 +3,7 @@ import sys
 
 import jinja2
 import yaml
+from six import string_types
 
 import future.builtins
 
@@ -58,6 +59,8 @@ def ns_cfg(cfg):
 
 
 sel_pat = re.compile(r'(.+?)\s*\[(.+)\]$')
+
+
 def select_lines(data, namespace):
     lines = []
     for line in data.splitlines():
@@ -90,9 +93,11 @@ try:
     # circular dependency.  We only try this import so that conda-build is an optional
     #      conda-verify dep
     from conda_build import api
-    render_metadata = lambda recipe_dir, cfg: api.render(recipe_dir, finalize=False,
-                                                         bypass_env_check=True,
-                                                         **(cfg if cfg else {}))[0][0].meta
+
+    def render_metadata(recipe_dir, cfg):
+        m = api.render(recipe_dir, finalize=False, bypass_env_check=True,
+                       **(cfg if cfg else {}))[0][0]
+        return m.get_rendered_recipe_text()
 except ImportError:
     def render_metadata(recipe_dir, cfg):
         data = render_jinja2(recipe_dir)
@@ -147,6 +152,8 @@ def all_ascii(data, allow_CR=False):
 def ensure_list(argument):
     if isinstance(argument, list):
         return argument
+    elif isinstance(argument, string_types):
+        return argument.split(',')
     return [argument]
 
 

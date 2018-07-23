@@ -1,29 +1,39 @@
-LICENSE_FAMILIES = ['AGPL', 'GPL2', 'GPL3', 'LGPL', 'BSD', 'MIT', 'Apache',
-                    'PSF', 'Public-Domain', 'Proprietary', 'Other']
+try:
+    from conda_build.license_family import allowed_license_families as LICENSE_FAMILIES
+except ImportError:
+    print("warning: could not import conda-build ALLOWED_LICENSE_FAMILIES data.  Falling back to "
+          "possibly stale static list")
+    LICENSE_FAMILIES = ['AGPL', 'GPL2', 'GPL3', 'LGPL', 'BSD', 'MIT', 'Apache',
+                        'PSF', 'Public-Domain', 'Proprietary', 'Other']
 
-FIELDS = {
-    'package': {'name', 'version'},
-    'source': {'fn', 'url', 'md5', 'sha1', 'sha256',
-               'git_url', 'git_tag', 'git_branch', 'git_rev',
-               'patches', 'hg_url', 'hg_tag', 'path'},
-    'build': {'features', 'track_features', 'skip',
-              'number', 'entry_points', 'osx_is_app', 'noarch',
-              'preserve_egg_dir', 'win_has_prefix', 'no_link',
-              'ignore_prefix_files', 'msvc_compiler', 'skip_compile_pyc',
-              'detect_binary_files_with_prefix', 'script',
-              'always_include_files', 'binary_relocation',
-              'binary_has_prefix_files', 'noarch_python', 'run_exports'},
-    'requirements': {'build', 'run', 'preferred_env', 'host',
-                     'preferred_env_executable_paths'},
-    'outputs': {'name', 'build', 'about', 'test', 'version', 'script', 'requirements',
-                'run_exports'},
-    'app': {'entry', 'icon', 'summary', 'type', 'cli_opts'},
-    'test': {'requires', 'commands', 'files', 'source_files', 'imports'},
-    'about': {'license', 'license_url', 'license_family', 'license_file',
-              'summary', 'description', 'home', 'doc_url', 'doc_source_url',
-              'dev_url'},
-    'extra': {'recipe-maintainers', 'final', 'parent_recipe'},
-}
+try:
+    from conda_build.metadata import FIELDS
+except ImportError:
+    print("warning: could not import conda-build FIELDS data.  Falling back to possibly stale"
+          "static list")
+    FIELDS = {
+        'package': {'name', 'version'},
+        'source': {'fn', 'url', 'md5', 'sha1', 'sha256',
+                'git_url', 'git_tag', 'git_branch', 'git_rev',
+                'patches', 'hg_url', 'hg_tag', 'path'},
+        'build': {'features', 'track_features', 'skip',
+                'number', 'entry_points', 'osx_is_app', 'noarch',
+                'preserve_egg_dir', 'win_has_prefix', 'no_link',
+                'ignore_prefix_files', 'msvc_compiler', 'skip_compile_pyc',
+                'detect_binary_files_with_prefix', 'script',
+                'always_include_files', 'binary_relocation',
+                'binary_has_prefix_files', 'noarch_python', 'run_exports'},
+        'requirements': {'build', 'run', 'preferred_env', 'host',
+                        'preferred_env_executable_paths'},
+        'outputs': {'name', 'build', 'about', 'test', 'version', 'script', 'requirements',
+                    'run_exports'},
+        'app': {'entry', 'icon', 'summary', 'type', 'cli_opts'},
+        'test': {'requires', 'commands', 'files', 'source_files', 'imports'},
+        'about': {'license', 'license_url', 'license_family', 'license_file',
+                'summary', 'description', 'home', 'doc_url', 'doc_source_url',
+                'dev_url'},
+        'extra': {'recipe-maintainers', 'final', 'parent_recipe'},
+    }
 
 MAGIC_HEADERS = {
     b'\xca\xfe\xba\xbe': 'MachO-universal',

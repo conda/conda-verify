@@ -23,6 +23,7 @@ from conda_verify.utilities import (all_ascii, get_bad_seq, get_object_type,
 
 ver_spec_pat = '^(?:[><=]{0,2}(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}'
 
+
 class CondaPackageCheck(object):
     """Create checks in order to validate conda package tarballs."""
 
@@ -427,8 +428,9 @@ class CondaRecipeCheck(object):
 
     def check_fields(self):
         """Check that the fields listed in meta.yaml are valid."""
+
         for section in self.meta:
-            if section not in FIELDS:
+            if section not in FIELDS and section != 'extra':
                 return Error(self.recipe_dir, 'C2109', u'Found invalid section "{}"' .format(section))
 
             if section != 'extra':

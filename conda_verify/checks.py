@@ -511,8 +511,7 @@ class CondaRecipeCheck(object):
 
     def check_license_family(self):
         """Check that the license family listed in meta.yaml is valid."""
-        license_family = (self.meta.get('about', {}).get('license_family',
-                          self.meta.get('about', {}).get('license')))
+        license_family = self.meta.get('about', {}).get('license_family')
 
         if license_family is not None and license_family not in LICENSE_FAMILIES:
             return Error(self.recipe_dir, 'C2122', u'Found invalid license family "{}"' .format(license_family))

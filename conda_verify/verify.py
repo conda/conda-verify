@@ -36,6 +36,9 @@ class Verify(object):
                 if check is not None and check.code not in ensure_list(checks_to_ignore):
                     checks_to_display.append(check)
 
+        if checks_to_display:
+            print("Package verification results:")
+            print("-----------------------------")
         for check in sorted(checks_to_display):
             try:
                 print(check, file=sys.stderr)

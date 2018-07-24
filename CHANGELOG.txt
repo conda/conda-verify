@@ -1,3 +1,17 @@
+2018-07-24   3.1.0:
+-------------------
+  * add git_rev to source section fields  #41
+  * use versioneer for versioning   #42
+  * import license families and FIELDS schema from conda-build when it is available  #47
+  * make exiting optional, but always print errors  #47
+
+Contributors:
+-------------
+
+* @mandeep
+* @msarahan
+
+
 2018-03-02   3.0.2:
 -------------------
   * fix hash and filesize verification  #19

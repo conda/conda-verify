@@ -140,7 +140,7 @@ Checks
     C1124 - Found hardlink {} in tar archive
     C1125 - Found unallowed file in tar archive: {}
     C1126 - Found {} however package is not a noarch package
-    C1127 - Found both .bat and .exe files in executable directory
+    C1127 - Found both .bat and .exe files with same basename in same folder: {}
     C1128 - Found non-ascii characters in info/has_prefix
     C1129 - Found filename "{}" in info/has_prefix not included in archive
     C1130 - Found invalid mode "{}" in info/has_prefix

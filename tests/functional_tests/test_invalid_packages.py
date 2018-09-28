@@ -156,7 +156,7 @@ def test_duplicates_in_bin(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1127 Found both .bat and .exe files in executable directory' in error
+    assert 'C1127 Found both .bat and .exe files with same basename in same folder' in error
 
 
 def test_win_package_warning(package_dir, verifier, capfd):

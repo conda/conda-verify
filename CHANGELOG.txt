@@ -1,3 +1,12 @@
+2018-09-28   3.1.1:
+-------------------
+  * Fix bat/exe check to only fail when .bat and .exe files with same name exist  #49
+
+Contributors:
+-------------
+* @mingwandroid
+
+
 2018-07-24   3.1.0:
 -------------------
   * add git_rev to source section fields  #41

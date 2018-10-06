@@ -8,12 +8,13 @@ abbreviation for 'conda'.
 Checks C1101 through C1145 are housed in CondaPackageCheck.
 Checks C2101 through C2126 are housed in CondaRecipeCheck.
 """
+import contextlib
 import hashlib
 import json
 import os
 import re
 import sys
-import tarfile
+import libarchive
 
 from conda_verify.errors import Error, PackageError
 from conda_verify.constants import FIELDS, LICENSE_FAMILIES, CONDA_FORGE_COMMENTS
@@ -24,6 +25,110 @@ from conda_verify.utilities import (all_ascii, get_bad_seq, get_object_type,
 ver_spec_pat = '^(?:[><=]{0,2}(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}'
 
 
+@contextlib.contextmanager
+def _tmp_chdir(dest):
+    curdir = os.getcwd()
+    try:
+        os.chdir(dest)
+        yield
+    finally:
+        os.chdir(curdir)
+
+
+def _tar_xf(tarball, dir_path):
+    flags = libarchive.extract.EXTRACT_TIME | \
+            libarchive.extract.EXTRACT_PERM | \
+            libarchive.extract.EXTRACT_SECURE_NODOTDOT | \
+            libarchive.extract.EXTRACT_SECURE_SYMLINKS | \
+            libarchive.extract.EXTRACT_SECURE_NOABSOLUTEPATHS
+    if not os.path.isabs(tarball):
+        tarball = os.path.join(os.getcwd(), tarball)
+    with _tmp_chdir(dir_path):
+        libarchive.extract_file(tarball, flags)
+
+
+def _tar_xf_entries(tarball):
+    if not os.path.isabs(tarball):
+        tarball = os.path.join(os.getcwd(), tarball)
+    result = None
+    n_found = 0
+    # Must be a list so that the duplicate_entries can work correctly.
+    entries = []
+    with libarchive.file_reader(tarball) as archive:
+        for entry in archive:
+            entries.append(entry.name)
+    return entries
+
+
+def _tar_xf_file(tarball, entries):
+    if not os.path.isabs(tarball):
+        tarball = os.path.join(os.getcwd(), tarball)
+    result = None
+    n_found = 0
+    with libarchive.file_reader(tarball) as archive:
+        for entry in archive:
+            if entry.name in entries:
+                n_found += 1
+                for block in entry.get_blocks():
+                    if result is None:
+                        result = bytes(block)
+                    else:
+                        result += block
+                break
+    if not result:
+        result = b''
+    from conda_build.utils import ensure_list
+    if n_found != len(ensure_list(entries)):
+        raise KeyError()
+    return result
+
+
+class LibarchiveMember(object):
+    def __init__(self, entry):
+        self.name = entry.path
+        self._isdir = entry.isdir
+        self._islnk = entry.islnk
+        self._isfile = entry.isfile
+        self.size = entry.size
+
+    def isfile(self):
+        return self._isfile
+
+    def isdir(self):
+        return self._isdir
+
+    def islnk(self):
+        return self._islnk
+
+    def __lt__(self, other):
+        return False
+
+    def __eq__(self, other):
+        try:
+            basestring
+        except NameError:
+            basestring = str
+        if isinstance(other, basestring):
+            return True if self.name == other else False
+        return True if (self.name == other.name and self._isdir == other._isdir) else False
+
+    def __hash__(self):
+        return hash(repr(self))
+
+class LibarchiveArchive(object):
+    def __init__(self, tarball):
+        self.path = tarball
+        self.members = []
+        with libarchive.file_reader(tarball) as archive:
+            for entry in archive:
+                self.members.append(LibarchiveMember(entry))
+
+    def getmembers(self):
+        return self.members
+
+    def extractfile_contents(self, file):
+        return _tar_xf_file(self.path, file)
+
 class CondaPackageCheck(object):
     """Create checks in order to validate conda package tarballs."""
 
@@ -31,14 +136,14 @@ class CondaPackageCheck(object):
         """Initialize conda package information for use with package checks."""
         super(CondaPackageCheck, self).__init__()
         self.path = path
-        self.archive = tarfile.open(self.path)
+        self.archive = LibarchiveArchive(self.path)
         self.dist = self.retrieve_package_name(self.path)
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
-        self.paths = set(member.path for member in self.archive.getmembers())
-        self.index = self.archive.extractfile('info/index.json').read()
+        self.paths = [member.name for member in self.archive.members]
+        self.index = _tar_xf_file(self.path, 'info/index.json')
         self.info = json.loads(self.index.decode('utf-8'))
-        self.files_file = self.archive.extractfile('info/files').read()
-        self.paths_file = self.archive.extractfile('info/paths.json').read()
+        self.files_file = _tar_xf_file(self.path, 'info/files')
+        self.paths_file = _tar_xf_file(self.path, 'info/paths.json')
         self.win_pkg = bool(self.info['platform'] == 'win')
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
@@ -134,16 +239,16 @@ class CondaPackageCheck(object):
 
     def check_duplicate_members(self):
         """Check for duplicate members inside the package tarball."""
-        if len(self.archive.getmembers()) != len(self.paths):
+        if len(set(self.paths)) != len(self.paths):
             return Error(self.path, 'C1117', 'Found duplicate members inside tar archive')
 
     def check_members(self):
         """Check the tar archive members for non ascii characters."""
         for member in self.archive.getmembers():
             if sys.version_info.major == 2:
-                unicode_path = member.path.decode('utf-8')
+                unicode_path = member.name.decode('utf-8')
             else:
-                unicode_path = member.path.encode('utf-8')
+                unicode_path = member.name.encode('utf-8')
 
             if not all_ascii(unicode_path):
                 return Error(self.path, 'C1118', 'Found archive member names containing non-ascii characters')
@@ -168,12 +273,12 @@ class CondaPackageCheck(object):
 
     def check_files_file_for_validity(self):
         """Check that the files listed in info/files exist in the tar archive and vice versa."""
-        members = [member.path for member in self.archive.getmembers()
-                   if not member.isdir() and not member.path.startswith('info')]
+        members = [member for member in self.archive.getmembers()
+                   if not member.isdir() and not member.name.startswith('info')]
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()
                      if not path.strip().startswith('info')]
 
-        for filename in sorted(set(members).union(set(filenames))):
+        for filename in sorted(set(member.name for member in members).union(set(filenames))):
             if filename not in members:
                 return Error(self.path, 'C1122', (u'Found filename in info/files missing from tar '
                                                   'archive: {}').format(filename))
@@ -220,8 +325,8 @@ class CondaPackageCheck(object):
         """
         prefix_file = None
         for member in self.archive.getmembers():
-            if member.path == 'info/has_prefix':
-                prefix_file = self.archive.extractfile(member.path).read()
+            if member.name == 'info/has_prefix':
+                prefix_file = self.archive.extractfile_contents(member.name)
         return prefix_file
 
     def check_prefix_file(self):
@@ -280,8 +385,9 @@ class CondaPackageCheck(object):
     def check_for_post_links(self):
         """Check the tar archive for pre and post link files."""
         for filepath in self.paths:
-            if filepath.endswith(('-post-link.sh', '-pre-link.sh', '-pre-unlink.sh',
-                                  '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat')):
+            if (filepath.endswith(('-post-link.sh', '-pre-link.sh', '-pre-unlink.sh',
+                                  '-post-link.bat', '-pre-link.bat', '-pre-unlink.bat'))
+                and not filepath.startswith('info/recipe/')):
                 return Error(self.path, 'C1134', u'Found pre/post link file "{}" in archive' .format(filepath))
 
     def check_for_egg(self):
@@ -362,8 +468,8 @@ class CondaPackageCheck(object):
 
         for member in self.archive.getmembers():
             if member.isfile():
-                file_object = self.archive.extractfile(member.name).read()
-                sha256_digest = hashlib.sha256(file_object).hexdigest()
+                file_content = self.archive.extractfile_contents(member.name)
+                sha256_digest = hashlib.sha256(file_content).hexdigest()
                 for path in paths_json['paths']:
                     if member.name == path['_path']:
                         if sha256_digest != path['sha256']:

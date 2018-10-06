@@ -158,13 +158,14 @@ class CondaPackageCheck(object):
             raise PackageError(u'Found invalid sequence "{}" in package in info/index.json'
                                .format(seq))
 
-        if path.endswith('.tar.bz2'):
-            return path[:-8]
-        elif path.endswith('.tar'):
-            return path[:-4]
-        else:
-            raise PackageError('Found package with invalid extension "{}"'
-                               .format(os.path.splitext(path)[1]))
+# Removed for now, while we're experimenting with formats.
+#        if path.endswith('.tar.bz2'):
+#            return path[:-8]
+#        elif path.endswith('.tar'):
+#            return path[:-4]
+#        else:
+#            raise PackageError('Found package with invalid extension "{}"'
+#                               .format(os.path.splitext(path)[1]))
 
     def check_package_name(self):
         """Check the package name located in info/index.json."""

@@ -77,4 +77,4 @@ CONDA_FORGE_COMMENTS = """
 # The remaining entries in this section are optional, but recommended
 # GitHub IDs for maintainers of the recipe.
 # Always check with the people listed below if they are OK becoming maintainers of the recipe. (There will be spam!)
-"""
+"""  # noqa

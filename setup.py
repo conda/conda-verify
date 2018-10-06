@@ -6,7 +6,8 @@ from setuptools import setup
 
 import versioneer
 
-requirements = ['click >= 6.7', 'future >= 0.12.0', 'jinja2 >= 2.9', 'pyyaml >= 3.12', 'six', 'python-libarchive-c >= 2.8']
+requirements = ['click >= 6.7', 'future >= 0.12.0', 'jinja2 >= 2.9', 'pyyaml >= 3.12', 'six',
+                'python-libarchive-c >= 2.8']
 if sys.version_info.major == 2:
     requirements.append('backports.functools_lru_cache >= 1.4')
 

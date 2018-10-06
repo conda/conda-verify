@@ -19,7 +19,7 @@ class Verify(object):
         Codes are listed in readme.md.  Package codes follow 1xxx, recipe codes follow 2xxx."""
         package_check = CondaPackageCheck(path_to_package)
 
-        if (('ignore_scripts' in kw and kw['ignore_scripts']) or
+        if (('ignore_scripts' in kw and kw['ignore_scripts']) or # noqa
                 ('run_scripts' in kw and kw['run_scripts'])):
             getLogger(__name__).warn('Ignoring legacy ignore_scripts or run_scripts.  These have '
                     'been replaced by the checks_to_ignore argument, which takes a'
@@ -43,7 +43,8 @@ class Verify(object):
             try:
                 print(check, file=sys.stderr)
             except UnicodeEncodeError:
-                print("Could not print message for error code {} due to unicode error".format(check.code), file=sys.stderr)
+                print("Could not print message for error code {} due to unicode error"
+                      .format(check.code), file=sys.stderr)
 
         if checks_to_display and exit_on_error:
             raise PackageError(check)
@@ -56,7 +57,7 @@ class Verify(object):
         Codes are listed in readme.md.  Package codes follow 1xxx, recipe codes follow 2xxx."""
         recipe_check = CondaRecipeCheck(rendered_meta, recipe_dir)
 
-        if (('ignore_scripts' in kw and kw['ignore_scripts']) or
+        if (('ignore_scripts' in kw and kw['ignore_scripts']) or  # noqa
                 ('run_scripts' in kw and kw['run_scripts'])):
             getLogger(__name__).warn('Ignoring legacy ignore_scripts or run_scripts.  These have '
                     'been replaced by the checks_to_ignore argument, which takes a'

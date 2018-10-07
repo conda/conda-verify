@@ -256,7 +256,8 @@ class CondaPackageCheck(object):
         license = self.info.get('license_family', self.info.get('license'))
         if license not in LICENSE_FAMILIES:
             return Error(self.path, 'C1115',
-                         'Found invalid license "{}" in info/index.json' .format(license))
+                         'Found invalid license "{}" in info/index.json\n'
+                         'Please use one of "{}"'.format(license, LICENSE_FAMILIES))
 
     def check_index_encoding(self):
         """Check that contents of info/index.json are all ascii characters."""
@@ -742,8 +743,8 @@ class CondaRecipeCheck(object):
 
         if license_family is not None and license_family not in LICENSE_FAMILIES:
             return Error(self.recipe_dir, 'C2122',
-                         u'Found invalid license family "{}"'
-                         .format(license_family))
+                         u'Found invalid license family "{}"\n'
+                         'Please use one of "{}"'.format(license_family, LICENSE_FAMILIES))
 
     def check_for_valid_files(self):
         """Check that the files listed in meta.yaml exist."""

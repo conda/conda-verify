@@ -24,6 +24,33 @@ from conda_verify.utilities import (all_ascii, get_bad_seq, get_object_type,
 
 ver_spec_pat = '^(?:[><=]{0,2}(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}'
 
+formats = {'zip', 'tar.gz', 'tgz', 'tar.bz2', 'tbz2', 'tar'}
+libarchive_extensions = {}
+
+# Lossy remap
+libarchive_format_to_ext = dict()
+# So reconstructing via 'infer' makes a best guess. Hmm .. we should make a clearer
+# distinction between file extension (includes both a low res indication of format
+# and filter, sometimes) and format (which is much more nuanced from a libarchive
+# perspective where there are many different tar variants for example).
+libarchive_fmt_to_ext_remap = dict({'7zip': '7z',
+                                    'ar_svr4': 'ar',
+                                    'ar_bsd': 'ar',
+                                    'cpio_newc': 'cpio',
+                                    'gnutar': 'tar',
+                                    'iso9660': 'iso',
+                                    'mtree_classic': 'mtree',
+                                    'pax_restricted': 'pax',
+                                    'shar_dump': 'shar',
+                                    'v7tar': 'tar'})
+libarchive_flt_to_ext_remap = dict({'bzip2': 'bz2',
+                                    'compress': 'Z',
+                                    'grzip': 'grz',
+                                    'gzip': 'gz',
+                                    'lrzip': 'lrz',
+                                    'lzip': 'lz',
+                                    'lzop': 'lzo',
+                                    'zstd': 'zst'})
 
 @contextlib.contextmanager
 def _tmp_chdir(dest):
@@ -63,6 +90,7 @@ def _tar_xf_file(tarball, entries):
         tarball = os.path.join(os.getcwd(), tarball)
     result = None
     n_found = 0
+    entries = ensure_list(entries)
     with libarchive.file_reader(tarball) as archive:
         for entry in archive:
             if entry.name in entries:
@@ -75,11 +103,47 @@ def _tar_xf_file(tarball, entries):
                 break
     if not result:
         result = b''
-    from conda_build.utils import ensure_list
-    if n_found != len(ensure_list(entries)):
+    if n_found != len(entries):
         raise KeyError()
     return result
 
+
+def get_libarchive_filters():
+    from libarchive.ffi import WRITE_FILTERS
+    # Sort by length in-case of endswith() used during linear forward iteration.
+    res = list(WRITE_FILTERS)
+    res.sort(key = len)
+    return res
+
+def get_libarchive_formats():
+    from libarchive.ffi import WRITE_FORMATS
+    # Sort by length in-case of endswith() used during linear forward iteration.
+    res = list(WRITE_FORMATS)
+    res.sort(key = len)
+    return res
+
+
+def get_libarchive_extensions():
+    global libarchive_extensions
+    if len(libarchive_extensions):
+        return libarchive_extensions
+    libarchive_formats = get_libarchive_formats()
+    for libarchive_format in libarchive_formats:
+        ext = '.' + libarchive_format
+        if libarchive_format in libarchive_fmt_to_ext_remap:
+            ext = libarchive_fmt_to_ext_remap[libarchive_format]
+        else:
+            ext = libarchive_format
+        libarchive_format_to_ext[libarchive_format] = ext
+
+    libarchive_filters = get_libarchive_filters()
+
+    for libarchive_filter in libarchive_filters:
+        if libarchive_filter in libarchive_flt_to_ext_remap:
+            libarchive_filter = libarchive_flt_to_ext_remap[libarchive_filter]
+        formats.add('tar.' + libarchive_filter)
+    libarchive_extensions = formats
+    return libarchive_extensions
 
 class LibarchiveMember(object):
     def __init__(self, entry):
@@ -118,9 +182,12 @@ class LibarchiveArchive(object):
     def __init__(self, tarball):
         self.path = tarball
         self.members = []
-        with libarchive.file_reader(tarball) as archive:
-            for entry in archive:
-                self.members.append(LibarchiveMember(entry))
+        try:
+            with libarchive.file_reader(tarball) as archive:
+                for entry in archive:
+                    self.members.append(LibarchiveMember(entry))
+        except Exception as exception:
+            raise exception
 
     def getmembers(self):
         return self.members
@@ -135,19 +202,28 @@ class CondaPackageCheck(object):
     def __init__(self, path):
         """Initialize conda package information for use with package checks."""
         super(CondaPackageCheck, self).__init__()
+        self.error = 'none'
         self.path = path
-        self.archive = LibarchiveArchive(self.path)
+        try:
+            self.archive = LibarchiveArchive(self.path)
+        except:
+            self.archive = None
         self.dist = self.retrieve_package_name(self.path)
-        self.name, self.version, self.build = self.dist.rsplit('-', 2)
-        self.paths = [member.name for member in self.archive.members]
-        self.index = _tar_xf_file(self.path, 'info/index.json')
-        self.info = json.loads(self.index.decode('utf-8'))
-        self.files_file = _tar_xf_file(self.path, 'info/files')
-        self.paths_file = _tar_xf_file(self.path, 'info/paths.json')
-        self.win_pkg = bool(self.info['platform'] == 'win')
-        self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
-        self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
-        self.version_pat = re.compile(r'[\w\.]+$')
+        if not self.dist:
+            print("debug")
+        if not self.archive:
+            self.error = "invalid_extension"
+        else:
+            self.name, self.version, self.build = self.dist.rsplit('-', 2)
+            self.paths = [member.name for member in self.archive.members]
+            self.index = _tar_xf_file(self.path, 'info/index.json')
+            self.info = json.loads(self.index.decode('utf-8'))
+            self.files_file = _tar_xf_file(self.path, 'info/files')
+            self.paths_file = _tar_xf_file(self.path, 'info/paths.json')
+            self.win_pkg = bool(self.info['platform'] == 'win')
+            self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
+            self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
+            self.version_pat = re.compile(r'[\w\.]+$')
 
     @staticmethod
     def retrieve_package_name(path):
@@ -157,15 +233,19 @@ class CondaPackageCheck(object):
         if seq:
             raise PackageError(u'Found invalid sequence "{}" in package in info/index.json'
                                .format(seq))
+        exts = get_libarchive_extensions()
+        for ext in exts:
+            if path.endswith('.' + ext):
+                return path.rstrip('.' + ext)
 
-# Removed for now, while we're experimenting with formats.
-#        if path.endswith('.tar.bz2'):
-#            return path[:-8]
-#        elif path.endswith('.tar'):
-#            return path[:-4]
-#        else:
-#            raise PackageError('Found package with invalid extension "{}"'
-#                               .format(os.path.splitext(path)[1]))
+        raise PackageError('Could not decompress "{}"'
+                           .format(os.path.splitext(path)[1]))
+
+
+    def check_package_extension(self):
+        if self.error == 'invalid_extension':
+            raise PackageError('Could not decompress "{}"'
+                               .format(os.path.splitext(self.path)[1]))
 
     def check_package_name(self):
         """Check the package name located in info/index.json."""
@@ -307,7 +387,8 @@ class CondaPackageCheck(object):
 
     def check_files_file_for_validity(self):
         """Check that the files listed in info/files exist in the tar archive and vice versa."""
-        members = [member for member in self.archive.getmembers()
+        members_in = self.archive.getmembers()
+        members = [member for member in members_in
                    if not member.isdir() and not member.name.startswith('info')]
         filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()
                      if not path.strip().startswith('info')]
@@ -316,7 +397,7 @@ class CondaPackageCheck(object):
             if filename not in members:
                 return Error(self.path, 'C1122',
                              u'Found filename in info/files missing from tar '
-                             'archive: {}').format(filename)
+                             'archive: {}'.format(filename))
             elif filename not in filenames:
                 return Error(self.path, 'C1123',
                              u'Found filename in tar archive missing from info/files: {}'
@@ -328,7 +409,7 @@ class CondaPackageCheck(object):
             if member.islnk():
                 return Error(self.path,
                              'C1124', u'Found hardlink {} in tar archive'
-                             .format(member.path))
+                             .format(member.name))
 
     def check_for_unallowed_files(self):
         """Check the tar archive for unallowed directories."""
@@ -433,8 +514,8 @@ class CondaPackageCheck(object):
                                  'not allowed in Windows package')
                 elif len(placeholder) != 255:
                     return Error(self.path, 'C1133',
-                                 u'Binary placeholder "{}" found in info/has_prefix'
-                                 u'does not have a length of 255 bytes'
+                                 u'Binary placeholder "{}" found in info/has_prefix '
+                                 u'does not have a length of 255 bytes '
                                  .format(placeholder))
 
     def check_for_post_links(self):
@@ -531,8 +612,8 @@ class CondaPackageCheck(object):
                              .format(arch))
 
             for member in self.archive.getmembers():
-                if member.path.endswith(('.exe', '.dll')):
-                    file_header = self.archive.extractfile(member.path).read(4096)
+                if member.name.endswith(('.exe', '.dll')):
+                    file_header = _tar_xf_file(self.path, member.name)
                     file_object_type = get_object_type(file_header)
                     if ((arch == 'x86' and file_object_type != 'DLL I386') or  # noqa
                         (arch == 'x86_64' and file_object_type != 'DLL AMD64')):
@@ -558,7 +639,7 @@ class CondaPackageCheck(object):
                                          .format(member.name))
                         elif member.size != path['size_in_bytes']:
                             return Error(self.path, 'C1147',
-                                         'Found file "{}" with filesize different'
+                                         'Found file "{}" with filesize different '
                                          'than listed in paths.json' .format(member.name))
 
 

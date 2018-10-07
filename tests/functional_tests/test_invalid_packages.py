@@ -29,13 +29,13 @@ def test_invalid_package_sequence(package_dir, verifier):
 
 
 def test_invalid_package_extension(package_dir, verifier):
-    package = os.path.join(package_dir, 'testfile.zip')
+    package = os.path.join(package_dir, 'testfile.unknown')
 
     with pytest.raises(PackageError) as excinfo:
         verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     assert ("PackageError: "
-            'Found package with invalid extension ".zip"' in str(excinfo))
+            'Could not decompress' in str(excinfo))
 
 
 def test_duplicate_members(package_dir, verifier, capfd):

@@ -161,6 +161,7 @@ Checks
     C1145 - Found file "{}" with object type "{}" but with arch "{}"
     C1146 - Found file "{}" with sha256 hash different than listed in paths.json
     C1147 - Found file "{}" with filesize different than listed in paths.json
+    C1148 - Found architecture specific file "{}" in package
     C2101 - Missing package name in meta.yaml
     C2102 - Found invalid package name "{}" in meta.yaml
     C2103 - Found invalid sequence "{}" in package name

@@ -233,7 +233,7 @@ def test_invalid_setuptools(package_dir, verifier, capfd):
         verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
-    
+
     assert 'C1136 Found easy_install script "bin/easy_install.pth" in archive' in error
     assert 'C1137 Found namespace file "bin/easy_install.pth" in archive' in error
 
@@ -545,3 +545,14 @@ def test_missing_package_name(package_dir, verifier, capfd):
     output, error = capfd.readouterr()
 
     assert "C1101 Missing package name in info/index.json" in error
+
+
+def test_invalid_noarch_files(package_dir, verifier, capfd):
+    package = os.path.join(package_dir, 'testfile-0.0.57-0.tar.bz2')
+
+    with pytest.raises(PackageError):
+        verifier.verify_package(path_to_package=package, exit_on_error=True)
+
+    output, error = capfd.readouterr()
+
+    assert 'C1148 Found architecture specific file "bin/testfile.dll" in package.' in error

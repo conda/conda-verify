@@ -3,7 +3,7 @@ try:
 except ImportError:
     print("warning: could not import conda-build ALLOWED_LICENSE_FAMILIES data.  Falling back to "
           "possibly stale static list")
-    LICENSE_FAMILIES = ['AGPL', 'GPL2', 'GPL3', 'LGPL', 'BSD', 'MIT', 'Apache',
+    LICENSE_FAMILIES = ['AGPL', 'GPL', 'GPL2', 'GPL3', 'LGPL', 'BSD', 'MIT', 'Apache',
                         'PSF', 'Public-Domain', 'Proprietary', 'Other']
 
 try:

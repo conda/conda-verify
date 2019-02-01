@@ -3,8 +3,8 @@ try:
 except ImportError:
     print("warning: could not import conda-build ALLOWED_LICENSE_FAMILIES data.  Falling back to "
           "possibly stale static list")
-    LICENSE_FAMILIES = ['AGPL', 'GPL', 'GPL2', 'GPL3', 'LGPL', 'BSD', 'MIT', 'Apache',
-                        'PSF', 'Public-Domain', 'Proprietary', 'Other']
+    LICENSE_FAMILIES = ['AGPL', 'GPL', 'GPL2', 'GPL3', 'LGPL', 'BSD', 'MIT', 'APACHE',
+                        'PSF', 'CC', 'PUBLIC-DOMAIN', 'PROPRIETARY', 'OTHER', 'NONE']
 
 try:
     from conda_build.metadata import FIELDS

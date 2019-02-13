@@ -38,17 +38,6 @@ def test_invalid_package_extension(package_dir, verifier):
             'Found package with invalid extension ".zip"' in str(excinfo))
 
 
-def test_duplicate_members(package_dir, verifier, capfd):
-    package = os.path.join(package_dir, 'testfile-0.0.1-py36_0.tar.bz2')
-
-    with pytest.raises(PackageError):
-        verifier.verify_package(path_to_package=package, exit_on_error=True)
-
-    output, error = capfd.readouterr()
-
-    assert 'C1117 Found duplicate members inside tar archive' in error
-
-
 def test_index_unicode(package_dir, verifier, capfd):
     package = os.path.join(package_dir, 'testfile-0.0.2-py36_0.tar.bz2')
 
@@ -90,7 +79,7 @@ def test_not_in_files_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1123 Found filename in tar archive missing from info/files: lib/testfile.txt' in error
+    assert 'C1123 Found filename in tar archive missing from info/files: lib{}testfile.txt'.format(os.path.sep) in error
 
 
 def test_not_in_tarball(package_dir, verifier, capfd):
@@ -112,7 +101,7 @@ def test_not_allowed_files(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1125 Found unallowed file in tar archive: info/testfile~' in error
+    assert 'C1125 Found unallowed file in tar archive: info{}testfile~'.format(os.path.sep) in error
 
 
 def test_file_not_allowed(package_dir, verifier, capfd):
@@ -123,7 +112,7 @@ def test_file_not_allowed(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1126 Found info/link.json however package is not a noarch package' in error
+    assert 'C1126 Found info{}link.json however package is not a noarch package'.format(os.path.sep) in error
 
 
 def test_invalid_package_name(package_dir, verifier, capfd):
@@ -223,7 +212,7 @@ def test_invalid_script_name(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1134 Found pre/post link file "bin/test-pre-unlink.bat" in archive' in error
+    assert 'C1134 Found pre/post link file "bin{}test-pre-unlink.bat" in archive'.format(os.path.sep) in error
 
 
 def test_invalid_setuptools(package_dir, verifier, capfd):
@@ -234,8 +223,8 @@ def test_invalid_setuptools(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1136 Found easy_install script "bin/easy_install.pth" in archive' in error
-    assert 'C1137 Found namespace file "bin/easy_install.pth" in archive' in error
+    assert 'C1136 Found easy_install script "bin{}easy_install" in archive'.format(os.path.sep) in error
+    assert 'C1137 Found namespace file "bin{}easy_install.pth" in archive'.format(os.path.sep) in error
 
 
 def test_invalid_eggfile(package_dir, verifier, capfd):
@@ -246,7 +235,7 @@ def test_invalid_eggfile(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1135 Found egg file "bin/test.egg" in archive' in error
+    assert 'C1135 Found egg file "bin{}test.egg" in archive'.format(os.path.sep) in error
 
 
 def test_invalid_namespace_file(package_dir, verifier, capfd):
@@ -257,7 +246,7 @@ def test_invalid_namespace_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1137 Found namespace file "bin/test-nspkg.pth" in archive' in error
+    assert 'C1137 Found namespace file "bin{}test-nspkg.pth" in archive'.format(os.path.sep) in error
 
 
 def test_invalid_pyo_file(package_dir, verifier, capfd):
@@ -268,7 +257,7 @@ def test_invalid_pyo_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1138 Found pyo file "bin/test.pyo" in archive' in error
+    assert 'C1138 Found pyo file "bin{}test.pyo" in archive'.format(os.path.sep) in error
 
 
 def test_invalid_pyc_and_so_files(package_dir, verifier, capfd):
@@ -279,8 +268,8 @@ def test_invalid_pyc_and_so_files(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1138 Found pyo file "bin/test.pyo" in archive' in error
-    assert 'C1139 Found pyc file "bin/test.pyc" in invalid directory' in error
+    assert 'C1138 Found pyo file "bin{}test.pyo" in archive'.format(os.path.sep) in error
+    assert 'C1139 Found pyc file "bin{}test.pyc" in invalid directory'.format(os.path.sep) in error
 
 
 def test_invalid_pickle_file(package_dir, verifier, capfd):
@@ -291,7 +280,7 @@ def test_invalid_pickle_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1140 Found lib2to3 .pickle file "lib/lib2to3/test.pickle"' in error
+    assert 'C1140 Found lib2to3 .pickle file "lib{0}lib2to3{0}test.pickle"'.format(os.path.sep) in error
 
 
 def test_missing_pyc_file(package_dir, verifier, capfd):
@@ -302,7 +291,7 @@ def test_missing_pyc_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert  'C1141 Found python file "lib/site-packages/python2.7/test.py" without a corresponding pyc file' in error
+    assert  'C1141 Found python file "lib{0}site-packages{0}python2.7{0}test.py" without a corresponding pyc file'.format(os.path.sep) in error
 
 
 def test_invalid_windows_architecture(package_dir, verifier, capfd):
@@ -324,7 +313,7 @@ def test_invalid_windows_dll(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1145 Found file "bin/testfile.dll" with object type "None" but with arch "x86_64"' in error
+    assert 'C1145 Found file "bin{}testfile.dll" with object type "None" but with arch "x86_64"'.format(os.path.sep) in error
 
 
 def test_invalid_easy_install_file(package_dir, verifier, capfd):
@@ -335,7 +324,7 @@ def test_invalid_easy_install_file(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1137 Found namespace file "bin/easy-install.pth" in archive' in error
+    assert 'C1137 Found namespace file "bin{}easy-install.pth" in archive'.format(os.path.sep) in error
 
 
 def test_non_ascii_path(package_dir, verifier, capfd):
@@ -390,7 +379,7 @@ def test_invalid_file_hash(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1146 Found file "lib/python3.6/site-packages/test/__main__.py" with sha256 hash different than listed in paths.json' in error
+    assert 'C1146 Found file "lib{0}python3.6{0}site-packages{0}test{0}__main__.py" with sha256 hash different than listed in paths.json'.format(os.path.sep) in error
 
 
 def test_invalid_file_size(package_dir, verifier, capfd):
@@ -401,29 +390,28 @@ def test_invalid_file_size(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1147 Found file "lib/python3.6/site-packages/test/__main__.py" with filesize different than listed in paths.json' in error
+    assert 'C1147 Found file "lib{0}python3.6{0}site-packages{0}test{0}__main__.py" with filesize different than listed in paths.json'.format(os.path.sep) in error
 
 
 def test_duplicate_menu_json(package_dir, verifier, capfd):
-    package = os.path.join(package_dir, 'testfile-0.0.45-py36_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.45-py36_0.tar.bz2')
 
     with pytest.raises(PackageError):
         verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
-
     assert 'C1143 Found more than one Menu json file' in error
 
 
 def test_invalid_menu_json(package_dir, verifier, capfd):
-    package = os.path.join(package_dir, 'testfile-0.0.46-py36_0.tar')
+    package = os.path.join(package_dir, 'testfile-0.0.46-py36_0.tar.bz2')
 
     with pytest.raises(PackageError):
         verifier.verify_package(path_to_package=package, exit_on_error=True)
 
     output, error = capfd.readouterr()
 
-    assert 'C1142 Found invalid Menu json file "Menu/wrongname.json"' in error
+    assert 'C1142 Found invalid Menu json file "Menu{}wrongname.json"'.format(os.path.sep) in error
 
 
 def test_python_binary_warning(package_dir, verifier, capfd):
@@ -555,4 +543,4 @@ def test_invalid_noarch_files(package_dir, verifier, capfd):
 
     output, error = capfd.readouterr()
 
-    assert 'C1148 Found architecture specific file "bin/testfile.dll" in package.' in error
+    assert 'C1148 Found architecture specific file "bin{}testfile.dll" in package.'.format(os.path.sep) in error

@@ -19,6 +19,7 @@ requirements:
     - pyyaml
     - future
     - backports.functools_lru_cache  # [py<33]
+    - conda-package-handling >=1.0.4
 
 build:
   script: pip install . --no-deps

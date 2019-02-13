@@ -5,7 +5,7 @@ Each class contains specific checks that relate to validating packages
 and recipes. These checks start with the letter 'C', which is an
 abbreviation for 'conda'.
 
-Checks C1101 through C1145 are housed in CondaPackageCheck.
+Checks C1101 through C1148 are housed in CondaPackageCheck.
 Checks C2101 through C2126 are housed in CondaRecipeCheck.
 """
 import hashlib
@@ -195,7 +195,7 @@ class CondaPackageCheck(object):
                 return Error(self.path, 'C1125', u'Found unallowed file in tar archive: {}' .format(filepath))
 
     def check_for_noarch_info(self):
-        """Check that noarch Python packages contain the proper files."""
+        """Check that noarch Python packages contain the proper metadata files."""
         for filepath in self.paths:
             if 'info/package_metadata.json' in filepath or 'info/link.json' in filepath:
                 if self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
@@ -370,6 +370,13 @@ class CondaPackageCheck(object):
                             return Error(self.path, 'C1146', 'Found file "{}" with sha256 hash different than listed in paths.json' .format(member.name))
                         elif member.size != path['size_in_bytes']:
                             return Error(self.path, 'C1147', 'Found file "{}" with filesize different than listed in paths.json' .format(member.name))
+
+    def check_noarch_files(self):
+        """Check that noarch packages do not contain architecture specific files."""
+        if self.info['subdir'] == 'noarch':
+            for filepath in self.paths:
+                if filepath.endswith(('.so', '.dylib', '.dll', 'lib')):
+                    return Error(self.path, 'C1148', u'Found architecture specific file "{}" in package.' .format(filepath))
 
 
 class CondaRecipeCheck(object):

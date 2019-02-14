@@ -6,7 +6,7 @@
   - msarahan@anaconda.com
   aliases:
   - Mike Sarahan
-  num_commits: 9
+  num_commits: 5
   first_commit: 2019-01-03 20:00:40
 - name: Mandeep Bhutani
   email: mbhutani@continuum.io
@@ -15,17 +15,40 @@
   - mandeep
   alternate_emails:
   - mandeep@users.noreply.github.com
+  num_commits: 185
+  first_commit: 2017-06-27 10:37:47
 - name: Ilan Schnell
   email: ilanschnell@gmail.com
   github: ilanschnell
   alternate_emails:
   - ilan@continuum.io
+  num_commits: 104
+  first_commit: 2016-06-03 00:53:19
 - name: Sophia Castellarin
   email: scastellarin@continuum.io
   github: soapy1
+  aliases:
+  - sophia
   alternate_emails:
-    - scastellarin95@gmail.com
+  - scastellarin95@gmail.com
+  num_commits: 6
+  first_commit: 2016-11-07 11:34:37
 - name: Kale Franz
   email: kfranz@continuum.io
   github: kalefranz
 
+  num_commits: 1
+  first_commit: 2017-08-14 15:37:34
+- name: jakirkham
+  email: jakirkham@gmail.com
+  num_commits: 2
+  first_commit: 2016-07-18 11:44:07
+  github: jakirkham
+- name: Ray Donnelly
+  email: mingw.android@gmail.com
+  num_commits: 1
+  first_commit: 2018-09-19 12:36:32
+- name: Nehal J Wani
+  email: nehaljw.kkd1@gmail.com
+  num_commits: 2
+  first_commit: 2017-10-13 18:24:57

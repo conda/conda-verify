@@ -1,0 +1,25 @@
+Enhancements:
+-------------
+
+ * support new conda package format
+ * speed things up by refactoring package extraction to use conda-package-handling
+
+ Bug fixes:
+----------
+
+ * <news item>
+
+ Deprecations:
+-------------
+
+ * <news item>
+
+ Docs:
+-----
+
+ * <news item>
+
+ Other:
+------
+
+ * <news item>

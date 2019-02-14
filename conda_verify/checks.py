@@ -12,8 +12,11 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sys
-import tarfile
+import tempfile
+
+import conda_package_handling.api
 
 from conda_verify.errors import Error, PackageError
 from conda_verify.constants import FIELDS, LICENSE_FAMILIES, CONDA_FORGE_COMMENTS
@@ -21,7 +24,22 @@ from conda_verify.utilities import (all_ascii, get_bad_seq, get_object_type,
                                     ensure_list, fullmatch)
 
 
-ver_spec_pat = '^(?:[><=]{0,2}(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}'
+ver_spec_pat = r'^(?:[><=]{0,2}(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}'
+
+
+def _checksum(fd, algorithm, buffersize=65536):
+    hash_impl = getattr(hashlib, algorithm)
+    if not hash_impl:
+        raise ValueError("Unrecognized hash algorithm: {}".format(algorithm))
+    else:
+        hash_impl = hash_impl()
+    for block in iter(lambda: fd.read(buffersize), b''):
+        hash_impl.update(block)
+    return hash_impl.hexdigest()
+
+
+def sha256_checksum(fd):
+    return _checksum(fd, 'sha256')
 
 
 class CondaPackageCheck(object):
@@ -31,18 +49,37 @@ class CondaPackageCheck(object):
         """Initialize conda package information for use with package checks."""
         super(CondaPackageCheck, self).__init__()
         self.path = path
-        self.archive = tarfile.open(self.path)
         self.dist = self.retrieve_package_name(self.path)
+
+        self.tmpdir = tempfile.mkdtemp()
+        conda_package_handling.api.extract(self.path, self.tmpdir)
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
-        self.paths = set(member.path for member in self.archive.getmembers())
-        self.index = self.archive.extractfile('info/index.json').read()
+        self.paths = self.archive_members = [os.path.relpath(os.path.join(dp, f), self.tmpdir)
+                                             for dp, dn, filenames in os.walk(self.tmpdir)
+                                             for f in filenames]
+        with open(os.path.join(self.tmpdir, 'info', 'index.json'), 'rb') as f:
+            self.index = f.read()
         self.info = json.loads(self.index.decode('utf-8'))
-        self.files_file = self.archive.extractfile('info/files').read()
-        self.paths_file = self.archive.extractfile('info/paths.json').read()
+
+        with open(os.path.join(self.tmpdir, 'info', 'files'), 'rb') as f:
+            self.files_file = f.read()
+
+        try:
+            with open(os.path.join(self.tmpdir, 'info', 'has_prefix'), 'rb') as f:
+                self.prefix_file = f.read()
+        except IOError:
+            self.prefix_file = None
+
+        with open(os.path.join(self.tmpdir, 'info', 'paths.json')) as f:
+            self.paths_json = json.load(f)
+
         self.win_pkg = bool(self.info['platform'] == 'win')
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
         self.version_pat = re.compile(r'[\w\.]+$')
+
+    def __del__(self):
+        shutil.rmtree(self.tmpdir)
 
     @staticmethod
     def retrieve_package_name(path):
@@ -56,6 +93,8 @@ class CondaPackageCheck(object):
             return path[:-8]
         elif path.endswith('.tar'):
             return path[:-4]
+        elif path.endswith('.conda'):
+            return path[:-6]
         else:
             raise PackageError('Found package with invalid extension "{}"' .format(os.path.splitext(path)[1]))
 
@@ -132,18 +171,13 @@ class CondaPackageCheck(object):
         if not all_ascii(self.index, self.win_pkg):
             return Error(self.path, 'C1116', 'Found non-ascii characters inside info/index.json')
 
-    def check_duplicate_members(self):
-        """Check for duplicate members inside the package tarball."""
-        if len(self.archive.getmembers()) != len(self.paths):
-            return Error(self.path, 'C1117', 'Found duplicate members inside tar archive')
-
     def check_members(self):
         """Check the tar archive members for non ascii characters."""
-        for member in self.archive.getmembers():
+        for member in self.archive_members:
             if sys.version_info.major == 2:
-                unicode_path = member.path.decode('utf-8')
+                unicode_path = member.decode('utf-8')
             else:
-                unicode_path = member.path.encode('utf-8')
+                unicode_path = member.encode('utf-8')
 
             if not all_ascii(unicode_path):
                 return Error(self.path, 'C1118', 'Found archive member names containing non-ascii characters')
@@ -168,9 +202,9 @@ class CondaPackageCheck(object):
 
     def check_files_file_for_validity(self):
         """Check that the files listed in info/files exist in the tar archive and vice versa."""
-        members = [member.path for member in self.archive.getmembers()
-                   if not member.isdir() and not member.path.startswith('info')]
-        filenames = [path.strip() for path in self.files_file.decode('utf-8').splitlines()
+        members = [member for member in self.archive_members
+                   if not os.path.isdir(os.path.join(self.tmpdir, member)) and not member.startswith('info')]
+        filenames = [os.path.normpath(path.strip()) for path in self.files_file.decode('utf-8').splitlines()
                      if not path.strip().startswith('info')]
 
         for filename in sorted(set(members).union(set(filenames))):
@@ -182,9 +216,9 @@ class CondaPackageCheck(object):
 
     def check_for_hardlinks(self):
         """Check the tar archive for hardlinks."""
-        for member in self.archive.getmembers():
-            if member.islnk():
-                return Error(self.path, 'C1124', u'Found hardlink {} in tar archive' .format(member.path))
+        for member in self.archive_members:
+            if os.path.islink(os.path.join(self.tmpdir, member)):
+                return Error(self.path, 'C1124', u'Found hardlink {} in tar archive' .format(member))
 
     def check_for_unallowed_files(self):
         """Check the tar archive for unallowed directories."""
@@ -197,7 +231,8 @@ class CondaPackageCheck(object):
     def check_for_noarch_info(self):
         """Check that noarch Python packages contain the proper metadata files."""
         for filepath in self.paths:
-            if 'info/package_metadata.json' in filepath or 'info/link.json' in filepath:
+            if filepath in (os.path.join('info', 'package_metadata.json'),
+                            os.path.join('info', 'link.json')):
                 if self.info['subdir'] != 'noarch' and 'preferred_env' not in self.info:
                     return Error(self.path, 'C1126', u'Found {} however package is not a noarch package' .format(filepath))
 
@@ -211,18 +246,6 @@ class CondaPackageCheck(object):
             return Error(self.path, 'C1127',
                          'Found both .bat and .exe files with same basename in same folder: {}'
                          .format(isect))
-
-    @property
-    def prefix_file(self):
-        """Extract the has_prefix file from the archive and return it.
-
-        If the file does not exist in the archive, None is returned.
-        """
-        prefix_file = None
-        for member in self.archive.getmembers():
-            if member.path == 'info/has_prefix':
-                prefix_file = self.archive.extractfile(member.path).read()
-        return prefix_file
 
     def check_prefix_file(self):
         """Check the info/has_prefix file for proper formatting."""
@@ -253,7 +276,8 @@ class CondaPackageCheck(object):
         """Check that the filenames in has_prefix exist in the archive."""
         if self.prefix_file_contents is not None:
             _, _, filename = self.prefix_file_contents
-            if filename not in self.paths:
+
+            if os.path.normpath(filename) not in self.paths:
                 return Error(self.path, 'C1129', u'Found filename "{}" in info/has_prefix not included in archive' .format(filename))
 
     def check_prefix_file_mode(self):
@@ -293,14 +317,16 @@ class CondaPackageCheck(object):
     def check_for_easy_install_script(self):
         """Check the tar archive for easy_install scripts."""
         for filepath in self.paths:
-            if filepath.startswith(('bin/easy_install', 'Scripts/easy_install')):
+            if filepath.startswith((os.path.join('bin', 'easy_install'),
+                                    os.path.join('Scripts', 'easy_install'))):
                 return Error(self.path, 'C1136', u'Found easy_install script "{}" in archive' .format(filepath))
 
     def check_for_pth_file(self):
         """Check the tar archive for .pth files."""
         for filepath in self.paths:
             if filepath.endswith('.pth'):
-                return Error(self.path, 'C1137', u'Found namespace file "{}" in archive' .format(filepath))
+                return Error(self.path, 'C1137', u'Found namespace file "{}" in archive' .format(
+                    os.path.normpath(filepath)))
 
     def check_for_pyo_file(self):
         """Check the tar archive for .pyo files"""
@@ -324,18 +350,18 @@ class CondaPackageCheck(object):
         """Check that a .pyc file exists for every .py file in a Python 2 package."""
         if 'py3' not in self.build:
             for filepath in self.paths:
-                if '/site-packages/' in filepath:
+                if 'site-packages' in filepath:
                     if filepath.endswith('.py') and (filepath + 'c') not in self.paths:
                         return Error(self.path, 'C1141', u'Found python file "{}" without a corresponding pyc file' .format(filepath))
 
     def check_menu_json_name(self):
         """Check that the Menu/package.json filename is identical to the package name."""
         menu_json_files = [filepath for filepath in self.paths
-                           if filepath.startswith('Menu/') and filepath.endswith('.json')]
+                           if filepath.startswith('Menu' + os.path.sep) and filepath.endswith('.json')]
 
         if len(menu_json_files) == 1:
             filename = menu_json_files[0]
-            if filename != '{}.json' .format(self.name):
+            if filename != os.path.normpath('{}.json' .format(self.name)):
                 return Error(self.path, 'C1142', u'Found invalid Menu json file "{}"' .format(filename))
         elif len(menu_json_files) > 1:
             return Error(self.path, 'C1143', 'Found more than one Menu json file')
@@ -347,29 +373,30 @@ class CondaPackageCheck(object):
             if arch not in ('x86', 'x86_64'):
                 return Error(self.path, 'C1144', u'Found unrecognized Windows architecture "{}"' .format(arch))
 
-            for member in self.archive.getmembers():
-                if member.path.endswith(('.exe', '.dll')):
-                    file_header = self.archive.extractfile(member.path).read(4096)
-                    file_object_type = get_object_type(file_header)
-                    if ((arch == 'x86' and file_object_type != 'DLL I386') or
-                        (arch == 'x86_64' and file_object_type != 'DLL AMD64')):
+            for member in self.archive_members:
+                if member.endswith(('.exe', '.dll')):
+                    with open(os.path.join(self.tmpdir, member), 'rb') as file_object:
+                        file_header = file_object.read(4096)
+                        file_object_type = get_object_type(file_header)
+                        if ((arch == 'x86' and file_object_type != 'DLL I386') or
+                            (arch == 'x86_64' and file_object_type != 'DLL AMD64')):
 
-                        return Error(self.path, 'C1145', u'Found file "{}" with object type "{}" but with arch "{}"' .format(member.name, file_object_type, arch))
+                            return Error(self.path, 'C1145', u'Found file "{}" with object type "{}" but with arch "{}"' .format(member, file_object_type, arch))
 
     def check_package_hashes_and_size(self):
         """Check the sha256 checksum and filesize of each file in the package."""
-        paths_json = json.loads(self.paths_file.decode('utf-8'))
-
-        for member in self.archive.getmembers():
-            if member.isfile():
-                file_object = self.archive.extractfile(member.name).read()
-                sha256_digest = hashlib.sha256(file_object).hexdigest()
-                for path in paths_json['paths']:
-                    if member.name == path['_path']:
+        for member in self.archive_members:
+            file_path = os.path.join(self.tmpdir, member)
+            if os.path.isfile(file_path):
+                for path in self.paths_json['paths']:
+                    size = os.stat(file_path).st_size
+                    if member == os.path.normpath(path['_path']):
+                        if size != path['size_in_bytes']:
+                            return Error(self.path, 'C1147', 'Found file "{}" with filesize different than listed in paths.json' .format(member))
+                        with open(file_path, 'rb') as file_object:
+                            sha256_digest = sha256_checksum(file_object)
                         if sha256_digest != path['sha256']:
-                            return Error(self.path, 'C1146', 'Found file "{}" with sha256 hash different than listed in paths.json' .format(member.name))
-                        elif member.size != path['size_in_bytes']:
-                            return Error(self.path, 'C1147', 'Found file "{}" with filesize different than listed in paths.json' .format(member.name))
+                            return Error(self.path, 'C1146', 'Found file "{}" with sha256 hash different than listed in paths.json' .format(member))
 
     def check_noarch_files(self):
         """Check that noarch packages do not contain architecture specific files."""

@@ -1,5 +1,4 @@
-conda-verify
-============
+# conda-verify
 [![Travis branch](https://img.shields.io/travis/conda/conda-verify/master.svg?style=flat-square)](https://travis-ci.org/conda/conda-verify)
 [![Codecov branch](https://img.shields.io/codecov/c/github/conda/conda-verify/master.svg?style=flat-square)](https://codecov.io/gh/conda/conda-verify)
 
@@ -8,8 +7,7 @@ conda packages. The purpose of this verification process is to ensure that
 recipes don't contain obvious bugs, and that the conda packages we distribute
 to millions of users meet our high quality standards.
 
-Features
---------
+## Features
 
 Another aspect of `conda-verify` is the ability to verify conda packages.
 These are the most important checks `conda-verify` performs on conda
@@ -188,3 +186,25 @@ Checks
     C2124 - Found file "{}" in meta.yaml that doesn't exist
     C2125 - Found disallowed file with extension "{}"
     C2126 - Found conda-forge comment in meta.yaml file
+
+## Releasing
+
+Conda-verify releases may be performed via the `rever command <https://regro.github.io/rever-docs/>`_.
+Rever is configured to perform the activities for a typical conda-build release.
+To cut a release, simply run ``rever <X.Y.Z>`` where ``<X.Y.Z>`` is the
+release number that you want bump to. For example, ``rever 1.2.3``.  However,
+it is always good idea to make sure that the you have permissions everywhere
+to actually perform the release.  So it is customary to run ``rever check`` before
+the release, just to make sure.  The standard workflow is thus::
+
+    rever check
+    rever 1.2.3
+
+If for some reason a release fails partway through, or you want to claw back a
+release that you have made, rever allows you to undo activities. If you find yourself
+in this pickle, you can pass the ``--undo`` option a comma-separated list of
+activities you'd like to undo.  For example::
+
+      rever --undo tag,changelog,authors 1.2.3
+
+Happy releasing!

@@ -17,6 +17,15 @@
   - mandeep@users.noreply.github.com
 - name: Ilan Schnell
   email: ilanschnell@gmail.com
+  github: ilanschnell
   alternate_emails:
   - ilan@continuum.io
-   
+- name: Sophia Castellarin
+  email: scastellarin@continuum.io
+  github: soapy1
+  alternate_emails:
+    - scastellarin95@gmail.com
+- name: Kale Franz
+  email: kfranz@continuum.io
+  github: kalefranz
+

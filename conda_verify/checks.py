@@ -79,8 +79,12 @@ class CondaPackageCheck(object):
         except IOError:
             self.prefix_file = None
 
-        with open(os.path.join(self.tmpdir, "info", "paths.json")) as f:
-            self.paths_json = json.load(f)
+        try:
+        with open(os.path.join(self.tmpdir, 'info', 'paths.json')) as f:
+                self.paths_json = json.load(f)
+        except IOError:
+            assert self.info.subdir == 'noarch'
+            self.paths_json = {}
 
         self.win_pkg = bool(self.info["platform"] == "win")
         self.name_pat = re.compile(r"[a-z0-9_][a-z0-9_\-\.]*$")

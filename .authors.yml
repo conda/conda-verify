@@ -6,7 +6,7 @@
   - msarahan@anaconda.com
   aliases:
   - Mike Sarahan
-  num_commits: 5
+  num_commits: 8
   first_commit: 2019-01-03 20:00:40
 - name: Mandeep Bhutani
   email: mbhutani@continuum.io
@@ -15,7 +15,7 @@
   - mandeep
   alternate_emails:
   - mandeep@users.noreply.github.com
-  num_commits: 185
+  num_commits: 90
   first_commit: 2017-06-27 10:37:47
 - name: Ilan Schnell
   email: ilanschnell@gmail.com

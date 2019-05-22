@@ -9,11 +9,11 @@
 # This file is up-to-date if the command git log --format="%aN <%aE>" | sort -u
 # gives no duplicates.
 
-Mandeep Bhutani <mbhutani@continuum.io> mandeep <mandeep@users.noreply.github.com>
 Ilan Schnell <ilanschnell@gmail.com> Ilan Schnell <ilan@continuum.io>
-Sophia Castellarin <scastellarin@continuum.io> sophia <scastellarin95@gmail.com>
+Mandeep Bhutani <mbhutani@continuum.io> mandeep <mandeep@users.noreply.github.com>
 Michael Sarahan <msarahan@gmail.com> Mike Sarahan <msarahan@continuum.io>
 Michael Sarahan <msarahan@gmail.com> Mike Sarahan <msarahan@anaconda.com>
+Sophia Castellarin <scastellarin@continuum.io> sophia <scastellarin95@gmail.com>
 jakirkham <jakirkham@gmail.com>
 Nehal J Wani <nehaljw.kkd1@gmail.com>
 Kale Franz <kfranz@continuum.io>

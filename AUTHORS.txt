@@ -1,10 +1,10 @@
 All of the people who have made at least one contribution to conda-verify.
 Authors are sorted by number of commits.
 
-* Mandeep Bhutani
 * Ilan Schnell
-* Sophia Castellarin
+* Mandeep Bhutani
 * Michael Sarahan
+* Sophia Castellarin
 * jakirkham
 * Nehal J Wani
 * Kale Franz

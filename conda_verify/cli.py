@@ -15,30 +15,37 @@ def _submit_verify_recipe(path, executor, ignore):
     futures = []
     for cfg in iter_cfgs():
         meta = render_metadata(path, cfg)
-        if meta.get('build', {}).get('skip', '').lower() != 'true':
-            futures.append(executor.submit(Verify.verify_recipe, rendered_meta=meta,
-                                           recipe_dir=path,
-                                           checks_to_ignore=ignore, exit_on_error=False))
+        if meta.get("build", {}).get("skip", "").lower() != "true":
+            futures.append(
+                executor.submit(
+                    Verify.verify_recipe,
+                    rendered_meta=meta,
+                    recipe_dir=path,
+                    checks_to_ignore=ignore,
+                    exit_on_error=False,
+                )
+            )
     return futures
 
 
 def _submit_verify_package(path, ignore):
     package_issues = (path, None)
     try:
-        package_issues = Verify.verify_package(path_to_package=path, checks_to_ignore=ignore,
-                                                    exit_on_error=False)
+        package_issues = Verify.verify_package(
+            path_to_package=path, checks_to_ignore=ignore, exit_on_error=False
+        )
     except (KeyError, OSError) as e:
         package_issues = (path, [str(e)])
     return package_issues
 
 
 @click.command()
-@click.argument('paths', nargs=-1, type=click.Path(exists=True))
-@click.option('--ignore', nargs=1, type=str)
-@click.option('--exit', is_flag=True)
-@click.option('--debug', is_flag=True)
-@click.option('--out-file', nargs=1, type=click.Path())
-@click.version_option(prog_name='conda-verify', version=__version__)
+@click.argument("paths", nargs=-1, type=click.Path(exists=True))
+@click.option("--ignore", nargs=1, type=str)
+@click.option("--exit", is_flag=True)
+@click.option("--debug", is_flag=True)
+@click.option("--out-file", nargs=1, type=click.Path())
+@click.version_option(prog_name="conda-verify", version=__version__)
 def cli(paths, ignore, exit, debug, out_file):
     """conda-verify is a tool for validating conda packages and recipes.
 
@@ -49,25 +56,24 @@ def cli(paths, ignore, exit, debug, out_file):
     $  conda-verify path/to/recipe_directory/
     """
     if ignore:
-        ignore = ignore.split(',')
+        ignore = ignore.split(",")
 
     package_issues = {}
     futures = []
     with (DummyExecutor if debug else ProcessPoolExecutor)(2) as executor:
         for path in paths:
-            meta_file = os.path.join(path, 'meta.yaml')
+            meta_file = os.path.join(path, "meta.yaml")
             if os.path.isfile(meta_file):
                 futures.extend(_submit_verify_recipe(path, executor, ignore))
-            elif path.endswith(('.tar.bz2', '.tar', '.conda')):
-                futures.append(executor.submit(
-                    _submit_verify_package, path, ignore))
+            elif path.endswith((".tar.bz2", ".tar", ".conda")):
+                futures.append(executor.submit(_submit_verify_package, path, ignore))
         for f in tqdm.tqdm(as_completed(futures), total=len(futures), leave=False):
             path, issues = f.result()
             if issues:
                 package_issues[path] = issues
 
     if out_file:
-        with open(out_file, 'w') as f:
+        with open(out_file, "w") as f:
             json.dump(package_issues, f)
             print("saved to %s" % out_file)
     else:
@@ -79,8 +85,12 @@ def cli(paths, ignore, exit, debug, out_file):
                 try:
                     print(check, file=sys.stderr)
                 except UnicodeEncodeError:
-                    print("Could not print message for error code {} due to unicode error".format(
-                        check.code), file=sys.stderr)
+                    print(
+                        "Could not print message for error code {} due to unicode error".format(
+                            check.code
+                        ),
+                        file=sys.stderr,
+                    )
 
     if exit and package_issues:
         sys.exit(1)

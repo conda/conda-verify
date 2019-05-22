@@ -27,26 +27,26 @@ def yamlize(data):
 
 
 def ns_cfg(cfg):
-    plat = '-'.join((cfg['platform'], cfg['arch']))
-    py = int(''.join(cfg['python'].split('.')))
-    np = int(''.join(cfg['numpy'].split('.')))
+    plat = "-".join((cfg["platform"], cfg["arch"]))
+    py = int("".join(cfg["python"].split(".")))
+    np = int("".join(cfg["numpy"].split(".")))
 
     return dict(
         nomkl=False,
         debug=False,
-        linux=plat.startswith('linux-'),
-        linux32=bool(plat == 'linux-32'),
-        linux64=bool(plat == 'linux-64'),
-        armv7l=bool(plat == 'linux-armv7l'),
-        arm=bool(plat == 'linux-armv7l'),
-        ppc64le=bool(plat == 'linux-ppc64le'),
-        osx=plat.startswith('osx-'),
-        unix=plat.startswith(('linux-', 'osx-')),
-        win=plat.startswith('win-'),
-        win32=bool(plat == 'win-32'),
-        win64=bool(plat == 'win-64'),
-        x86=plat.endswith(('-32', '-64')),
-        x86_64=plat.endswith('-64'),
+        linux=plat.startswith("linux-"),
+        linux32=bool(plat == "linux-32"),
+        linux64=bool(plat == "linux-64"),
+        armv7l=bool(plat == "linux-armv7l"),
+        arm=bool(plat == "linux-armv7l"),
+        ppc64le=bool(plat == "linux-ppc64le"),
+        osx=plat.startswith("osx-"),
+        unix=plat.startswith(("linux-", "osx-")),
+        win=plat.startswith("win-"),
+        win32=bool(plat == "win-32"),
+        win64=bool(plat == "win-64"),
+        x86=plat.endswith(("-32", "-64")),
+        x86_64=plat.endswith("-64"),
         py=py,
         py3k=bool(30 <= py < 40),
         py2k=bool(20 <= py < 30),
@@ -60,7 +60,7 @@ def ns_cfg(cfg):
     )
 
 
-sel_pat = re.compile(r'(.+?)\s*\[(.+)\]$')
+sel_pat = re.compile(r"(.+?)\s*\[(.+)\]$")
 
 
 def select_lines(data, namespace):
@@ -74,7 +74,7 @@ def select_lines(data, namespace):
                 lines.append(m.group(1))
             continue
         lines.append(line)
-    return '\n'.join(lines) + '\n'
+    return "\n".join(lines) + "\n"
 
 
 def parse(data, cfg):
@@ -87,7 +87,7 @@ def parse(data, cfg):
 def render_jinja2(recipe_dir):
     loaders = [jinja2.FileSystemLoader(recipe_dir)]
     env = jinja2.Environment(loader=jinja2.ChoiceLoader(loaders))
-    template = env.get_or_select_template('meta.yaml')
+    template = env.get_or_select_template("meta.yaml")
     return template.render(environment=env)
 
 
@@ -97,10 +97,14 @@ try:
     from conda_build import api
 
     def render_metadata(recipe_dir, cfg):
-        m = api.render(recipe_dir, finalize=False, bypass_env_check=True,
-                       **(cfg if cfg else {}))[0][0]
+        m = api.render(
+            recipe_dir, finalize=False, bypass_env_check=True, **(cfg if cfg else {})
+        )[0][0]
         return m.get_rendered_recipe_text()
+
+
 except ImportError:
+
     def render_metadata(recipe_dir, cfg):
         data = render_jinja2(recipe_dir)
         return parse(data, cfg)
@@ -108,8 +112,8 @@ except ImportError:
 
 def iter_cfgs():
     for py in "27", "34", "35":
-        for plat in 'linux-64', 'linux-32', 'osx-64', 'win-32', 'win-64':
-            platform, arch = plat.split('-')
+        for plat in "linux-64", "linux-32", "osx-64", "win-32", "win-64":
+            platform, arch = plat.split("-")
             yield dict(platform=platform, arch=arch, python=py, numpy="1.11")
 
 
@@ -118,23 +122,21 @@ def get_object_type(data):
     if head not in MAGIC_HEADERS:
         return None
     lookup = MAGIC_HEADERS.get(head)
-    if lookup == 'DLL':
-        pos = data.find(b'PE\0\0')
+    if lookup == "DLL":
+        pos = data.find(b"PE\0\0")
         if pos < 0:
             return "<no PE header found>"
         data = future.builtins.bytes(data)
         i = data[pos + 4] + 256 * data[pos + 5]
         return "DLL " + DLL_TYPES.get(i)
-    elif lookup.startswith('MachO'):
+    elif lookup.startswith("MachO"):
         return lookup
-    elif lookup == 'ELF':
-        return "ELF" + {'\x01': '32', '\x02': '64'}.get(data[4])
+    elif lookup == "ELF":
+        return "ELF" + {"\x01": "32", "\x02": "64"}.get(data[4])
 
 
 def get_bad_seq(s):
-    for seq in ('--', '-.', '-_',
-                '.-', '..', '._',
-                '_-', '_.'):  # but '__' is fine
+    for seq in ("--", "-.", "-_", ".-", "..", "._", "_-", "_."):  # but '__' is fine
         if seq in s:
             return seq
     return None
@@ -155,7 +157,7 @@ def ensure_list(argument):
     if isinstance(argument, list):
         return argument
     elif isinstance(argument, string_types):
-        return argument.split(',')
+        return argument.split(",")
     return [argument]
 
 
@@ -176,7 +178,7 @@ class DummyExecutor(Executor):
     def submit(self, fn, *args, **kwargs):
         with self._shutdownLock:
             if self._shutdown:
-                raise RuntimeError('cannot schedule new futures after shutdown')
+                raise RuntimeError("cannot schedule new futures after shutdown")
 
             f = Future()
             try:

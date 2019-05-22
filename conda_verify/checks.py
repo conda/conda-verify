@@ -12,11 +12,11 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import sys
-import tempfile
 
 import conda_package_handling.api
+
+from tempfile import TemporaryDirectory
 
 from conda_verify.errors import Error, PackageError
 from conda_verify.constants import FIELDS, LICENSE_FAMILIES, CONDA_FORGE_COMMENTS
@@ -51,7 +51,8 @@ class CondaPackageCheck(object):
         self.path = path
         self.dist = self.retrieve_package_name(self.path)
 
-        self.tmpdir = tempfile.mkdtemp()
+        self._tmpdir = TemporaryDirectory()
+        self.tmpdir = self._tmpdir.name
         conda_package_handling.api.extract(self.path, self.tmpdir)
         self.name, self.version, self.build = self.dist.rsplit('-', 2)
         self.paths = self.archive_members = [os.path.relpath(os.path.join(dp, f), self.tmpdir)
@@ -77,9 +78,6 @@ class CondaPackageCheck(object):
         self.name_pat = re.compile(r'[a-z0-9_][a-z0-9_\-\.]*$')
         self.hash_pat = re.compile(r'[gh][0-9a-f]{5,}', re.I)
         self.version_pat = re.compile(r'[\w\.]+$')
-
-    def __del__(self):
-        shutil.rmtree(self.tmpdir)
 
     @staticmethod
     def retrieve_package_name(path):

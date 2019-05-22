@@ -4,6 +4,8 @@ import sys
 import jinja2
 import yaml
 from six import string_types
+from concurrent.futures import Future, Executor
+from threading import Lock
 
 import future.builtins
 
@@ -163,3 +165,29 @@ def fullmatch(regex, string, flags=0):
     Credit: https://stackoverflow.com/questions/30212413/
     """
     return re.match("(?:" + regex + r")\Z", string, flags=flags)
+
+
+# use this for debugging, because ProcessPoolExecutor isn't pdb/ipdb friendly
+class DummyExecutor(Executor):
+    def __init__(self):
+        self._shutdown = False
+        self._shutdownLock = Lock()
+
+    def submit(self, fn, *args, **kwargs):
+        with self._shutdownLock:
+            if self._shutdown:
+                raise RuntimeError('cannot schedule new futures after shutdown')
+
+            f = Future()
+            try:
+                result = fn(*args, **kwargs)
+            except BaseException as e:
+                f.set_exception(e)
+            else:
+                f.set_result(result)
+
+            return f
+
+    def shutdown(self, wait=True):
+        with self._shutdownLock:
+            self._shutdown = True

@@ -22,7 +22,7 @@ def test_package_cli(package_dir):
     runner = CliRunner()
     result = runner.invoke(cli, [package])
     assert not result.exception
-    assert 'Verifying {}...' .format(package) in result.output
+    assert '0/1' in result.output
 
 
 def test_recipe_cli(recipe_dir):
@@ -30,7 +30,6 @@ def test_recipe_cli(recipe_dir):
     runner = CliRunner()
     result = runner.invoke(cli, [recipe])
     assert not result.exception
-    assert 'Verifying {}' .format(recipe) in result.output
 
 
 def test_cli_version():

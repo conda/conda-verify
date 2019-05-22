@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
-import sys
 
 from conda_verify.checks import CondaPackageCheck, CondaRecipeCheck
 from conda_verify.errors import PackageError, RecipeError
@@ -36,17 +35,9 @@ class Verify(object):
                 if check is not None and check.code not in ensure_list(checks_to_ignore):
                     checks_to_display.append(check)
 
-        if checks_to_display:
-            print("Package verification results:")
-            print("-----------------------------")
-        for check in sorted(checks_to_display):
-            try:
-                print(check, file=sys.stderr)
-            except UnicodeEncodeError:
-                print("Could not print message for error code {} due to unicode error".format(check.code), file=sys.stderr)
-
         if checks_to_display and exit_on_error:
             raise PackageError(check)
+        return (path_to_package, sorted(["[{}] {}".format(*c[1:]) for c in checks_to_display]))
 
     @staticmethod
     def verify_recipe(rendered_meta=None, recipe_dir=None, checks_to_ignore=None,
@@ -63,17 +54,11 @@ class Verify(object):
                     'list of codes, documented at https://github.com/conda/conda-verify#checks')
 
         checks_to_display = []
-        for method in dir(recipe_check):
-            if method.startswith('check'):
-                check = getattr(recipe_check, method)()
-                if check is not None and check.code not in ensure_list(checks_to_ignore):
-                    checks_to_display.append(check)
-
-        for check in sorted(checks_to_display):
-            try:
-                print(check, file=sys.stderr)
-            except UnicodeEncodeError:
-                print(str(check).encode('utf-8', 'ignore'), file=sys.stderr)
+        for method in (_ for _ in dir(recipe_check) if _.startswith('check_')):
+            check = getattr(recipe_check, method)()
+            if check and check.code not in ensure_list(checks_to_ignore):
+                checks_to_display.append(check)
 
         if checks_to_display and exit_on_error:
-            raise RecipeError(check)
+            raise RecipeError(checks_to_display[0])
+        return (recipe_dir, sorted(["[{}] {}".format(*c[1:]) for c in checks_to_display]))

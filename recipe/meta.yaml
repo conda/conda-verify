@@ -2,10 +2,15 @@
 
 package:
   name: conda-verify
-  version: {{ setup_data['version'] }}
+  version: {{ setup_data["version"] }}
 
 source:
   path: ../
+
+build:
+  script: pip install . --no-deps
+  # we need TemporaryDirectory.  not worth backporting or importing conda's backport.
+  skip:  True  # [py27]
 
 requirements:
   build:
@@ -20,9 +25,6 @@ requirements:
     - future
     - backports.functools_lru_cache  # [py<33]
     - conda-package-handling >=1.0.4
-
-build:
-  script: pip install . --no-deps
 
 test:
   imports:

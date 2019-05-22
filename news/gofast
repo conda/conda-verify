@@ -4,6 +4,8 @@ Enhancements:
  * accepts wildcards of many files to verify
  * uses ProcessPoolExecutor to run files in parallel
  * adds --out-file to specify a .json file to dump all results to
+ * support glob patterns for input specs
+ * vendor in conda's faster rm_rf code.  It's less prone to deadlocks than shutil.rmtree.
 
  Bug fixes:
 ----------

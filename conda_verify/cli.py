@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+from glob import glob
 
 import click
 import tqdm
@@ -40,7 +41,7 @@ def _submit_verify_package(path, ignore):
 
 
 @click.command()
-@click.argument("paths", nargs=-1, type=click.Path(exists=True))
+@click.argument("paths", nargs=-1, type=str)
 @click.option("--ignore", nargs=1, type=str)
 @click.option("--exit", is_flag=True)
 @click.option("--debug", is_flag=True)
@@ -60,8 +61,15 @@ def cli(paths, ignore, exit, debug, out_file):
 
     package_issues = {}
     futures = []
-    with (DummyExecutor if debug else ProcessPoolExecutor)(2) as executor:
-        for path in paths:
+    paths_glob = []
+    for path in paths:
+        glob_paths = glob(os.path.expanduser(path))
+        if not glob_paths:
+            print("Error: path spec %s didn't match any files" % path)
+            sys.exit(1)
+        paths_glob.extend(glob_paths)
+    with (DummyExecutor if debug else ProcessPoolExecutor)() as executor:
+        for path in paths_glob:
             meta_file = os.path.join(path, "meta.yaml")
             if os.path.isfile(meta_file):
                 futures.extend(_submit_verify_recipe(path, executor, ignore))

@@ -26,6 +26,7 @@ from conda_verify.utilities import (
     get_object_type,
     ensure_list,
     fullmatch,
+    rm_rf,
 )
 
 
@@ -85,6 +86,9 @@ class CondaPackageCheck(object):
         self.name_pat = re.compile(r"[a-z0-9_][a-z0-9_\-\.]*$")
         self.hash_pat = re.compile(r"[gh][0-9a-f]{5,}", re.I)
         self.version_pat = re.compile(r"[\w\.]+$")
+
+    def __exit__(self, exc, value, tb):
+        rm_rf(self._tmpdir.name)
 
     @staticmethod
     def retrieve_package_name(path):

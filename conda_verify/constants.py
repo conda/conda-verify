@@ -1,56 +1,138 @@
 try:
     from conda_build.license_family import allowed_license_families as LICENSE_FAMILIES
 except ImportError:
-    print("warning: could not import conda-build ALLOWED_LICENSE_FAMILIES data.  Falling back to "
-          "possibly stale static list")
-    LICENSE_FAMILIES = ['AGPL', 'GPL', 'GPL2', 'GPL3', 'LGPL', 'BSD', 'MIT', 'APACHE',
-                        'PSF', 'CC', 'PUBLIC-DOMAIN', 'PROPRIETARY', 'OTHER', 'NONE']
+    print(
+        "warning: could not import conda-build ALLOWED_LICENSE_FAMILIES data.  Falling back to "
+        "possibly stale static list"
+    )
+    LICENSE_FAMILIES = [
+        "AGPL",
+        "GPL",
+        "GPL2",
+        "GPL3",
+        "LGPL",
+        "BSD",
+        "MIT",
+        "APACHE",
+        "PSF",
+        "CC",
+        "PUBLIC-DOMAIN",
+        "PROPRIETARY",
+        "OTHER",
+        "NONE",
+    ]
 
 try:
     from conda_build.metadata import FIELDS
 except ImportError:
-    print("warning: could not import conda-build FIELDS data.  Falling back to possibly stale"
-          "static list")
+    print(
+        "warning: could not import conda-build FIELDS data.  Falling back to possibly stale"
+        "static list"
+    )
     FIELDS = {
-        'package': {'name', 'version'},
-        'source': {'fn', 'url', 'md5', 'sha1', 'sha256',
-                'git_url', 'git_tag', 'git_branch', 'git_rev',
-                'patches', 'hg_url', 'hg_tag', 'path'},
-        'build': {'features', 'track_features', 'skip',
-                'number', 'entry_points', 'osx_is_app', 'noarch',
-                'preserve_egg_dir', 'win_has_prefix', 'no_link',
-                'ignore_prefix_files', 'msvc_compiler', 'skip_compile_pyc',
-                'detect_binary_files_with_prefix', 'script',
-                'always_include_files', 'binary_relocation',
-                'binary_has_prefix_files', 'noarch_python', 'run_exports'},
-        'requirements': {'build', 'run', 'preferred_env', 'host',
-                        'preferred_env_executable_paths'},
-        'outputs': {'name', 'build', 'about', 'test', 'version', 'script', 'requirements',
-                    'run_exports'},
-        'app': {'entry', 'icon', 'summary', 'type', 'cli_opts'},
-        'test': {'requires', 'commands', 'files', 'source_files', 'imports'},
-        'about': {'license', 'license_url', 'license_family', 'license_file',
-                'summary', 'description', 'home', 'doc_url', 'doc_source_url',
-                'dev_url'},
-        'extra': {'recipe-maintainers', 'final', 'parent_recipe'},
+        "package": {"name", "version"},
+        "source": {
+            "fn",
+            "url",
+            "md5",
+            "sha1",
+            "sha256",
+            "git_url",
+            "git_tag",
+            "git_branch",
+            "git_rev",
+            "patches",
+            "hg_url",
+            "hg_tag",
+            "path",
+        },
+        "build": {
+            "features",
+            "track_features",
+            "skip",
+            "number",
+            "entry_points",
+            "osx_is_app",
+            "noarch",
+            "preserve_egg_dir",
+            "win_has_prefix",
+            "no_link",
+            "ignore_prefix_files",
+            "msvc_compiler",
+            "skip_compile_pyc",
+            "detect_binary_files_with_prefix",
+            "script",
+            "always_include_files",
+            "binary_relocation",
+            "binary_has_prefix_files",
+            "noarch_python",
+            "run_exports",
+        },
+        "requirements": {
+            "build",
+            "run",
+            "preferred_env",
+            "host",
+            "preferred_env_executable_paths",
+        },
+        "outputs": {
+            "name",
+            "build",
+            "about",
+            "test",
+            "version",
+            "script",
+            "requirements",
+            "run_exports",
+        },
+        "app": {"entry", "icon", "summary", "type", "cli_opts"},
+        "test": {"requires", "commands", "files", "source_files", "imports"},
+        "about": {
+            "license",
+            "license_url",
+            "license_family",
+            "license_file",
+            "summary",
+            "description",
+            "home",
+            "doc_url",
+            "doc_source_url",
+            "dev_url",
+        },
+        "extra": {"recipe-maintainers", "final", "parent_recipe"},
     }
 
 MAGIC_HEADERS = {
-    b'\xca\xfe\xba\xbe': 'MachO-universal',
-    b'\xce\xfa\xed\xfe': 'MachO-i386',
-    b'\xcf\xfa\xed\xfe': 'MachO-x86_64',
-    b'\xfe\xed\xfa\xce': 'MachO-ppc',
-    b'\xfe\xed\xfa\xcf': 'MachO-ppc64',
-    b'MZ\x90\x00': 'DLL',
-    b'\x7fELF': 'ELF',
+    b"\xca\xfe\xba\xbe": "MachO-universal",
+    b"\xce\xfa\xed\xfe": "MachO-i386",
+    b"\xcf\xfa\xed\xfe": "MachO-x86_64",
+    b"\xfe\xed\xfa\xce": "MachO-ppc",
+    b"\xfe\xed\xfa\xcf": "MachO-ppc64",
+    b"MZ\x90\x00": "DLL",
+    b"\x7fELF": "ELF",
 }
 
 DLL_TYPES = {
-    0x0: 'UNKNOWN', 0x1d3: 'AM33', 0x8664: 'AMD64', 0x1c0: 'ARM',
-    0xebc: 'EBC', 0x14c: 'I386', 0x200: 'IA64', 0x9041: 'M32R',
-    0x266: 'MIPS16', 0x366: 'MIPSFPU', 0x466: 'MIPSFPU16', 0x1f0: 'POWERPC',
-    0x1f1: 'POWERPCFP', 0x166: 'R4000', 0x1a2: 'SH3', 0x1a3: 'SH3DSP',
-    0x1a6: 'SH4', 0x1a8: 'SH5', 0x1c2: 'THUMB', 0x169: 'WCEMIPSV2',
+    0x0: "UNKNOWN",
+    0x1D3: "AM33",
+    0x8664: "AMD64",
+    0x1C0: "ARM",
+    0xEBC: "EBC",
+    0x14C: "I386",
+    0x200: "IA64",
+    0x9041: "M32R",
+    0x266: "MIPS16",
+    0x366: "MIPSFPU",
+    0x466: "MIPSFPU16",
+    0x1F0: "POWERPC",
+    0x1F1: "POWERPCFP",
+    0x166: "R4000",
+    0x1A2: "SH3",
+    0x1A3: "SH3DSP",
+    0x1A6: "SH4",
+    0x1A8: "SH5",
+    0x1C2: "THUMB",
+    0x169: "WCEMIPSV2",
 }
 
 CONDA_FORGE_COMMENTS = """

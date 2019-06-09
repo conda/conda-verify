@@ -79,9 +79,12 @@ class CondaPackageCheck(object):
         except IOError:
             self.prefix_file = None
 
+        self.paths_json_path = dict()
         try:
-        with open(os.path.join(self.tmpdir, 'info', 'paths.json')) as f:
+            with open(os.path.join(self.tmpdir, 'info', 'paths.json')) as f:
                 self.paths_json = json.load(f)
+                for path in self.paths_json['paths']:
+                    self.paths_json_path[path["_path"]] = path
         except IOError:
             assert self.info.subdir == 'noarch'
             self.paths_json = {}
@@ -304,19 +307,20 @@ class CondaPackageCheck(object):
 
     def check_files_file_for_validity(self):
         """Check that the files listed in info/files exist in the tar archive and vice versa."""
-        members = [
+        members = set([
             member
             for member in self.archive_members
             if not os.path.isdir(os.path.join(self.tmpdir, member))
             and not member.startswith("info")
-        ]
-        filenames = [
+        ])
+        filenames = set([
             os.path.normpath(path.strip())
             for path in self.files_file.decode("utf-8").splitlines()
             if not path.strip().startswith("info")
-        ]
+        ])
 
-        for filename in sorted(set(members).union(set(filenames))):
+        sorted_union_filenames = sorted(members.union(filenames))
+        for filename in sorted_union_filenames:
             if filename not in members:
                 return Error(
                     self.path,
@@ -628,28 +632,28 @@ class CondaPackageCheck(object):
         """Check the sha256 checksum and filesize of each file in the package."""
         for member in self.archive_members:
             file_path = os.path.join(self.tmpdir, member)
-            if os.path.isfile(file_path):
-                for path in self.paths_json["paths"]:
+            if member in self.paths_json_path:
+                if os.path.isfile(file_path):
+                    path = self.paths_json_path[member]
                     size = os.stat(file_path).st_size
-                    if member == os.path.normpath(path["_path"]):
-                        if size != path["size_in_bytes"]:
-                            return Error(
-                                self.path,
-                                "C1147",
-                                'Found file "{}" with filesize different than listed in paths.json'.format(
-                                    member
-                                ),
-                            )
-                        with open(file_path, "rb") as file_object:
-                            sha256_digest = sha256_checksum(file_object)
-                        if sha256_digest != path["sha256"]:
-                            return Error(
-                                self.path,
-                                "C1146",
-                                'Found file "{}" with sha256 hash different than listed in paths.json'.format(
-                                    member
-                                ),
-                            )
+                    if size != path["size_in_bytes"]:
+                        return Error(
+                            self.path,
+                            "C1147",
+                            'Found file "{}" with filesize different than listed in paths.json'.format(
+                                member
+                            ),
+                        )
+                    with open(file_path, "rb") as file_object:
+                        sha256_digest = sha256_checksum(file_object)
+                    if sha256_digest != path["sha256"]:
+                        return Error(
+                            self.path,
+                            "C1146",
+                            'Found file "{}" with sha256 hash different than listed in paths.json'.format(
+                                member
+                            ),
+                        )
 
     def check_noarch_files(self):
         """Check that noarch packages do not contain architecture specific files."""

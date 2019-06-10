@@ -5,9 +5,9 @@ Authors are sorted by number of commits.
 * Mandeep Bhutani
 * Michael Sarahan
 * Sophia Castellarin
+* Ray Donnelly
 * jakirkham
 * Nehal J Wani
 * Kale Franz
-* Ray Donnelly
 
 

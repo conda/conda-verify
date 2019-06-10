@@ -6,7 +6,7 @@
   - msarahan@anaconda.com
   aliases:
   - Mike Sarahan
-  num_commits: 8
+  num_commits: 9
   first_commit: 2019-01-03 20:00:40
 - name: Mandeep Bhutani
   email: mbhutani@continuum.io
@@ -45,8 +45,9 @@
   github: jakirkham
 - name: Ray Donnelly
   email: mingw.android@gmail.com
-  num_commits: 1
+  num_commits: 3
   first_commit: 2018-09-19 12:36:32
+  github: mingwandroid
 - name: Nehal J Wani
   email: nehaljw.kkd1@gmail.com
   num_commits: 2

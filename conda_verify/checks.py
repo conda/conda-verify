@@ -16,7 +16,10 @@ import sys
 
 import conda_package_handling.api
 
-from tempfile import TemporaryDirectory
+try:
+    from tempfile import TemporaryDirectory
+except:
+    from backports.tempfile import TemporaryDirectory
 
 from conda_verify.errors import Error, PackageError
 from conda_verify.constants import FIELDS, LICENSE_FAMILIES, CONDA_FORGE_COMMENTS

@@ -4,8 +4,8 @@ Authors are sorted by number of commits.
 * Ilan Schnell
 * Mandeep Bhutani
 * Michael Sarahan
-* Sophia Castellarin
 * Ray Donnelly
+* Sophia Castellarin
 * jakirkham
 * Nehal J Wani
 * Kale Franz

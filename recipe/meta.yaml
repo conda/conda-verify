@@ -8,8 +8,9 @@ source:
   path: ../
 
 build:
-  script: pip install . --no-deps
-  # we need TemporaryDirectory.  not worth backporting or importing conda's backport.
+  number: 0
+  script: {{ PYTHON }} -m pip install . --no-deps
+  noarch: python
   skip:  True  # [py27]
 
 requirements:
@@ -24,16 +25,36 @@ requirements:
     - pyyaml
     - future
     - backports.functools_lru_cache  # [py<33]
+    - backports.tempfile
     - conda-package-handling >=1.0.4
+    - six
+    - tqdm
 
 test:
   imports:
     - conda_verify
   commands:
-    - conda-verify --version
-    - conda-verify --help
+    # return code of version and help is 1 on windows !?
+    - conda-verify --version  # [unix]
+    - conda-verify --help     # [unix]
 
 about:
   home: https://github.com/conda/conda-verify
-  license: BSD
+  license: BSD 3-Clause
   license_file: LICENSE.txt
+  summary: tool for validating conda recipes and conda packages
+  description: |
+    conda-verify is a tool for (passively) verifying conda recipes and conda
+    packages.
+
+extra:
+  recipe-maintainers:
+    - jakirkham
+    - jjhelmus
+    - msarahan
+    - mwcraig
+    - ocefpaf
+    - patricksnape
+    - pelson
+    - scopatz
+    - mandeep

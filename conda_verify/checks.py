@@ -86,7 +86,6 @@ class CondaPackageCheck(object):
                 for path in self.paths_json['paths']:
                     self.paths_json_path[path["_path"]] = path
         except IOError:
-            assert self.info.subdir == 'noarch'
             self.paths_json = {}
 
         self.win_pkg = bool(self.info["platform"] == "win")

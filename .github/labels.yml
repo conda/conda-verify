@@ -1,0 +1,13 @@
+# Deprecated
+- name: "Status: Accepted"
+  description: "[deprecated] use milestones/project boards"
+  color: "888888"
+- name: "Status: Completed"
+  description: "[deprecated] use milestones/project boards"
+  color: "888888"
+- name: "Status: In Progress"
+  description: "[deprecated] use milestones/project boards"
+  color: "888888"
+- name: "Status: Review Needed"
+  description: "[deprecated] use milestones/project boards"
+  color: "888888"

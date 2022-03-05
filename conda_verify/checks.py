@@ -630,6 +630,24 @@ class CondaPackageCheck(object):
                                 ),
                             )
 
+    def check_windows_debug_link(self):
+        """Ensure Windows binaries do not link to Visual Studio debug libraries."""
+        if not self.win_pkg:
+            return
+        if not any(member.endswith((".exe", ".dll")) for member in self.archive_members):
+            return
+        import lief.PE
+
+        pat = re.compile(r"vcruntime\d+d\.dll", re.IGNORECASE)
+        for member in self.archive_members:
+            if not member.endswith((".exe", ".dll")):
+                continue
+            b = lief.PE.parse(os.path.join(self.tmpdir, member))
+            for dll in b.libraries:
+                if pat.match(dll):
+                    return Error(self.path, "C1149",
+                        'Found binary "{}" linking to VS debug library: "{}"'.format(member, dll))
+
     def check_package_hashes_and_size(self):
         """Check the sha256 checksum and filesize of each file in the package."""
         for member in self.archive_members:

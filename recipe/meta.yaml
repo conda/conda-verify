@@ -29,6 +29,7 @@ requirements:
     - conda-package-handling >=1.0.4
     - six
     - tqdm
+    - py-lief
 
 test:
   imports:

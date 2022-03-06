@@ -1,3 +1,6 @@
+  * add C1149: detect when Windows binaries are linked against Visual Studio debug DLLs  #75
+
+
 2018-09-28   3.1.1:
 -------------------
   * Fix bat/exe check to only fail when .bat and .exe files with same name exist  #49

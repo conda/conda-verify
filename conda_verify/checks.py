@@ -636,6 +636,7 @@ class CondaPackageCheck(object):
             return
         if not any(member.endswith((".exe", ".dll")) for member in self.archive_members):
             return
+        # only import lief when necessary
         import lief.PE
 
         pat = re.compile(r"vcruntime\d+d\.dll", re.IGNORECASE)

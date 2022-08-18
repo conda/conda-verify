@@ -21,6 +21,8 @@ jobs:
         pyver: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Setup conda installation
         run: |
           [ $RUNNER_OS = 'Windows' ] && CONDA_EXE=$CONDA/Scripts/conda.exe
@@ -50,7 +52,7 @@ jobs:
           conda create -n verify -c local --strict-channel-priority conda-verify pytest
           conda activate verify
           installed_channel=$(conda list conda-verify --json | jq -r '.[].channel')
-          if [[ "$installed_channel" != "conda-bld" ]]; then
+          if [[ "$installed_channel" != */conda-bld ]]; then
             echo $(conda list conda-verify --json)
             echo "Installed conda-verify is not local!"
             exit 1

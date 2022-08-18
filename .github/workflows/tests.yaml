@@ -8,6 +8,8 @@ on:
   pull_request:
     branches:
       - main
+  schedule:
+    - cron: "30 5 * * 3"
 defaults:
   run:
     shell: bash

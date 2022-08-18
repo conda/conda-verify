@@ -11,20 +11,20 @@ build:
   number: 0
   script: {{ PYTHON }} -m pip install . --no-deps
   noarch: python
-  skip:  True  # [py27]
+  entry_points:
+    - conda-verify = conda_verify.cli:cli
 
 requirements:
   build:
-    - python
+    - python >=3.6
     - setuptools
     - pip
   run:
-    - python
+    - python >=3.6
     - jinja2
     - click
     - pyyaml
     - future
-    - backports.functools_lru_cache  # [py<33]
     - backports.tempfile
     - conda-package-handling >=1.0.4
     - six

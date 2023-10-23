@@ -33,7 +33,7 @@ from conda_verify.utilities import (
 )
 
 
-ver_spec_pat = r"^(?:[><=]{0,2}(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}"
+ver_spec_pat = r"^(?:[=><!]?=?(?:(?:[\d\*]+[!\._]?){1,})[+\w\*]*[|,]?){1,}"
 
 
 def _checksum(fd, algorithm, buffersize=65536):

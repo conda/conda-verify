@@ -22,7 +22,7 @@ class Verify(object):
         if ("ignore_scripts" in kw and kw["ignore_scripts"]) or (
             "run_scripts" in kw and kw["run_scripts"]
         ):
-            getLogger(__name__).warn(
+            getLogger(__name__).warning(
                 "Ignoring legacy ignore_scripts or run_scripts.  These have "
                 "been replaced by the checks_to_ignore argument, which takes a"
                 "list of codes, documented at https://github.com/conda/conda-verify#checks"
@@ -64,7 +64,7 @@ class Verify(object):
         if ("ignore_scripts" in kw and kw["ignore_scripts"]) or (
             "run_scripts" in kw and kw["run_scripts"]
         ):
-            getLogger(__name__).warn(
+            getLogger(__name__).warning(
                 "Ignoring legacy ignore_scripts or run_scripts.  These have "
                 "been replaced by the checks_to_ignore argument, which takes a"
                 "list of codes, documented at https://github.com/conda/conda-verify#checks"

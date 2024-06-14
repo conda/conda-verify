@@ -1,0 +1,3 @@
+### Bug fixes
+
+* Version specs using the "!=" operator no longer flagged as invalid

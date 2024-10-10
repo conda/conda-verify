@@ -22,7 +22,7 @@ or useful.
     linked anywhere or (ii) files which do no exist are attempted to get
     linked (which would result in an error).
 
-  * Check for now allowed archives in the tarball.  A conda package should
+  * Check for prohibited archives in the tarball.  A conda package should
     not contain files in the following directories `conda-meta/`,
     `conda-bld/`, `pkgs/`, `pkgs32/` and `envs/`, because this would (for
     example) allow a conda package to modify another existing environment.

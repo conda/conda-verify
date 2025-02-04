@@ -1,0 +1,68 @@
+name: Tests
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "30 5 * * 3"
+defaults:
+  run:
+    shell: bash
+jobs:
+  package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        pyver: ["3.7", "3.8", "3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Setup conda installation
+        run: |
+          [ $RUNNER_OS = 'Windows' ] && CONDA_EXE=$CONDA/Scripts/conda.exe
+          [ $RUNNER_OS == macOS ] && export CONDA_PKGS_DIRS=~/.pkgs
+          ${CONDA_EXE:-conda} create -p ../conda conda conda-build conda-verify
+      - name: Build the package
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUNBUFFERED: True
+          CONDA_BLD_PATH: ${{ runner.temp }}/conda-bld
+        run: |
+          source ../conda/etc/profile.d/conda.sh
+          conda build recipe --python=${{ matrix.pyver }}
+      - name: Upload the packages as artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v2
+        with:
+          # By uploading to the same artifact we can download all of the packages
+          # and upload them all to anaconda.org in a single job
+          name: package-${{ github.sha }}
+          path: ${{ runner.temp }}/conda-bld/*/*.tar.bz2
+      - name: Install and check local conda-verify
+        env:
+          CONDA_BLD_PATH: ${{ runner.temp }}/conda-bld
+        run: |
+          source ../conda/etc/profile.d/conda.sh
+          conda create -n verify -c local --strict-channel-priority conda-verify pytest
+          conda activate verify
+          installed_channel=$(conda list conda-verify --json | jq -r '.[].channel')
+          if [[ "$installed_channel" != */conda-bld ]]; then
+            echo $(conda list conda-verify --json)
+            echo "Installed conda-verify is not local!"
+            exit 1
+          fi
+      - name: Run tests
+        run: |
+          source ../conda/etc/profile.d/conda.sh
+          conda activate verify
+          pytest
+
+

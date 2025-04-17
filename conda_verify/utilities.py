@@ -23,7 +23,7 @@ except ImportError:
 
 @lru_cache(maxsize=32)
 def yamlize(data):
-    res = yaml.load(data)
+    res = yaml.safe_load(data)
     # ensure the result is a dict
     if res is None:
         res = {}

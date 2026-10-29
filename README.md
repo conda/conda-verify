@@ -1,6 +1,10 @@
 # conda-verify
-[![Travis branch](https://img.shields.io/travis/conda/conda-verify/main.svg?style=flat-square)](https://travis-ci.org/conda/conda-verify)
-[![Codecov branch](https://img.shields.io/codecov/c/github/conda/conda-verify/main.svg?style=flat-square)](https://codecov.io/gh/conda/conda-verify)
+
+> [!WARNING]
+> This project is archived and unmaintained. Use
+> [anaconda-linter](https://anaconda.org/channels/main/packages/anaconda-linter/overview)
+> for Anaconda recipes and
+> [conda-smithy](https://github.com/conda-forge/conda-smithy) for conda-forge.
 
 conda-verify is a tool for (passively) verifying conda recipes and
 conda packages. The purpose of this verification process is to ensure that
